@@ -1,0 +1,43 @@
+{
+  "build_command": "pnpm run build",
+  "capabilities": [
+    "server",
+    "db",
+    "user"
+  ],
+  "dev_command": "pnpm run dev",
+  "env_vars": {
+    "DATABASE_URL": "mysql://2Wd63gUdtSjtYY3.root:2A6xj0VwvvEUg4ER4xm8@gateway06.us-east-1.prod.aws.tidbcloud.com:4000/5wkBquEUPqEsiikipJdWYy?ssl={\"rejectUnauthorized\":true}"
+  },
+  "experiments": [
+    "no_db_push"
+  ],
+  "git_remote": {
+    "repo_url": "s3://vida-prod-gitrepo/webdev-git/310519663677930309/5wkBquEUPqEsiikipJdWYy",
+    "access_key_id": "ASIAZV3A2ECZHP5S3T2C",
+    "secret_access_key": "JE859J+6Idexlm7uVNJGt8rwUOxW/ADmumd9siUl",
+    "session_token": "IQoJb3JpZ2luX2VjEBwaCXVzLWVhc3QtMSJGMEQCIFMAj4wTM8J21RbpENTGQ/OoLIwIgLGmSNSsnUZUQ+r6AiBAxz5vMGVYACHXOdSCoRJAGjmBHWK6QTEsJFC8Vfu61yr/Awjl//////////8BEAQaDDY2NTM4NjA5ODg2NiIMZ9QE4fERBPzpJ4oIKtMDWStPESrSf41Q6QGZqPBOdhg+qezNO7RGpmoS+lM1drmOgSk2sPj51VUjdgmccsOrp2b4VpJ14y4D2RK6vPvQewMmmo2Ul4PlUM1vNqmZfO8RB8zkU0SJ4F4CkEYlyyQ1P9uQRcx8wCx+gZcSR4uRFfT1hTZHuu2g9U45z5nfEA2gX/XbyJ4i6sdD9opBFx+Ekmw8msK8quconmATGxkyBvhUDcE+RN8ytDgdqrsVTGlsLvBi0nWqQPTqyDX68VOENuDgXYi4BI05gxqT8UGltUhsSoI9huCSfiR2sCG7H3ElYcG0c7+xpjYy+XhoQsD9F5ZUuNBEYBdABOzR+XRQjYWPLM6xFOYU5aNfL/PKB6RoGtJ8ZVxR9ioxjMZecRzGgHpNOOo2kO2UNm8XVXFlFYsyp4RaVE03O+zakG2Im8ZaDSdcC9dzGjcQbd9SVf/7zEv/FFkVekZ7gXLopzrkRzadc2V+Jy2dNLIJnXD3ZqR/DvAV/7CyY33RUsqkUWbAvn7slqpCF/NGqGSNAUFMPHOn4KU9SY/W13DmmJ+iVPbKjG0eNaJxHIzGQH0aYf+yNSSzcoNDU6RoqRIbAlVHiG3DWRhbVwKWZ1HMrWEBPikq7QowhtW00AY6ngEQ3vR1Gf46kLlePSilLejoUDISZozzYlu5lniv93KB3mX1N8WoErEY8nqogLgkcOng65qMwKwLJU/tqTozv+ln89BdLTRC2NDx56TvZVqZQ4HK0pp64GJpzRrfIRdO4lypfqLi/ZrQV7aL7JeVKm+IpOT1n8rYeYdF03nN6L/1TYs/uvqhxjUngf8JkotVGqWR+gsb9GSL5xghYLvilg==",
+    "expiration": "2026-05-20T15:29:10.000Z"
+  },
+  "name": "jekyll-forge",
+  "path": "/home/ubuntu/jekyll-forge",
+  "port": 3000,
+  "secrets": {
+    "BUILT_IN_FORGE_API_KEY": "frhXX6PKGoRGjnsyRnYsVb",
+    "BUILT_IN_FORGE_API_URL": "https://forge.manus.ai",
+    "JWT_SECRET": "mk6s6HtTMqjk3MNVipSYts",
+    "OAUTH_SERVER_URL": "https://api.manus.im",
+    "OWNER_NAME": "a1ssholebiker",
+    "OWNER_OPEN_ID": "7e8xTTXR35h48HAkz9AU9P",
+    "VITE_ANALYTICS_ENDPOINT": "https://manus-analytics.com",
+    "VITE_ANALYTICS_WEBSITE_ID": "a2c66a81-480e-4d6d-8b43-5eb984f2264f",
+    "VITE_APP_ID": "5wkBquEUPqEsiikipJdWYy",
+    "VITE_APP_LOGO": "",
+    "VITE_APP_TITLE": "Jekyll Forge",
+    "VITE_FRONTEND_FORGE_API_KEY": "RHhr9474MwsCAKXH3TnLat",
+    "VITE_FRONTEND_FORGE_API_URL": "https://forge.manus.ai",
+    "VITE_OAUTH_PORTAL_URL": "https://manus.im"
+  },
+  "template_id": "web-db-user",
+  "test_command": "pnpm test"
+}
