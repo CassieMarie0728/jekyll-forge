@@ -100,6 +100,14 @@ export async function deleteSite(id: number, userId: number): Promise<void> {
   await db.delete(sites).where(and(eq(sites.id, id), eq(sites.userId, userId)));
 }
 
+// For cron handlers that don't have a userId context
+export async function getSiteByIdAny(id: number): Promise<Site | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(sites).where(eq(sites.id, id)).limit(1);
+  return result[0];
+}
+
 // ─── Posts ────────────────────────────────────────────────────────────────────
 export async function getPostsBySiteId(siteId: number, userId: number): Promise<Post[]> {
   const db = await getDb();
@@ -294,6 +302,22 @@ export async function deleteReusableBlock(id: number, userId: number): Promise<v
   const db = await getDb();
   if (!db) return;
   await db.delete(reusableBlocks).where(and(eq(reusableBlocks.id, id), eq(reusableBlocks.userId, userId)));
+}
+
+export async function getScheduledPostById(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(scheduledPosts)
+    .where(and(eq(scheduledPosts.id, id), eq(scheduledPosts.userId, userId))).limit(1);
+  return result[0];
+}
+
+export async function getScheduledPostByTaskUid(taskUid: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(scheduledPosts)
+    .where(eq(scheduledPosts.scheduleCronTaskUid, taskUid)).limit(1);
+  return result[0];
 }
 
 // ─── Front Matter Templates ───────────────────────────────────────────────────

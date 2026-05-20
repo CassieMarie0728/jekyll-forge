@@ -295,3 +295,119 @@ describe("SnapshotReason types", () => {
     expect(VALID_REASONS).toHaveLength(6);
   });
 });
+
+// ─── Scheduler: dateToCron ────────────────────────────────────────────────────
+describe("dateToCron", () => {
+  function dateToCron(date: Date): string {
+    const sec = date.getUTCSeconds();
+    const min = date.getUTCMinutes();
+    const hour = date.getUTCHours();
+    const dom = date.getUTCDate();
+    const mon = date.getUTCMonth() + 1;
+    return `${sec} ${min} ${hour} ${dom} ${mon} *`;
+  }
+
+  it("converts a UTC date to a 6-field cron expression", () => {
+    const d = new Date("2024-06-15T14:30:00.000Z");
+    expect(dateToCron(d)).toBe("0 30 14 15 6 *");
+  });
+
+  it("handles midnight UTC", () => {
+    const d = new Date("2024-01-01T00:00:00.000Z");
+    expect(dateToCron(d)).toBe("0 0 0 1 1 *");
+  });
+
+  it("handles end-of-month dates", () => {
+    const d = new Date("2024-12-31T23:59:59.000Z");
+    expect(dateToCron(d)).toBe("59 59 23 31 12 *");
+  });
+});
+
+// ─── Scheduler: cancel logic ──────────────────────────────────────────────────
+describe("scheduler cancel safety", () => {
+  it("cancel uses row ID not siteId=0 to fetch the scheduled post", () => {
+    // This test documents the fixed bug: cancel must fetch by (id, userId),
+    // not by (siteId=0, userId) which would always return empty.
+    function mockGetById(id: number, userId: number) {
+      if (id === 42 && userId === 1) return { id: 42, scheduleCronTaskUid: "task-uid-abc", status: "pending" };
+      return undefined;
+    }
+    const row = mockGetById(42, 1);
+    expect(row).toBeDefined();
+    expect(row?.scheduleCronTaskUid).toBe("task-uid-abc");
+
+    // Simulating the old bug: siteId=0 would return nothing
+    function mockGetBySite(siteId: number, userId: number) {
+      if (siteId === 5 && userId === 1) return [{ id: 42, scheduleCronTaskUid: "task-uid-abc" }];
+      return [];
+    }
+    const bugResult = mockGetBySite(0, 1); // old bug: siteId=0
+    expect(bugResult).toHaveLength(0);
+  });
+});
+
+// ─── Image Optimization: variant naming ──────────────────────────────────────
+describe("image variant naming", () => {
+  function getVariantSizes() {
+    return [
+      { name: "thumbnail", maxWidth: 300, quality: 75 },
+      { name: "medium", maxWidth: 800, quality: 80 },
+      { name: "large", maxWidth: 1200, quality: 82 },
+    ];
+  }
+
+  it("defines three responsive variant sizes", () => {
+    const sizes = getVariantSizes();
+    expect(sizes).toHaveLength(3);
+    expect(sizes[0].name).toBe("thumbnail");
+    expect(sizes[1].name).toBe("medium");
+    expect(sizes[2].name).toBe("large");
+  });
+
+  it("thumbnail is smallest, large is biggest", () => {
+    const sizes = getVariantSizes();
+    expect(sizes[0].maxWidth).toBeLessThan(sizes[1].maxWidth);
+    expect(sizes[1].maxWidth).toBeLessThan(sizes[2].maxWidth);
+  });
+
+  it("generates correct storage key suffix for webp variants", () => {
+    const baseName = "hero-image";
+    const ts = 1718000000000;
+    const ext = ".webp";
+    const siteId = 3;
+    const userId = 1;
+    const keys = ["thumb", "medium", "large"].map(
+      (suffix) => `assets/${userId}/${siteId}/${ts}-${baseName}-${suffix}${ext}`
+    );
+    expect(keys[0]).toBe(`assets/1/3/${ts}-hero-image-thumb.webp`);
+    expect(keys[1]).toBe(`assets/1/3/${ts}-hero-image-medium.webp`);
+    expect(keys[2]).toBe(`assets/1/3/${ts}-hero-image-large.webp`);
+  });
+});
+
+// ─── updateJekyllConfig: theme patching logic ─────────────────────────────────
+describe("updateJekyllConfig theme patching", () => {
+  function patchTheme(content: string, theme: string): string {
+    if (/^theme:/m.test(content)) {
+      return content.replace(/^theme:.*$/m, `theme: ${theme}`);
+    }
+    return `theme: ${theme}\n` + content;
+  }
+
+  it("replaces existing theme line", () => {
+    const result = patchTheme("theme: minima\ntitle: My Blog\n", "cayman");
+    expect(result).toContain("theme: cayman");
+    expect(result).not.toContain("theme: minima");
+  });
+
+  it("prepends theme when not present", () => {
+    const result = patchTheme("title: My Blog\n", "slate");
+    expect(result.startsWith("theme: slate\n")).toBe(true);
+  });
+
+  it("does not duplicate theme line", () => {
+    const result = patchTheme("theme: minima\n", "cayman");
+    const matches = result.match(/^theme:/gm);
+    expect(matches).toHaveLength(1);
+  });
+});

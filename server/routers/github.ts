@@ -230,6 +230,89 @@ export const githubRouter = router({
       };
     }),
 
+  /**
+   * Update _config.yml to change the theme or add/remove a plugin.
+   * Reads the current file, patches the relevant lines, and commits back.
+   */
+  updateJekyllConfig: protectedProcedure
+    .input(z.object({
+      owner: z.string(),
+      repo: z.string(),
+      branch: z.string().default("main"),
+      /** Set a new theme */
+      theme: z.string().optional(),
+      /** Add a plugin (appended to plugins list) */
+      addPlugin: z.string().optional(),
+      /** Remove a plugin */
+      removePlugin: z.string().optional(),
+      commitMessage: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const token = await getGitHubToken(ctx.user.id, ctx.user.openId);
+
+      // Fetch current _config.yml
+      let currentContent = "";
+      let sha: string | undefined;
+      try {
+        const file = await ghFetch(token, `/repos/${input.owner}/${input.repo}/contents/_config.yml?ref=${input.branch}`);
+        currentContent = Buffer.from(file.content, "base64").toString("utf-8");
+        sha = file.sha;
+      } catch {
+        // File doesn't exist yet — start with empty content
+        currentContent = "";
+      }
+
+      let updatedContent = currentContent;
+
+      // Update theme
+      if (input.theme) {
+        if (/^theme:/m.test(updatedContent)) {
+          updatedContent = updatedContent.replace(/^theme:.*$/m, `theme: ${input.theme}`);
+        } else {
+          updatedContent = `theme: ${input.theme}\n` + updatedContent;
+        }
+      }
+
+      // Add plugin
+      if (input.addPlugin) {
+        const plugin = input.addPlugin;
+        if (!updatedContent.includes(plugin)) {
+          if (/^plugins:/m.test(updatedContent)) {
+            // Append to existing plugins list
+            updatedContent = updatedContent.replace(
+              /^(plugins:\s*\n(?:(?:\s+-\s+.+\n)*))/m,
+              (match) => match.trimEnd() + `\n  - ${plugin}\n`
+            );
+          } else {
+            // Add plugins section at end
+            updatedContent = updatedContent.trimEnd() + `\n\nplugins:\n  - ${plugin}\n`;
+          }
+        }
+      }
+
+      // Remove plugin
+      if (input.removePlugin) {
+        const plugin = input.removePlugin;
+        updatedContent = updatedContent.replace(new RegExp(`^\\s*-\\s*${plugin.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}\\s*$`, 'gm'), '');
+      }
+
+      const commitMsg = input.commitMessage ||
+        (input.theme ? `chore: update Jekyll theme to ${input.theme}` :
+         input.addPlugin ? `chore: add Jekyll plugin ${input.addPlugin}` :
+         `chore: remove Jekyll plugin ${input.removePlugin}`);
+
+      const encoded = Buffer.from(updatedContent).toString("base64");
+      const body: Record<string, unknown> = { message: commitMsg, content: encoded, branch: input.branch };
+      if (sha) body.sha = sha;
+
+      await ghFetch(token, `/repos/${input.owner}/${input.repo}/contents/_config.yml`, {
+        method: "PUT",
+        body: JSON.stringify(body),
+      });
+
+      return { success: true, updatedContent };
+    }),
+
   getJekyllConfig: protectedProcedure
     .input(z.object({ owner: z.string(), repo: z.string(), branch: z.string().default("main") }))
     .query(async ({ ctx, input }) => {

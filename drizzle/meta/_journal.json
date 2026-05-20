@@ -15,6 +15,20 @@
       "when": 1779247968090,
       "tag": "0001_slim_toad_men",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1779250156278,
+      "tag": "0002_lonely_sersi",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1779250827880,
+      "tag": "0003_quick_luckman",
+      "breakpoints": true
     }
   ]
 }

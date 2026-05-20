@@ -89,10 +89,20 @@
 - [x] TypeScript: zero errors (pnpm check clean)
 - [x] Final checkpoint and delivery
 
+## Additional Features Implemented
+- [x] Image optimization pipeline (sharp: resize, compress, WEBP conversion, EXIF strip, responsive sizes)
+- [x] Re-optimize existing assets endpoint
+- [x] Heartbeat cron handler at POST /api/scheduled/publish-post
+- [x] Scheduler router with full heartbeat SDK integration (create/cancel/list jobs)
+- [x] getSiteByIdAny helper for cron context (no userId check)
+- [x] scheduledPublishHandler: fetch draft → commit to _posts → delete draft → notify owner on failure
+- [x] updateJekyllConfig mutation (theme/plugin persistence to GitHub via _config.yml commit)
+- [x] ThemeManager Commit to GitHub button (real GitHub API commit)
+- [x] Scheduler UI: deploy-first warning, cron active/inactive status per post, heartbeat jobs summary
+
 ## Known Limitations / Future Work
 - [ ] TipTap rich-text visual editor (currently uses toolbar-assisted textarea; full TipTap integration deferred)
 - [ ] Monaco editor integration (currently uses textarea; Monaco deferred to avoid bundle size impact)
 - [ ] Real-time conflict detection against GitHub (polling-based; WebSocket upgrade deferred)
 - [ ] Offline mode with background sync (service worker deferred)
-- [ ] Cron heartbeat for scheduled posts (periodic-updates integration deferred)
-- [ ] Image optimization pipeline (sharp server-side; currently stores original; optimization deferred)
+- [ ] Heartbeat cron jobs require site to be deployed (published) before they activate

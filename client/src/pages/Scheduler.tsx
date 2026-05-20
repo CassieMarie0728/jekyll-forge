@@ -5,9 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Calendar, Clock, CheckCircle2, AlertCircle, XCircle, Trash2,
-  RefreshCw, Play, FileText, GitBranch,
+  RefreshCw, Play, FileText, GitBranch, Zap, Info,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format, formatDistanceToNow } from "date-fns";
@@ -23,6 +24,7 @@ export default function Scheduler() {
   const { siteId } = useParams<{ siteId: string }>();
   const { data: site } = trpc.sites.get.useQuery({ id: Number(siteId) }, { enabled: !!siteId });
   const { data: scheduled, isLoading, refetch } = trpc.scheduler.list.useQuery({ siteId: Number(siteId) }, { enabled: !!siteId });
+  const { data: heartbeatJobs } = trpc.scheduler.listHeartbeatJobs.useQuery({ page: 1, pageSize: 50 });
   const cancelMutation = trpc.scheduler.cancel.useMutation({
     onSuccess: () => { refetch(); toast.success("Schedule cancelled"); },
     onError: (err) => toast.error(err.message),
@@ -30,6 +32,9 @@ export default function Scheduler() {
 
   const pending = scheduled?.filter(s => s.status === "pending") || [];
   const history = scheduled?.filter(s => s.status !== "pending") || [];
+  // Check if any pending posts have no heartbeat job (site not deployed)
+  const pendingWithoutCron = pending.filter(s => !s.scheduleCronTaskUid);
+  const hasDeployWarning = pendingWithoutCron.length > 0;
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
@@ -60,6 +65,43 @@ export default function Scheduler() {
         ))}
       </div>
 
+      {/* Deploy warning */}
+      {hasDeployWarning && (
+        <Alert className="mb-4 border-forge-amber/40 bg-forge-amber/10">
+          <AlertCircle className="h-4 w-4 text-forge-amber" />
+          <AlertDescription className="text-sm">
+            <strong className="text-forge-amber">{pendingWithoutCron.length} scheduled post{pendingWithoutCron.length > 1 ? 's' : ''} need deployment to activate.</strong>{' '}
+            Heartbeat cron jobs require the site to be deployed (published) before they can fire.
+            Click <strong>Publish</strong> in the top-right to deploy, then re-schedule these posts.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Heartbeat jobs summary */}
+      {heartbeatJobs && heartbeatJobs.total > 0 && (
+        <Card className="bg-card border-border mb-4">
+          <CardContent className="pt-4">
+            <div className="flex items-center gap-2 text-sm">
+              <Zap className="w-4 h-4 text-primary" />
+              <span className="font-medium">Active Heartbeat Jobs</span>
+              <Badge variant="outline" className="text-xs ml-auto">{heartbeatJobs.total}</Badge>
+            </div>
+            <div className="mt-2 space-y-1">
+              {heartbeatJobs.jobs.slice(0, 5).map(job => (
+                <div key={job.taskUid} className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span className="truncate">{job.name}</span>
+                  <span className="flex items-center gap-1 ml-2 flex-shrink-0">
+                    <span className={cn("w-1.5 h-1.5 rounded-full", job.isEnable ? "bg-forge-emerald" : "bg-muted-foreground")} />
+                    {job.isEnable ? 'Active' : 'Paused'}
+                    {job.nextExecutionAt && ` · next: ${format(new Date(job.nextExecutionAt), 'MMM d HH:mm')}`}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* How it works */}
       <Card className="bg-card border-border mb-6">
         <CardContent className="pt-4">
@@ -71,7 +113,7 @@ export default function Scheduler() {
                 When you schedule a post, it is saved to <code className="bg-muted px-1 rounded">_drafts/</code> on GitHub.
                 At the scheduled time, the server automatically moves it to <code className="bg-muted px-1 rounded">_posts/</code>
                 and commits it, triggering a GitHub Pages rebuild. Timezone-aware scheduling ensures posts go live at the right local time.
-                You will receive a notification if publishing fails.
+                You will receive a notification if publishing fails. <strong>Note:</strong> The site must be deployed (published) for cron jobs to activate.
               </p>
             </div>
           </div>
@@ -113,6 +155,18 @@ export default function Scheduler() {
                       <div className="text-xs text-muted-foreground mt-0.5">
                         → <code className="bg-muted px-1 rounded">{s.targetPath}</code>
                       </div>
+                      {!s.scheduleCronTaskUid && (
+                        <div className="flex items-center gap-1 text-xs text-forge-amber mt-1">
+                          <AlertCircle className="w-3 h-3" />
+                          Cron not active — deploy site to enable
+                        </div>
+                      )}
+                      {s.scheduleCronTaskUid && (
+                        <div className="flex items-center gap-1 text-xs text-forge-emerald mt-1">
+                          <Zap className="w-3 h-3" />
+                          Cron active
+                        </div>
+                      )}
                     </div>
                     <Button
                       variant="ghost" size="sm" className="h-7 text-xs gap-1 text-destructive hover:text-destructive"

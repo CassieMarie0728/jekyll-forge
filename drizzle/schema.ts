@@ -114,6 +114,8 @@ export const assets = mysqlTable("assets", {
   sha: varchar("sha", { length: 64 }),
   hash: varchar("hash", { length: 64 }),
   optimized: boolean("optimized").default(false),
+  /** JSON: { thumbnail?: string, medium?: string, large?: string } — S3 URLs for responsive variants */
+  variants: json("variants").$type<{ thumbnail?: string; medium?: string; large?: string }>(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -195,6 +197,7 @@ export const scheduledPosts = mysqlTable("scheduled_posts", {
   commitMessage: text("commitMessage"),
   errorMessage: text("errorMessage"),
   publishedAt: timestamp("publishedAt"),
+  scheduleCronTaskUid: varchar("scheduleCronTaskUid", { length: 65 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

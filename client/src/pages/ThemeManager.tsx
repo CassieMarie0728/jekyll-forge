@@ -55,6 +55,31 @@ export default function ThemeManager() {
     onError: (err) => toast.error(err.message),
   });
 
+  const utils = trpc.useUtils();
+  const updateConfig = trpc.github.updateJekyllConfig.useMutation({
+    onSuccess: (_, vars) => {
+      toast.success(vars.theme ? `Theme updated to ${vars.theme}` : vars.addPlugin ? `Plugin ${vars.addPlugin} added` : `Plugin removed`);
+      utils.github.getJekyllConfig.invalidate();
+      setShowActionsDialog(false);
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const handleCommitToGitHub = () => {
+    if (!site || !selectedItem) return;
+    const branch = site.selectedBranch || site.defaultBranch || "main";
+    if (selectedItem.type === "theme") {
+      updateConfig.mutate({ owner: site.owner, repo: site.repo, branch, theme: selectedItem.name });
+    } else {
+      const isInstalled = currentPlugins.includes(selectedItem.name);
+      if (isInstalled) {
+        updateConfig.mutate({ owner: site.owner, repo: site.repo, branch, removePlugin: selectedItem.name });
+      } else {
+        updateConfig.mutate({ owner: site.owner, repo: site.repo, branch, addPlugin: selectedItem.name });
+      }
+    }
+  };
+
   const filteredThemes = POPULAR_THEMES.filter(t =>
     !search || t.name.includes(search.toLowerCase()) || t.displayName.toLowerCase().includes(search.toLowerCase())
   );
@@ -240,10 +265,23 @@ gem "${selectedItem?.name}"`}
               </pre>
             )}
             <p className="text-xs text-muted-foreground">
-              After updating, commit the changes and GitHub Pages will rebuild your site automatically.
-              Use the "Generate CI Workflow" button to create a GitHub Actions workflow for automated builds.
+              Click <strong>Commit to GitHub</strong> to automatically update <code className="bg-muted px-1 rounded">_config.yml</code> in your repository.
+              GitHub Pages will rebuild your site automatically after the commit.
             </p>
-            <Button onClick={() => setShowActionsDialog(false)} className="w-full">Got it</Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setShowActionsDialog(false)} className="flex-1">Cancel</Button>
+              <Button
+                onClick={handleCommitToGitHub}
+                disabled={updateConfig.isPending}
+                className="flex-1 gap-2"
+              >
+                {updateConfig.isPending ? (
+                  <><RefreshCw className="w-3.5 h-3.5 animate-spin" />Committing...</>
+                ) : (
+                  <><Globe className="w-3.5 h-3.5" />Commit to GitHub</>
+                )}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
