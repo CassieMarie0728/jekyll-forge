@@ -1,22 +1,28 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import {
+  int,
+  mysqlEnum,
+  mysqlTable,
+  text,
+  timestamp,
+  varchar,
+  boolean,
+  json,
+  bigint,
+} from "drizzle-orm/mysql-core";
 
-/**
- * Core user table backing auth flow.
- * Extend this file with additional tables as your product grows.
- * Columns use camelCase to match both database fields and generated types.
- */
+// ─── Users ──────────────────────────────────────────────────────────────────
 export const users = mysqlTable("users", {
-  /**
-   * Surrogate primary key. Auto-incremented numeric value managed by the database.
-   * Use this for relations between tables.
-   */
   id: int("id").autoincrement().primaryKey(),
-  /** Manus OAuth identifier (openId) returned from the OAuth callback. Unique per user. */
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
+  // GitHub OAuth
+  githubToken: text("githubToken"),
+  githubLogin: varchar("githubLogin", { length: 128 }),
+  githubAvatarUrl: text("githubAvatarUrl"),
+  githubId: varchar("githubId", { length: 64 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
@@ -25,4 +31,202 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-// TODO: Add your tables here
+// ─── Sites (GitHub Repositories) ────────────────────────────────────────────
+export const sites = mysqlTable("sites", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  owner: varchar("owner", { length: 128 }).notNull(),
+  repo: varchar("repo", { length: 256 }).notNull(),
+  defaultBranch: varchar("defaultBranch", { length: 128 }).default("main"),
+  selectedBranch: varchar("selectedBranch", { length: 128 }).default("main"),
+  rootPath: varchar("rootPath", { length: 256 }).default("/"),
+  isJekyll: boolean("isJekyll").default(false),
+  isFavorite: boolean("isFavorite").default(false),
+  timezone: varchar("timezone", { length: 64 }).default("UTC"),
+  defaultLayout: varchar("defaultLayout", { length: 128 }).default("post"),
+  defaultAssetPath: varchar("defaultAssetPath", { length: 256 }).default("/assets/images"),
+  aiVoiceProfile: varchar("aiVoiceProfile", { length: 64 }).default("default"),
+  settings: json("settings").$type<Record<string, unknown>>(),
+  lastAccessedAt: timestamp("lastAccessedAt").defaultNow(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Site = typeof sites.$inferSelect;
+export type InsertSite = typeof sites.$inferInsert;
+
+// ─── Posts (local drafts / metadata cache) ───────────────────────────────────
+export const posts = mysqlTable("posts", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  siteId: int("siteId").notNull(),
+  path: varchar("path", { length: 512 }).notNull(),
+  filename: varchar("filename", { length: 256 }),
+  slug: varchar("slug", { length: 256 }),
+  title: text("title"),
+  status: mysqlEnum("status", ["draft", "published", "modified", "new", "scheduled", "archived"]).default("new"),
+  frontMatter: json("frontMatter").$type<Record<string, unknown>>(),
+  markdown: text("markdown"),
+  sha: varchar("sha", { length: 64 }),
+  scheduledAt: timestamp("scheduledAt"),
+  publishedAt: timestamp("publishedAt"),
+  lastAutosaveAt: timestamp("lastAutosaveAt"),
+  autosaveContent: text("autosaveContent"),
+  autosaveFrontMatter: json("autosaveFrontMatter").$type<Record<string, unknown>>(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Post = typeof posts.$inferSelect;
+export type InsertPost = typeof posts.$inferInsert;
+
+// ─── Revision Snapshots ───────────────────────────────────────────────────────
+export const snapshots = mysqlTable("snapshots", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  siteId: int("siteId").notNull(),
+  postId: int("postId"),
+  postPath: varchar("postPath", { length: 512 }),
+  label: varchar("label", { length: 256 }).notNull(),
+  reason: mysqlEnum("reason", ["manual", "autosave", "before-ai", "before-publish", "before-theme", "before-plugin"]).default("manual"),
+  markdown: text("markdown"),
+  frontMatter: json("frontMatter").$type<Record<string, unknown>>(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Snapshot = typeof snapshots.$inferSelect;
+export type InsertSnapshot = typeof snapshots.$inferInsert;
+
+// ─── Assets ───────────────────────────────────────────────────────────────────
+export const assets = mysqlTable("assets", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  siteId: int("siteId").notNull(),
+  name: varchar("name", { length: 256 }).notNull(),
+  path: varchar("path", { length: 512 }).notNull(),
+  storageKey: varchar("storageKey", { length: 512 }),
+  storageUrl: text("storageUrl"),
+  mimeType: varchar("mimeType", { length: 128 }),
+  size: bigint("size", { mode: "number" }),
+  width: int("width"),
+  height: int("height"),
+  alt: text("alt"),
+  sha: varchar("sha", { length: 64 }),
+  hash: varchar("hash", { length: 64 }),
+  optimized: boolean("optimized").default(false),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Asset = typeof assets.$inferSelect;
+export type InsertAsset = typeof assets.$inferInsert;
+
+// ─── AI Settings ─────────────────────────────────────────────────────────────
+export const aiSettings = mysqlTable("ai_settings", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().unique(),
+  enabled: boolean("enabled").default(true),
+  provider: varchar("provider", { length: 64 }).default("built-in"),
+  model: varchar("model", { length: 128 }),
+  temperature: int("temperature").default(70), // stored as 0-100, divide by 100
+  maxTokens: int("maxTokens").default(2048),
+  systemPrompt: text("systemPrompt"),
+  brandVoicePrompt: text("brandVoicePrompt"),
+  safetyPrompt: text("safetyPrompt"),
+  streaming: boolean("streaming").default(true),
+  defaultLanguage: varchar("defaultLanguage", { length: 16 }).default("en"),
+  budgetLimitCents: int("budgetLimitCents"),
+  totalRequestCount: int("totalRequestCount").default(0),
+  totalInputTokens: bigint("totalInputTokens", { mode: "number" }).default(0),
+  totalOutputTokens: bigint("totalOutputTokens", { mode: "number" }).default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AiSetting = typeof aiSettings.$inferSelect;
+export type InsertAiSetting = typeof aiSettings.$inferInsert;
+
+// ─── AI Voice Profiles ────────────────────────────────────────────────────────
+export const aiVoiceProfiles = mysqlTable("ai_voice_profiles", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 128 }).notNull(),
+  tone: varchar("tone", { length: 64 }),
+  formality: varchar("formality", { length: 64 }),
+  humorLevel: varchar("humorLevel", { length: 32 }),
+  readingLevel: varchar("readingLevel", { length: 64 }),
+  forbiddenPhrases: json("forbiddenPhrases").$type<string[]>(),
+  requiredPhrases: json("requiredPhrases").$type<string[]>(),
+  brandRules: text("brandRules"),
+  exampleSamples: text("exampleSamples"),
+  systemPrompt: text("systemPrompt"),
+  isDefault: boolean("isDefault").default(false),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AiVoiceProfile = typeof aiVoiceProfiles.$inferSelect;
+
+// ─── AI Prompt Templates ──────────────────────────────────────────────────────
+export const aiPromptTemplates = mysqlTable("ai_prompt_templates", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 128 }).notNull(),
+  category: varchar("category", { length: 64 }),
+  template: text("template").notNull(),
+  variables: json("variables").$type<string[]>(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AiPromptTemplate = typeof aiPromptTemplates.$inferSelect;
+
+// ─── Scheduled Posts ─────────────────────────────────────────────────────────
+export const scheduledPosts = mysqlTable("scheduled_posts", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  siteId: int("siteId").notNull(),
+  postId: int("postId"),
+  draftPath: varchar("draftPath", { length: 512 }).notNull(),
+  targetPath: varchar("targetPath", { length: 512 }).notNull(),
+  scheduledAt: timestamp("scheduledAt").notNull(),
+  timezone: varchar("timezone", { length: 64 }).default("UTC"),
+  status: mysqlEnum("status", ["pending", "processing", "published", "failed", "cancelled"]).default("pending"),
+  commitMessage: text("commitMessage"),
+  errorMessage: text("errorMessage"),
+  publishedAt: timestamp("publishedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ScheduledPost = typeof scheduledPosts.$inferSelect;
+export type InsertScheduledPost = typeof scheduledPosts.$inferInsert;
+
+// ─── Reusable Content Blocks ──────────────────────────────────────────────────
+export const reusableBlocks = mysqlTable("reusable_blocks", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 128 }).notNull(),
+  category: varchar("category", { length: 64 }),
+  content: text("content").notNull(),
+  contentType: mysqlEnum("contentType", ["markdown", "html", "liquid"]).default("markdown"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ReusableBlock = typeof reusableBlocks.$inferSelect;
+export type InsertReusableBlock = typeof reusableBlocks.$inferInsert;
+
+// ─── Front Matter Templates ───────────────────────────────────────────────────
+export const frontMatterTemplates = mysqlTable("front_matter_templates", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  siteId: int("siteId"),
+  name: varchar("name", { length: 128 }).notNull(),
+  template: json("template").$type<Record<string, unknown>>().notNull(),
+  isDefault: boolean("isDefault").default(false),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type FrontMatterTemplate = typeof frontMatterTemplates.$inferSelect;
