@@ -122,7 +122,10 @@ export default function Editor() {
   const [selectedFile, setSelectedFile] = useState<string | null>(postPath || null);
   const [isLoadingFile, setIsLoadingFile] = useState(false);
   const [autosaveTimer, setAutosaveTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
+  const [hasConflict, setHasConflict] = useState(false);
+  const [remoteUpdated, setRemoteUpdated] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const conflictCheckTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const { data: site } = trpc.sites.get.useQuery({ id: Number(siteId) }, { enabled: !!siteId });
   const { data: posts, refetch: refetchPosts } = trpc.posts.list.useQuery({ siteId: Number(siteId) }, { enabled: !!siteId });
@@ -164,6 +167,33 @@ export default function Editor() {
     return () => clearTimeout(timer);
   }, [markdown, frontMatter, isDirty, currentPostId]);
 
+  // Poll for remote file changes (conflict detection)
+  useEffect(() => {
+    if (!site || !selectedFile || selectedFile === "new" || !currentSha) return;
+    if (conflictCheckTimer.current) clearInterval(conflictCheckTimer.current);
+    const checkConflict = async () => {
+      try {
+        const result = await fetch(`/api/trpc/github.getFile?input=${encodeURIComponent(JSON.stringify({
+          owner: site.owner,
+          repo: site.repo,
+          path: selectedFile,
+          branch: site.selectedBranch || "main",
+        }))}`).then(r => r.json()).then(d => d.result.data);
+        if (result.sha !== currentSha) {
+          setRemoteUpdated(true);
+          if (isDirty) setHasConflict(true);
+        } else {
+          setRemoteUpdated(false);
+          setHasConflict(false);
+        }
+      } catch { /* silent */ }
+    };
+    conflictCheckTimer.current = setInterval(checkConflict, 30000);
+    return () => {
+      if (conflictCheckTimer.current) clearInterval(conflictCheckTimer.current);
+    };
+  }, [site, selectedFile, currentSha, isDirty]);
+
   const handleNewPost = () => {
     setSelectedFile("new");
     setMarkdown("");
@@ -177,6 +207,15 @@ export default function Editor() {
     setCurrentSha(undefined);
     setCurrentPostId(null);
     setIsDirty(false);
+  };
+
+  const handleReloadFromRemote = async () => {
+    if (selectedFile && selectedFile !== "new") {
+      await getFileMutation.refetch();
+      setHasConflict(false);
+      setIsDirty(false);
+      toast.success("Reloaded from remote");
+    }
   };
 
   const handleSelectFile = async (path: string) => {
@@ -363,11 +402,19 @@ export default function Editor() {
             <span>{rt} min read</span>
             {isDirty && <Badge variant="outline" className="text-forge-amber border-forge-amber/30 text-[10px] px-1.5 py-0 h-4">Unsaved</Badge>}
             {autosaveMutation.isPending && <span className="text-[10px]">Autosaving...</span>}
+            {hasConflict && <Badge variant="destructive" className="text-[10px] px-1.5 py-0 h-4 animate-pulse">Conflict</Badge>}
+            {remoteUpdated && !isDirty && <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">Updated</Badge>}
           </div>
 
           <Separator orientation="vertical" className="h-5" />
 
           {/* Action Buttons */}
+          {hasConflict && (
+            <Button variant="destructive" size="sm" className="h-7 text-xs gap-1" onClick={handleReloadFromRemote}>
+              <AlertCircle className="w-3 h-3" />
+              Reload
+            </Button>
+          )}
           <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => setShowSnapshots(true)}>
             <RotateCcw className="w-3 h-3" />
             Snapshots

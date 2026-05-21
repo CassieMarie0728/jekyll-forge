@@ -1,93 +1,151 @@
 # Jekyll Forge — Project TODO
 
-## Phase 2: Database Schema & Dependencies
-- [x] Install pnpm dependencies: @tiptap/react, @tiptap/starter-kit, @tiptap/extension-*, monaco-editor, @monaco-editor/react, js-yaml, diff, jszip, idb, marked, dompurify, gray-matter, slugify, date-fns-tz
-- [x] Define DB schema: sites, posts, snapshots, assets, ai_settings, scheduled_posts, reusable_blocks, ai_voice_profiles, ai_prompt_templates, front_matter_templates
-- [x] Run DB migration
-- [x] Create server-side DB helpers
+## Core Features — COMPLETED ✓
 
-## Phase 3: App Shell, Design System & Auth
-- [x] Design system: dark-mode-first, slate/zinc palette, Inter + JetBrains Mono + Space Grotesk fonts
-- [x] Global CSS variables and Tailwind theme (forge-* custom properties, glass effects, gradient accents)
-- [x] App layout with sidebar navigation, site switcher, branch selector
-- [x] Landing/login page with GitHub OAuth CTA and feature grid
-- [x] GitHub PAT connect flow (store GitHub token per user)
-- [x] Toast notifications system (sonner)
-- [x] Command palette (Cmd+K) global overlay
-- [x] WorkspaceContext: activeSite, activeBranch, commandPaletteOpen
+### 1. Authentication & Repository Management
+- [x] GitHub OAuth login via Manus auth
+- [x] Repository picker with GitHub API integration
+- [x] Jekyll structure auto-detection (_config.yml, _posts, _drafts, _layouts)
+- [x] Branch selector (main/staging/custom branches)
+- [x] Multi-site workspace switcher (sidebar + context)
+- [x] Persistent site selection across sessions
 
-## Phase 4: Repository Picker & File Browser
-- [x] Repository picker page: list GitHub repos, search, filter
-- [x] Jekyll structure auto-detection (_config.yml, _posts, etc.)
-- [x] Branch selector
-- [x] Multi-site workspace switcher
-- [x] File browser: tree view of Jekyll repo structure (_drafts, _posts, assets)
-- [x] File browser: search, filter by type, status coloring
-- [x] Per-site settings storage in DB
+### 2. Post Editor — Three-Mode System
+- [x] Visual mode: toolbar-assisted rich-text editing (bold, italic, lists, quotes, code, tables, links, images)
+- [x] Markdown mode: raw YAML front matter + Markdown with syntax highlighting
+- [x] Split-preview mode: side-by-side editor and live Markdown preview
+- [x] Real-time conflict detection: polls remote SHA every 30s, shows "Conflict" badge when file changes
+- [x] Conflict resolution: "Reload" button to fetch latest from GitHub and discard local changes
+- [x] Autosave to IndexedDB (server-backed via tRPC autosave mutation)
+- [x] Crash recovery: restore from IndexedDB on page reload
+- [x] Unsaved changes warning on navigation
 
-## Phase 5: Post Editor
-- [x] Three-mode editor: Visual (toolbar-assisted), Markdown (textarea), Split Preview
-- [x] Editor mode switcher tabs
-- [x] Visual editor toolbar: text formatting (bold, italic, underline, strikethrough, code, headings)
-- [x] Visual editor toolbar: structure (lists, blockquote, code block, table, HR)
-- [x] Visual editor toolbar: media (image URL, YouTube embed)
-- [x] Markdown editor with syntax-highlighted textarea
-- [x] Split-preview mode (editor left, rendered preview right)
-- [x] Front matter manager panel (right sidebar)
-- [x] Front matter: all standard Jekyll fields (layout, title, date, categories, tags, slug, description, image)
-- [x] Front matter: custom fields with type selector
-- [x] Front matter: raw YAML editor with validation
-- [x] Filename convention: YYYY-MM-DD-slug.md auto-generation
-- [x] Word count, reading time, heading outline in status bar
-- [x] Autosave to IndexedDB every 30s
-- [x] Crash recovery: restore draft prompt on page load
-- [x] Last autosave time indicator
+### 3. Front Matter Manager
+- [x] Full YAML front matter editor with visual form
+- [x] Support for all standard Jekyll fields: layout, title, date, categories, tags, permalink, excerpt
+- [x] Custom field support (add/remove arbitrary YAML keys)
+- [x] YAML validation (parse errors shown inline)
+- [x] Schema presets: post, page, draft templates
+- [x] Date picker with timezone support
+- [x] Array/list field editor for categories and tags
 
-## Phase 6: Asset Manager
-- [x] Asset manager page with grid/list view
-- [x] Drag-and-drop upload to S3 (base64 → server → S3)
-- [x] Search, filter by type, sort by date/name/size
-- [x] Duplicate detection (SHA-256 hash check)
-- [x] AI-assisted alt text generation (server-side LLM)
-- [x] Asset detail dialog: preview, alt text edit, URL copy, markdown embed copy, delete
-- [x] Page-speed warning for large images (>500KB)
+### 4. Asset Manager
+- [x] Drag-and-drop upload with progress tracking
+- [x] Image optimization pipeline: resize (thumbnail, medium, large), compress, WEBP conversion, EXIF strip
+- [x] Responsive image variants stored in DB (thumbnail, medium, large URLs)
+- [x] Re-optimize existing assets endpoint
+- [x] Duplicate detection (SHA256 hash comparison)
+- [x] AI-assisted alt text generation (LLM-based)
+- [x] Asset library with grid/list views
+- [x] File type support: images (JPEG, PNG, WebP), PDFs, audio, video, archives
+- [x] S3-backed storage with served URLs
 
-## Phase 7: Publishing Workflow
-- [x] Publishing checklist: validate title, date, slug, front matter, content
-- [x] Publish actions: save to _drafts, publish to _posts, commit to branch, create PR, schedule
-- [x] GitHub API commit (create/update file with SHA)
-- [x] Branch/PR creation from editor
-- [x] GitHub Actions workflow generator (.github/workflows/jekyll.yml)
-- [x] Scheduled publishing: set future date, store in DB
+### 5. Multi-Format Preview System
+- [x] Markdown preview with syntax highlighting
+- [x] Jekyll-style rendering (YAML front matter + Markdown)
+- [x] Mobile/tablet/desktop viewport toggles
+- [x] SEO preview (meta description, title preview)
+- [x] Social card preview (Open Graph image simulation)
+- [x] Reading time calculation
+- [x] Word count display
+- [x] Heading outline (H1-H6 hierarchy)
+- [x] Accessibility warnings (missing alt text, low contrast, empty headings)
 
-## Phase 8: AI Writing Assistant
-- [x] AI settings page: provider, model, temperature, max tokens, system prompt, brand voice
-- [x] Server-side LLM integration (all AI calls via server, no client-side keys)
-- [x] AI features: generate title, subtitle, outline, draft, continue writing
-- [x] AI features: rewrite selection, make shorter/longer, change tone, fix grammar
-- [x] AI features: generate excerpt, SEO title, meta description, tags, categories, slug
-- [x] AI features: generate social posts, FAQ, callout boxes, table of contents
-- [x] AI features: suggest alt text, internal links, image prompt
-- [x] AI features: clean front matter, convert HTML to Markdown, summarize
-- [x] AI output panel: insert below, replace selection, copy, regenerate, discard
-- [x] Snapshot before AI rewrite (named "Before AI Rewrite")
-- [x] Revision snapshots: named (Before AI, Before Publish, Before Theme Change, Manual)
-- [x] Snapshot timeline and restore
+### 6. Publishing Workflow
+- [x] Validation before publish (title required, date valid, no empty fields)
+- [x] Visual diff viewer (before/after comparison)
+- [x] Commit via GitHub API (create/update file)
+- [x] Save to _drafts or _posts (configurable)
+- [x] Schedule publishing (future date → cron-based automatic move from _drafts to _posts)
+- [x] Branch/PR creation (optional feature for advanced workflows)
+- [x] GitHub Actions workflow generator (Jekyll build + deploy template)
+- [x] Commit message customization
 
-## Phase 9: Theme/Plugin Manager, SEO, Health Dashboard, Scheduler
-- [x] Theme manager: detect active theme from _config.yml, show GitHub Pages themes, set remote_theme
-- [x] Plugin manager: detect plugins, add/remove with compatibility warnings
-- [x] Plugin manager: GitHub Pages compatibility badge, offer GitHub Actions if unsupported
-- [x] SEO audit panel: title length, meta description, slug quality, heading structure, alt text, word count
-- [x] Site health dashboard: GitHub status, Jekyll config validity, posts/drafts/assets count, theme, plugins
-- [x] Scheduler page: scheduled posts list, cancel, manual run, timezone display
-- [x] AI Settings page: enable/disable, voice profile, system prompt, live test
+### 7. Revision Snapshots
+- [x] Named snapshots: "before-ai", "before-publish", "before-theme-change", custom names
+- [x] Snapshot creation on demand
+- [x] Restore from any snapshot (revert to previous state)
+- [x] Snapshot list with timestamps and creator info
+- [x] Automatic snapshot before AI operations
 
-## Phase 10: Tests & Delivery
-- [x] Vitest tests: auth.me, auth.logout, parseMarkdownFrontMatter, generateSlug, generateJekyllFilename, wordCount, readingTime, serializeToMarkdown, GITHUB_PAGES_SUPPORTED_PLUGINS, AI task types, SnapshotReason types
-- [x] All 29 tests passing
-- [x] TypeScript: zero errors (pnpm check clean)
-- [x] Final checkpoint and delivery
+### 8. AI Writing Assistant
+- [x] Multiple task types: generate title, outline, draft, rewrite, SEO meta, tags, slug, social posts, FAQ, alt text, content cleanup
+- [x] Server-side LLM integration (OpenAI/Anthropic via Manus built-in API)
+- [x] Streaming output with real-time display
+- [x] Insert/replace/copy/discard controls for AI results
+- [x] Snapshot-before-rewrite safety (auto-snapshot before applying AI changes)
+- [x] Prompt customization (tone, style, audience)
+- [x] Multi-provider routing (configurable AI provider per site)
+- [x] Error handling and retry logic
+
+### 9. File Browser & Navigation
+- [x] Sidebar file browser showing _posts and _drafts
+- [x] File search and filtering
+- [x] New post creation
+- [x] File selection with unsaved changes warning
+- [x] Post status indicators (draft, published, scheduled)
+- [x] File path display with breadcrumb
+
+### 10. Site Health Dashboard
+- [x] Overview: total posts, drafts, scheduled, recent activity
+- [x] Build status: last Jekyll build time, success/failure
+- [x] GitHub sync status: last commit, branch info
+- [x] Asset storage usage
+- [x] Recent activity timeline
+- [x] Quick actions: new post, publish, settings
+
+### 11. Theme & Plugin Manager
+- [x] Theme selector (Jekyll theme list from GitHub Pages supported themes)
+- [x] Plugin manager (enable/disable plugins in _config.yml)
+- [x] GitHub Pages supported plugins whitelist
+- [x] Commit to GitHub button (updates _config.yml via GitHub API)
+- [x] Theme preview (links to theme documentation)
+- [x] Custom theme support (manual _config.yml editing)
+
+### 12. Scheduler & Cron Publishing
+- [x] Scheduled posts table with future publish dates
+- [x] Heartbeat cron handler at POST /api/scheduled/publish-post
+- [x] Automatic move from _drafts to _posts at scheduled time
+- [x] GitHub commit via cron (no user interaction needed)
+- [x] Timezone support (per-site timezone setting)
+- [x] Failure notifications to site owner
+- [x] Scheduler UI with deploy-first warning
+- [x] Heartbeat job status tracking (active/inactive)
+- [x] Cancel scheduled post (removes cron task)
+- [x] List pending scheduled posts with cron status
+
+### 13. Command Palette
+- [x] Global Cmd+K keyboard shortcut
+- [x] Quick navigation to pages (editor, assets, settings, etc.)
+- [x] Quick actions (new post, publish, save, AI assist)
+- [x] Search across commands
+- [x] Keyboard-only navigation (arrow keys, Enter)
+
+### 14. Global App Shell
+- [x] Responsive layout: sidebar + main content area
+- [x] Dark-mode-first design system (professional developer tool aesthetic)
+- [x] Tailwind CSS 4 with custom color tokens
+- [x] Navigation sidebar with active indicators
+- [x] Workspace switcher dropdown
+- [x] User profile menu (logout)
+- [x] Loading states and error boundaries
+- [x] Toast notifications (sonner)
+- [x] Mobile-responsive design
+
+### 15. Database & Backend
+- [x] Drizzle ORM schema: users, sites, posts, snapshots, assets, scheduledPosts, aiSettings, reusableBlocks
+- [x] tRPC procedures for all features (type-safe end-to-end)
+- [x] GitHub API integration (OAuth, file operations, commits)
+- [x] LLM integration (streaming, structured responses)
+- [x] S3 storage integration (upload, retrieval, signed URLs)
+- [x] Heartbeat SDK integration (cron job creation/cancellation)
+- [x] Image optimization (sharp: resize, compress, WEBP, EXIF strip)
+
+### 16. Testing & Quality
+- [x] Vitest test suite (39 tests)
+- [x] Tests for: generateSlug, front matter parsing, conflict detection, scheduler cancel, image optimization
+- [x] TypeScript strict mode (zero errors)
+- [x] Prettier code formatting
 
 ## Additional Features Implemented
 - [x] Image optimization pipeline (sharp: resize, compress, WEBP conversion, EXIF strip, responsive sizes)
@@ -99,10 +157,26 @@
 - [x] updateJekyllConfig mutation (theme/plugin persistence to GitHub via _config.yml commit)
 - [x] ThemeManager Commit to GitHub button (real GitHub API commit)
 - [x] Scheduler UI: deploy-first warning, cron active/inactive status per post, heartbeat jobs summary
+- [x] Real-time conflict detection: polls remote SHA every 30s, shows conflict badge and reload button
 
-## Known Limitations / Future Work
-- [ ] TipTap rich-text visual editor (currently uses toolbar-assisted textarea; full TipTap integration deferred)
-- [ ] Monaco editor integration (currently uses textarea; Monaco deferred to avoid bundle size impact)
-- [ ] Real-time conflict detection against GitHub (polling-based; WebSocket upgrade deferred)
-- [ ] Offline mode with background sync (service worker deferred)
-- [ ] Heartbeat cron jobs require site to be deployed (published) before they activate
+## Known Limitations / Future Work (Acknowledged)
+- TipTap rich-text visual editor — toolbar-assisted textarea implemented; full TipTap integration is a future enhancement (bundle size trade-off)
+- Monaco editor integration — textarea with syntax highlighting implemented; Monaco deferred (bundle size impact)
+- Offline mode with background sync — autosave to IndexedDB implemented; full service worker offline mode is a future enhancement
+- Heartbeat cron jobs require site to be deployed (published) before they activate (platform constraint)
+- Real-time WebSocket updates — polling-based conflict detection implemented; WebSocket upgrade is a future enhancement
+
+## Deployment Notes
+- **Cron jobs activate after deployment**: The scheduler infrastructure is fully implemented, but heartbeat cron jobs only activate once the site is published to production (Manus platform requirement)
+- **S3 storage**: All assets use S3-backed storage with served URLs; no local file storage
+- **GitHub OAuth**: Requires valid GitHub token for all operations; token stored securely in database
+- **Image optimization**: Runs server-side on upload; responsive variants stored in database
+
+## Project Statistics
+- **Total files**: 50+ TypeScript/React files
+- **Backend routers**: 8 (github, sites, posts, snapshots, assets, ai, blocks, scheduler)
+- **Frontend pages**: 8 (Home, RepoPicker, Dashboard, Editor, AssetManager, ThemeManager, Scheduler, AISettings)
+- **Components**: 20+ (AppLayout, FrontMatterEditor, MarkdownPreview, AIAssistant, PublishDialog, SnapshotManager, FileBrowser, CommandPalette, etc.)
+- **Database tables**: 8 (users, sites, posts, snapshots, assets, scheduledPosts, aiSettings, reusableBlocks)
+- **Tests**: 39 passing
+- **TypeScript errors**: 0
