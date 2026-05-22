@@ -159,6 +159,16 @@
 - [x] Scheduler UI: deploy-first warning, cron active/inactive status per post, heartbeat jobs summary
 - [x] Real-time conflict detection: polls remote SHA every 30s, shows conflict badge and reload button
 
+## Mobile Responsiveness — COMPLETED ✓
+- [x] Mobile-first responsive design on Editor page
+- [x] Hidden sidebar on mobile (toggle via menu icon)
+- [x] Responsive toolbar with icon-only buttons on small screens
+- [x] Stacked layout on mobile (no split-preview on <768px)
+- [x] Full-width editor on phones, split-preview on tablets+
+- [x] Responsive front matter panel (hidden on mobile)
+- [x] Mobile-optimized sheet width for AI assistant
+- [x] Tested on Samsung Galaxy S24 FE (375px viewport)
+
 ## Known Limitations / Future Work (Acknowledged)
 - TipTap rich-text visual editor — toolbar-assisted textarea implemented; full TipTap integration is a future enhancement (bundle size trade-off)
 - Monaco editor integration — textarea with syntax highlighting implemented; Monaco deferred (bundle size impact)

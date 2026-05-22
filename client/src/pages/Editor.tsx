@@ -328,10 +328,10 @@ export default function Editor() {
   const rt = readingTime(markdown);
 
   return (
-    <div className="flex h-full overflow-hidden">
-      {/* File Browser Sidebar */}
+    <div className="flex h-full overflow-hidden flex-col md:flex-row">
+      {/* File Browser Sidebar - Hidden on mobile */}
       {showFileBrowser && (
-        <div className="w-56 flex-shrink-0 border-r border-border bg-card/30 flex flex-col">
+        <div className="hidden md:flex w-56 flex-shrink-0 border-r border-border bg-card/30 flex-col">
           <div className="flex items-center justify-between px-3 py-2.5 border-b border-border">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Posts</span>
             <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleNewPost}>
@@ -350,8 +350,8 @@ export default function Editor() {
 
       {/* Main Editor */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Editor Toolbar */}
-        <div className="flex items-center gap-2 px-4 py-2 border-b border-border bg-card/30 flex-shrink-0">
+        {/* Editor Toolbar - Responsive */}
+        <div className="flex flex-wrap md:flex-nowrap items-center gap-1 md:gap-2 px-2 md:px-4 py-1.5 md:py-2 border-b border-border bg-card/30 flex-shrink-0 overflow-x-auto">
           <Button
             variant="ghost" size="icon" className="h-7 w-7"
             onClick={() => setShowFileBrowser(!showFileBrowser)}
@@ -361,25 +361,26 @@ export default function Editor() {
 
           <Separator orientation="vertical" className="h-5" />
 
-          {/* Mode Switcher */}
-          <Tabs value={mode} onValueChange={(v) => setMode(v as EditorMode)}>
-            <TabsList className="h-7 bg-muted/50">
-              <TabsTrigger value="visual" className="h-5 text-xs px-2 gap-1">
-                <Eye className="w-3 h-3" />Visual
-              </TabsTrigger>
-              <TabsTrigger value="markdown" className="h-5 text-xs px-2 gap-1">
-                <Code2 className="w-3 h-3" />Markdown
-              </TabsTrigger>
-              <TabsTrigger value="split" className="h-5 text-xs px-2 gap-1">
-                <AlignLeft className="w-3 h-3" />Split
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+          {/* Mode Switcher - Hidden on mobile, shown on tablet+ */}
+          <div className="hidden sm:block">
+            <Tabs value={mode} onValueChange={(v) => setMode(v as EditorMode)}>
+              <TabsList className="h-7 bg-muted/50">
+                <TabsTrigger value="visual" className="h-5 text-xs px-2 gap-1">
+                  <Eye className="w-3 h-3" /><span className="hidden md:inline">Visual</span>
+                </TabsTrigger>
+                <TabsTrigger value="markdown" className="h-5 text-xs px-2 gap-1">
+                  <Code2 className="w-3 h-3" /><span className="hidden md:inline">Markdown</span>
+                </TabsTrigger>
+                <TabsTrigger value="split" className="h-5 text-xs px-2 gap-1">
+                  <AlignLeft className="w-3 h-3" /><span className="hidden md:inline">Split</span>
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <Separator orientation="vertical" className="h-5" />
+          </div>
 
-          <Separator orientation="vertical" className="h-5" />
-
-          {/* Markdown Toolbar */}
-          <div className="flex items-center gap-0.5 overflow-x-auto">
+          {/* Markdown Toolbar - Hidden on mobile */}
+          <div className="hidden sm:flex items-center gap-0.5 overflow-x-auto">
             {TOOLBAR_ACTIONS.map(({ icon: Icon, label, action }) => (
               <Button
                 key={label}
@@ -396,8 +397,8 @@ export default function Editor() {
 
           <div className="flex-1" />
 
-          {/* Stats */}
-          <div className="hidden md:flex items-center gap-3 text-xs text-muted-foreground">
+          {/* Stats - Hidden on mobile */}
+          <div className="hidden lg:flex items-center gap-3 text-xs text-muted-foreground">
             <span>{wc} words</span>
             <span>{rt} min read</span>
             {isDirty && <Badge variant="outline" className="text-forge-amber border-forge-amber/30 text-[10px] px-1.5 py-0 h-4">Unsaved</Badge>}
@@ -406,40 +407,40 @@ export default function Editor() {
             {remoteUpdated && !isDirty && <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">Updated</Badge>}
           </div>
 
-          <Separator orientation="vertical" className="h-5" />
+          <Separator orientation="vertical" className="h-5 hidden sm:block" />
 
-          {/* Action Buttons */}
+          {/* Action Buttons - Responsive */}
           {hasConflict && (
-            <Button variant="destructive" size="sm" className="h-7 text-xs gap-1" onClick={handleReloadFromRemote}>
+            <Button variant="destructive" size="sm" className="h-7 text-xs gap-1 flex-shrink-0" onClick={handleReloadFromRemote}>
               <AlertCircle className="w-3 h-3" />
-              Reload
+              <span className="hidden md:inline">Reload</span>
             </Button>
           )}
-          <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => setShowSnapshots(true)}>
+          <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 flex-shrink-0 hidden sm:flex" onClick={() => setShowSnapshots(true)}>
             <RotateCcw className="w-3 h-3" />
-            Snapshots
+            <span className="hidden md:inline">Snapshots</span>
           </Button>
-          <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => setShowAI(true)}>
+          <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 flex-shrink-0 hidden sm:flex" onClick={() => setShowAI(true)}>
             <Wand2 className="w-3 h-3 text-forge-violet" />
-            AI
+            <span className="hidden md:inline">AI</span>
           </Button>
-          <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={handleSaveLocal}>
+          <Button variant="outline" size="sm" className="h-7 text-xs gap-1 flex-shrink-0" onClick={handleSaveLocal}>
             <Save className="w-3 h-3" />
-            Save
+            <span className="hidden sm:inline">Save</span>
           </Button>
-          <Button size="sm" className="h-7 text-xs gap-1" onClick={() => {
+          <Button size="sm" className="h-7 text-xs gap-1 flex-shrink-0" onClick={() => {
             if (!selectedFile && !currentPostId) { toast.error("Save the post first"); return; }
             handleCreateSnapshot("before-publish").then(() => setShowPublish(true));
           }}>
             <Send className="w-3 h-3" />
-            Publish
+            <span className="hidden sm:inline">Publish</span>
           </Button>
         </div>
 
-        {/* Editor Content */}
-        <div className="flex-1 flex overflow-hidden">
-          {/* Front Matter Panel */}
-          <div className="w-64 flex-shrink-0 border-r border-border bg-card/20 overflow-y-auto">
+        {/* Editor Content - Responsive */}
+        <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+          {/* Front Matter Panel - Hidden on mobile, shown on tablet+ */}
+          <div className="hidden md:flex md:w-64 flex-shrink-0 border-r border-border bg-card/20 overflow-y-auto">
             <FrontMatterEditor
               frontMatter={frontMatter}
               onChange={handleFrontMatterChange}
@@ -447,11 +448,11 @@ export default function Editor() {
             />
           </div>
 
-          {/* Editor / Preview */}
-          <div className="flex-1 flex overflow-hidden">
-            {/* Markdown Editor */}
+          {/* Editor / Preview - Responsive */}
+          <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+            {/* Markdown Editor - Full width on mobile, split on desktop */}
             {(mode === "markdown" || mode === "split") && (
-              <div className="flex-1 flex flex-col overflow-hidden border-r border-border">
+              <div className="flex-1 flex flex-col overflow-hidden md:border-r border-border">
                 <div className="flex-1 overflow-hidden">
                   <Textarea
                     ref={textareaRef}
@@ -465,9 +466,9 @@ export default function Editor() {
               </div>
             )}
 
-            {/* Preview */}
+            {/* Preview - Hidden on mobile in markdown mode */}
             {(mode === "visual" || mode === "split") && (
-              <div className="flex-1 overflow-y-auto bg-background">
+              <div className="flex-1 overflow-y-auto bg-background hidden md:block" style={{ display: mode === "visual" ? "block" : "" }}>
                 <div className="max-w-2xl mx-auto px-8 py-6">
                   {frontMatter.title != null && (
                     <h1 className="text-3xl font-display font-bold mb-2">{String(frontMatter.title)}</h1>
@@ -483,9 +484,9 @@ export default function Editor() {
         </div>
       </div>
 
-      {/* AI Assistant Sheet */}
+      {/* AI Assistant Sheet - Responsive width */}
       <Sheet open={showAI} onOpenChange={setShowAI}>
-        <SheetContent side="right" className="w-[420px] p-0">
+        <SheetContent side="right" className="w-full sm:w-[420px] p-0">
           <AIAssistant
             markdown={markdown}
             frontMatter={frontMatter}
@@ -497,7 +498,7 @@ export default function Editor() {
         </SheetContent>
       </Sheet>
 
-      {/* Publish Dialog */}
+      {/* Publish Dialog - Responsive */}
       <PublishDialog
         open={showPublish}
         onOpenChange={setShowPublish}
