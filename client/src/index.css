@@ -1,0 +1,297 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ─── Google Fonts ─────────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+/* ─── Design Tokens ────────────────────────────────────────────────────────── */
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-forge-amber: var(--forge-amber);
+  --color-forge-emerald: var(--forge-emerald);
+  --color-forge-violet: var(--forge-violet);
+  --color-forge-rose: var(--forge-rose);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-display: 'Syne', 'Inter', sans-serif;
+}
+
+/* ─── Dark Theme (default) ─────────────────────────────────────────────────── */
+:root {
+  --radius: 0.5rem;
+
+  /* Core palette — deep slate/zinc dark */
+  --background: oklch(0.12 0.008 264);
+  --foreground: oklch(0.94 0.006 264);
+
+  --card: oklch(0.16 0.008 264);
+  --card-foreground: oklch(0.94 0.006 264);
+
+  --popover: oklch(0.14 0.008 264);
+  --popover-foreground: oklch(0.94 0.006 264);
+
+  --primary: oklch(0.72 0.18 264);
+  --primary-foreground: oklch(0.12 0.008 264);
+
+  --secondary: oklch(0.22 0.008 264);
+  --secondary-foreground: oklch(0.86 0.006 264);
+
+  --muted: oklch(0.20 0.008 264);
+  --muted-foreground: oklch(0.58 0.008 264);
+
+  --accent: oklch(0.24 0.012 264);
+  --accent-foreground: oklch(0.94 0.006 264);
+
+  --destructive: oklch(0.62 0.22 25);
+  --border: oklch(0.24 0.008 264);
+  --input: oklch(0.20 0.008 264);
+  --ring: oklch(0.72 0.18 264);
+
+  /* Brand accent colors */
+  --forge-amber: oklch(0.78 0.18 75);
+  --forge-emerald: oklch(0.72 0.18 160);
+  --forge-violet: oklch(0.72 0.18 290);
+  --forge-rose: oklch(0.72 0.18 10);
+
+  /* Sidebar */
+  --sidebar: oklch(0.10 0.008 264);
+  --sidebar-foreground: oklch(0.86 0.006 264);
+  --sidebar-border: oklch(0.20 0.008 264);
+  --sidebar-accent: oklch(0.18 0.010 264);
+  --sidebar-accent-foreground: oklch(0.94 0.006 264);
+  --sidebar-primary: oklch(0.72 0.18 264);
+  --sidebar-primary-foreground: oklch(0.12 0.008 264);
+  --sidebar-ring: oklch(0.72 0.18 264);
+}
+
+/* ─── Light Theme ──────────────────────────────────────────────────────────── */
+.light {
+  --background: oklch(0.98 0.003 264);
+  --foreground: oklch(0.14 0.010 264);
+
+  --card: oklch(1.0 0 0);
+  --card-foreground: oklch(0.14 0.010 264);
+
+  --popover: oklch(1.0 0 0);
+  --popover-foreground: oklch(0.14 0.010 264);
+
+  --primary: oklch(0.52 0.20 264);
+  --primary-foreground: oklch(0.98 0.003 264);
+
+  --secondary: oklch(0.94 0.004 264);
+  --secondary-foreground: oklch(0.22 0.010 264);
+
+  --muted: oklch(0.94 0.004 264);
+  --muted-foreground: oklch(0.52 0.008 264);
+
+  --accent: oklch(0.92 0.006 264);
+  --accent-foreground: oklch(0.22 0.010 264);
+
+  --destructive: oklch(0.58 0.22 25);
+  --border: oklch(0.88 0.006 264);
+  --input: oklch(0.92 0.004 264);
+  --ring: oklch(0.52 0.20 264);
+
+  --forge-amber: oklch(0.62 0.18 75);
+  --forge-emerald: oklch(0.52 0.18 160);
+  --forge-violet: oklch(0.52 0.18 290);
+  --forge-rose: oklch(0.58 0.18 10);
+
+  --sidebar: oklch(0.95 0.004 264);
+  --sidebar-foreground: oklch(0.22 0.010 264);
+  --sidebar-border: oklch(0.88 0.006 264);
+  --sidebar-accent: oklch(0.90 0.006 264);
+  --sidebar-accent-foreground: oklch(0.14 0.010 264);
+  --sidebar-primary: oklch(0.52 0.20 264);
+  --sidebar-primary-foreground: oklch(0.98 0.003 264);
+  --sidebar-ring: oklch(0.52 0.20 264);
+}
+
+/* ─── Base Styles ──────────────────────────────────────────────────────────── */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "cv11", "ss01";
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    @apply tracking-tight;
+  }
+
+  code, pre, kbd {
+    font-family: var(--font-mono);
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/40;
+  }
+
+  /* Selection */
+  ::selection {
+    @apply bg-primary/30 text-foreground;
+  }
+}
+
+/* ─── Utility Classes ──────────────────────────────────────────────────────── */
+@layer utilities {
+  .container {
+    @apply mx-auto px-4 w-full;
+    max-width: 1400px;
+  }
+
+  .flex {
+    min-width: 0;
+    min-height: 0;
+  }
+
+  /* Forge-specific utilities */
+  .forge-sidebar {
+    background: var(--sidebar);
+    color: var(--sidebar-foreground);
+    border-color: var(--sidebar-border);
+  }
+
+  .forge-glass {
+    @apply backdrop-blur-sm bg-card/80 border border-border/60;
+  }
+
+  .forge-glow {
+    box-shadow: 0 0 0 1px oklch(0.72 0.18 264 / 0.3), 0 0 20px oklch(0.72 0.18 264 / 0.1);
+  }
+
+  .forge-text-gradient {
+    background: linear-gradient(135deg, oklch(0.72 0.18 264), oklch(0.72 0.18 290));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Status badge colors */
+  .status-draft { @apply bg-muted text-muted-foreground; }
+  .status-published { @apply bg-forge-emerald/15 text-forge-emerald; }
+  .status-modified { @apply bg-forge-amber/15 text-forge-amber; }
+  .status-scheduled { @apply bg-forge-violet/15 text-forge-violet; }
+  .status-archived { @apply bg-muted/50 text-muted-foreground/60; }
+
+  /* Plugin warning */
+  .plugin-warning {
+    @apply bg-forge-amber/10 border border-forge-amber/30 text-forge-amber rounded-md p-3 text-sm;
+  }
+
+  /* Editor styles */
+  .tiptap-editor {
+    @apply min-h-[400px] outline-none;
+  }
+
+  .tiptap-editor p.is-editor-empty:first-child::before {
+    @apply text-muted-foreground pointer-events-none float-left h-0;
+    content: attr(data-placeholder);
+  }
+
+  /* Diff viewer */
+  .diff-added { @apply bg-forge-emerald/10 text-forge-emerald; }
+  .diff-removed { @apply bg-forge-rose/10 text-forge-rose; }
+  .diff-modified { @apply bg-forge-amber/10 text-forge-amber; }
+
+  /* Code block in preview */
+  .prose-forge pre {
+    @apply bg-muted rounded-lg p-4 overflow-x-auto;
+  }
+  .prose-forge code {
+    @apply bg-muted/60 rounded px-1 py-0.5 text-sm font-mono;
+  }
+  .prose-forge blockquote {
+    @apply border-l-4 border-primary/40 pl-4 italic text-muted-foreground;
+  }
+  .prose-forge table {
+    @apply w-full border-collapse;
+  }
+  .prose-forge th {
+    @apply bg-muted px-3 py-2 text-left font-semibold text-sm border border-border;
+  }
+  .prose-forge td {
+    @apply px-3 py-2 border border-border text-sm;
+  }
+
+  /* Callout boxes */
+  .callout-note { @apply bg-primary/10 border-l-4 border-primary p-4 rounded-r-lg; }
+  .callout-warning { @apply bg-forge-amber/10 border-l-4 border-forge-amber p-4 rounded-r-lg; }
+  .callout-tip { @apply bg-forge-emerald/10 border-l-4 border-forge-emerald p-4 rounded-r-lg; }
+  .callout-danger { @apply bg-forge-rose/10 border-l-4 border-forge-rose p-4 rounded-r-lg; }
+
+  /* Animation utilities */
+  .animate-in-fast {
+    animation: fadeInScale 0.15s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+  }
+
+  @keyframes fadeInScale {
+    from { opacity: 0; transform: scale(0.97) translateY(-4px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  /* Button active state */
+  button:active:not(:disabled) {
+    transform: scale(0.97);
+    transition: transform 0.16s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  /* Sidebar navigation item */
+  .nav-item {
+    @apply flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium transition-all duration-150 cursor-pointer;
+    @apply text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent;
+  }
+  .nav-item.active {
+    @apply bg-sidebar-accent text-sidebar-accent-foreground;
+  }
+}
