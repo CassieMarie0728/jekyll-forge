@@ -1,0 +1,169 @@
+/* Cass-coded polish: sharper, louder, less brochure-bot. */
+:root {
+    --primary: #38bdf8;
+    --primary-dark: #0ea5e9;
+    --secondary: #981518;
+    --accent: #f97316;
+    --background: #05070d;
+    --surface: #101827;
+    --surface-light: #192436;
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --border: rgba(56, 189, 248, 0.28);
+}
+
+body {
+    background:
+        radial-gradient(circle at 15% 10%, rgba(152, 21, 24, 0.28), transparent 30%),
+        radial-gradient(circle at 80% 0%, rgba(56, 189, 248, 0.20), transparent 32%),
+        linear-gradient(180deg, #05070d 0%, #0b1020 48%, #05070d 100%);
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+    background-size: 42px 42px;
+    mask-image: linear-gradient(to bottom, black, transparent 88%);
+}
+
+.navbar,
+.hero,
+.features,
+.showcase,
+.how-it-works,
+.pricing,
+.cta,
+.footer {
+    position: relative;
+    z-index: 1;
+}
+
+.navbar {
+    background-color: rgba(5, 7, 13, 0.84);
+    border-bottom: 1px solid rgba(56, 189, 248, 0.24);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.28);
+}
+
+.nav-brand span {
+    letter-spacing: 0.02em;
+}
+
+.logo {
+    filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.45));
+}
+
+.hero {
+    background:
+        linear-gradient(135deg, rgba(56, 189, 248, 0.09), rgba(152, 21, 24, 0.16)),
+        radial-gradient(circle at 60% 35%, rgba(249, 115, 22, 0.12), transparent 34%);
+}
+
+.badge,
+.badge-featured {
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    box-shadow: 0 0 24px rgba(56, 189, 248, 0.16);
+}
+
+.hero-text h1 {
+    letter-spacing: -0.045em;
+    text-shadow: 0 0 38px rgba(56, 189, 248, 0.12);
+}
+
+.gradient {
+    background: linear-gradient(120deg, #38bdf8 0%, #f97316 45%, #ef4444 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.btn {
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #38bdf8, #0ea5e9 46%, #981518);
+    color: #05070d;
+    border: 1px solid rgba(248, 250, 252, 0.20);
+    box-shadow: 0 16px 42px rgba(14, 165, 233, 0.24);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #7dd3fc, #38bdf8 45%, #ef4444);
+    color: #05070d;
+    transform: translateY(-2px);
+}
+
+.btn-outline {
+    border-color: rgba(56, 189, 248, 0.45);
+    color: #e0f2fe;
+    background: rgba(15, 23, 42, 0.36);
+}
+
+.btn-outline:hover {
+    border-color: rgba(249, 115, 22, 0.70);
+    background: rgba(152, 21, 24, 0.18);
+}
+
+.hero-image,
+.showcase-image {
+    border: 1px solid rgba(56, 189, 248, 0.30);
+    box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.05),
+        0 24px 70px rgba(0, 0, 0, 0.42),
+        0 0 50px rgba(56, 189, 248, 0.18);
+}
+
+.feature-card,
+.pricing-card,
+.step {
+    border: 1px solid rgba(56, 189, 248, 0.20);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.015)),
+        rgba(16, 24, 39, 0.90);
+}
+
+.feature-card:hover,
+.pricing-card:hover {
+    border-color: rgba(249, 115, 22, 0.65);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.28), 0 0 32px rgba(249, 115, 22, 0.12);
+}
+
+.feature-icon {
+    filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.20));
+}
+
+.step-number {
+    background: linear-gradient(135deg, #38bdf8, #981518);
+    color: #05070d;
+    box-shadow: 0 0 28px rgba(56, 189, 248, 0.18);
+}
+
+.pricing-card.featured {
+    border-color: rgba(249, 115, 22, 0.75);
+    box-shadow: 0 0 44px rgba(249, 115, 22, 0.16);
+}
+
+.price {
+    color: #38bdf8;
+}
+
+.cta {
+    background:
+        radial-gradient(circle at center, rgba(152, 21, 24, 0.26), transparent 46%),
+        linear-gradient(135deg, rgba(56, 189, 248, 0.10), rgba(249, 115, 22, 0.10));
+}
+
+.footer {
+    background-color: rgba(5, 7, 13, 0.94);
+}
+
+.footer-bottom p {
+    color: #94a3b8;
+}
