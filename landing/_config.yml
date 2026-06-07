@@ -1,0 +1,54 @@
+# Jekyll Forge Landing Page Configuration
+# For GitHub Pages deployment
+
+title: Jekyll Forge
+description: The visual CMS for Jekyll blogs. Write more. Deploy anywhere. Powered by Jekyll.
+url: https://jekyllforge.dev
+baseurl: ""
+
+# GitHub Pages settings
+remote_theme: null
+plugins:
+  - jekyll-seo-tag
+  - jekyll-feed
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+
+# Exclude files from build
+exclude:
+  - .gitignore
+  - README.md
+  - LICENSE
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
+
+# Include files
+include:
+  - .nojekyll
+
+# Permalink structure
+permalink: /:title/
+
+# Collections
+collections_dir: collections
+
+# Timezone
+timezone: UTC
+
+# Sass
+sass:
+  style: compressed
+
+# SEO
+social:
+  name: Jekyll Forge
+  links:
+    - https://github.com/jekyll-forge
+    - https://twitter.com/jekyll_forge
+
+# Analytics (optional)
+# google_analytics: UA-XXXXXXXXX-X
