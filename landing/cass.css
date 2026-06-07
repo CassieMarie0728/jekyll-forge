@@ -59,20 +59,43 @@ body::before {
 }
 
 .hero {
+    min-height: auto;
+    padding: clamp(3rem, 7vw, 6rem) var(--spacing-lg);
     background:
         linear-gradient(135deg, rgba(56, 189, 248, 0.09), rgba(152, 21, 24, 0.16)),
         radial-gradient(circle at 60% 35%, rgba(249, 115, 22, 0.12), transparent 34%);
+}
+
+.hero .container {
+    display: block;
+}
+
+.hero-content,
+.showcase-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1.02fr) minmax(320px, 0.98fr);
+    gap: clamp(2rem, 6vw, 5rem);
+    align-items: center;
+}
+
+.hero-text {
+    max-width: 680px;
+}
+
+.hero-text h1 {
+    max-width: 780px;
+    letter-spacing: -0.045em;
+    text-shadow: 0 0 38px rgba(56, 189, 248, 0.12);
+}
+
+.hero-text > p {
+    max-width: 650px;
 }
 
 .badge,
 .badge-featured {
     border: 1px solid rgba(56, 189, 248, 0.35);
     box-shadow: 0 0 24px rgba(56, 189, 248, 0.16);
-}
-
-.hero-text h1 {
-    letter-spacing: -0.045em;
-    text-shadow: 0 0 38px rgba(56, 189, 248, 0.12);
 }
 
 .gradient {
@@ -118,6 +141,11 @@ body::before {
         0 0 0 1px rgba(255, 255, 255, 0.05),
         0 24px 70px rgba(0, 0, 0, 0.42),
         0 0 50px rgba(56, 189, 248, 0.18);
+}
+
+.hero-image {
+    max-width: 620px;
+    justify-self: end;
 }
 
 .feature-card,
@@ -166,4 +194,27 @@ body::before {
 
 .footer-bottom p {
     color: #94a3b8;
+}
+
+@media (max-width: 1024px) {
+    .hero-content,
+    .showcase-content {
+        grid-template-columns: 1fr;
+    }
+
+    .hero-image {
+        justify-self: start;
+        max-width: 760px;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero {
+        padding-top: var(--spacing-2xl);
+        padding-bottom: var(--spacing-2xl);
+    }
+
+    .hero-social {
+        align-items: flex-start;
+    }
 }
