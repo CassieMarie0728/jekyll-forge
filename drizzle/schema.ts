@@ -258,3 +258,49 @@ export const repurposedContent = mysqlTable("repurposed_content", {
 
 export type RepurposedContent = typeof repurposedContent.$inferSelect;
 export type InsertRepurposedContent = typeof repurposedContent.$inferInsert;
+
+// ─── Social Media Accounts ────────────────────────────────────────────────────
+export const socialMediaAccounts = mysqlTable("social_media_accounts", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  platform: mysqlEnum("platform", ["twitter", "linkedin"]).notNull(),
+  accountId: varchar("accountId", { length: 256 }).notNull(),
+  username: varchar("username", { length: 256 }),
+  displayName: varchar("displayName", { length: 256 }),
+  profileImageUrl: text("profileImageUrl"),
+  accessToken: text("accessToken").notNull(),
+  refreshToken: text("refreshToken"),
+  expiresAt: timestamp("expiresAt"),
+  isConnected: boolean("isConnected").default(true),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SocialMediaAccount = typeof socialMediaAccounts.$inferSelect;
+export type InsertSocialMediaAccount = typeof socialMediaAccounts.$inferInsert;
+
+// ─── Content Analytics ────────────────────────────────────────────────────────
+export const contentAnalytics = mysqlTable("content_analytics", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  repurposedContentId: int("repurposedContentId").notNull(),
+  platform: mysqlEnum("platform", ["twitter", "linkedin"]).notNull(),
+  externalPostId: varchar("externalPostId", { length: 256 }),
+  externalUrl: text("externalUrl"),
+  impressions: int("impressions").default(0),
+  engagements: int("engagements").default(0),
+  clicks: int("clicks").default(0),
+  shares: int("shares").default(0),
+  likes: int("likes").default(0),
+  replies: int("replies").default(0),
+  retweets: int("retweets").default(0),
+  /** Raw analytics data from platform API */
+  rawMetrics: json("rawMetrics").$type<Record<string, unknown>>(),
+  /** Last time metrics were synced from platform */
+  lastSyncedAt: timestamp("lastSyncedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ContentAnalytics = typeof contentAnalytics.$inferSelect;
+export type InsertContentAnalytics = typeof contentAnalytics.$inferInsert;

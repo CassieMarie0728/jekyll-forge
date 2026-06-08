@@ -205,3 +205,28 @@
 - **Database tables**: 8 (users, sites, posts, snapshots, assets, scheduledPosts, aiSettings, reusableBlocks)
 - **Tests**: 39 passing
 - **TypeScript errors**: 0
+
+
+## Social Media Auto-Posting & Analytics — COMPLETED
+- [x] Database schema: socialMediaAccounts table with platform, accessToken, refreshToken, expiresAt
+- [x] Database schema: contentAnalytics table with impressions, engagements, clicks, shares, likes, replies, retweets
+- [x] Twitter/X API integration: TwitterService with postTweet, postThread, getTweetMetrics
+- [x] LinkedIn API integration: LinkedInService with postArticle, getPostMetrics
+- [x] tRPC procedures: connectAccount, disconnectAccount, publishContent, getContentAnalytics, syncAnalytics, getAnalyticsSummary
+- [x] Frontend: SocialMediaPanel component with account management and publishing UI
+- [x] Frontend: AnalyticsDashboard with performance metrics per platform
+- [x] Frontend: Analytics sync button with real-time metrics updates
+- [x] Frontend: SocialMediaPanel embedded in RepurposingModal for easy publishing
+- [x] Error handling: Graceful failures for API errors and auth issues
+- [x] All tests passing (57 passed, 7 skipped)
+
+
+## Future Enhancements for Social Media
+- [ ] OAuth 2.0 connection flows for Twitter/X and LinkedIn (auth URLs, callbacks, token exchange)
+- [ ] Token refresh mechanism for expired credentials
+- [ ] Batch publishing to multiple platforms simultaneously
+- [ ] Scheduled social media posts (publish at specific time)
+- [ ] Social media account analytics page in dashboard
+- [ ] Rate limit handling and retry logic
+- [ ] Post preview before publishing
+- [ ] Integration tests for social publishing and analytics sync

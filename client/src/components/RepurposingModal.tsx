@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import { Copy, RefreshCw, Check, Twitter, Linkedin, Share2, Youtube, Mail, Podcast, Presentation, MessageSquare } from "lucide-react";
+import { SocialMediaPanel } from "./SocialMediaPanel";
 
 type RepurposingFormat = "twitter" | "linkedin" | "tiktok" | "youtube" | "newsletter" | "email" | "podcast" | "slides";
 
@@ -14,6 +15,7 @@ interface RepurposingModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   postId: number;
+  repurposedContentId?: number; // ID of the repurposed content record
   siteId: number;
   postTitle: string;
 }
@@ -73,6 +75,7 @@ export function RepurposingModal({
   open,
   onOpenChange,
   postId,
+  repurposedContentId,
   siteId,
   postTitle,
 }: RepurposingModalProps) {
@@ -128,7 +131,7 @@ export function RepurposingModal({
         </DialogHeader>
 
         <Tabs defaultValue="twitter" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 mb-4">
+          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-9 mb-4">
             {formats.map((format) => (
               <TabsTrigger
                 key={format}
@@ -139,7 +142,27 @@ export function RepurposingModal({
                 {FORMAT_CONFIG[format].icon}
               </TabsTrigger>
             ))}
+            <TabsTrigger
+              value="social"
+              className="text-xs"
+              onClick={() => setActiveFormat("twitter")}
+            >
+              <Share2 className="w-4 h-4" />
+            </TabsTrigger>
           </TabsList>
+
+          {/* Social Media Tab */}
+          <TabsContent value="social" className="space-y-4">
+            {repurposedContentId ? (
+              <SocialMediaPanel repurposedContentId={repurposedContentId} format={activeFormat} />
+            ) : (
+              <Card>
+                <CardContent className="pt-6">
+                  <p className="text-sm text-muted-foreground">Generate content first to enable social media publishing</p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
 
           {formats.map((format) => (
             <TabsContent key={format} value={format} className="space-y-4">

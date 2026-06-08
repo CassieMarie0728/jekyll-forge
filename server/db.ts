@@ -13,6 +13,8 @@ import {
   reusableBlocks, InsertReusableBlock,
   frontMatterTemplates,
   repurposedContent, InsertRepurposedContent, RepurposedContent,
+  socialMediaAccounts, InsertSocialMediaAccount, SocialMediaAccount,
+  contentAnalytics, InsertContentAnalytics, ContentAnalytics,
 } from "../drizzle/schema";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -371,4 +373,117 @@ export async function getFrontMatterTemplates(userId: number, siteId?: number) {
     ? and(eq(frontMatterTemplates.userId, userId), eq(frontMatterTemplates.siteId, siteId))
     : eq(frontMatterTemplates.userId, userId);
   return db.select().from(frontMatterTemplates).where(conditions).orderBy(asc(frontMatterTemplates.name));
+}
+
+
+// ─── Social Media Accounts ────────────────────────────────────────────────────
+export async function createSocialMediaAccount(data: InsertSocialMediaAccount): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const result = await db.insert(socialMediaAccounts).values(data);
+  return result[0].insertId as number;
+}
+
+export async function getSocialMediaAccountsByUserId(userId: number): Promise<SocialMediaAccount[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select()
+    .from(socialMediaAccounts)
+    .where(eq(socialMediaAccounts.userId, userId))
+    .orderBy(desc(socialMediaAccounts.createdAt));
+}
+
+export async function getSocialMediaAccount(id: number, userId: number): Promise<SocialMediaAccount | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select()
+    .from(socialMediaAccounts)
+    .where(and(eq(socialMediaAccounts.id, id), eq(socialMediaAccounts.userId, userId)))
+    .limit(1);
+  return result[0];
+}
+
+export async function updateSocialMediaAccount(id: number, userId: number, data: Partial<SocialMediaAccount>): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(socialMediaAccounts)
+    .set({ ...data, updatedAt: new Date() })
+    .where(and(eq(socialMediaAccounts.id, id), eq(socialMediaAccounts.userId, userId)));
+}
+
+export async function deleteSocialMediaAccount(id: number, userId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.delete(socialMediaAccounts)
+    .where(and(eq(socialMediaAccounts.id, id), eq(socialMediaAccounts.userId, userId)));
+}
+
+// ─── Content Analytics ────────────────────────────────────────────────────────
+export async function createContentAnalytics(data: InsertContentAnalytics): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const result = await db.insert(contentAnalytics).values(data);
+  return result[0].insertId as number;
+}
+
+export async function getContentAnalyticsByRepurposedId(repurposedContentId: number, userId: number): Promise<ContentAnalytics[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select()
+    .from(contentAnalytics)
+    .where(and(eq(contentAnalytics.repurposedContentId, repurposedContentId), eq(contentAnalytics.userId, userId)))
+    .orderBy(desc(contentAnalytics.createdAt));
+}
+
+export async function getContentAnalyticsByPlatform(userId: number, platform: "twitter" | "linkedin"): Promise<ContentAnalytics[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select()
+    .from(contentAnalytics)
+    .where(and(eq(contentAnalytics.userId, userId), eq(contentAnalytics.platform, platform)))
+    .orderBy(desc(contentAnalytics.createdAt));
+}
+
+export async function updateContentAnalytics(id: number, userId: number, data: Partial<ContentAnalytics>): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(contentAnalytics)
+    .set({ ...data, updatedAt: new Date() })
+    .where(and(eq(contentAnalytics.id, id), eq(contentAnalytics.userId, userId)));
+}
+
+export async function getAnalyticsSummary(userId: number): Promise<{
+  totalImpressions: number;
+  totalEngagements: number;
+  totalClicks: number;
+  byPlatform: Record<string, { impressions: number; engagements: number; clicks: number }>;
+}> {
+  const db = await getDb();
+  if (!db) return { totalImpressions: 0, totalEngagements: 0, totalClicks: 0, byPlatform: {} };
+
+  const allAnalytics = await db.select()
+    .from(contentAnalytics)
+    .where(eq(contentAnalytics.userId, userId));
+
+  const summary = {
+    totalImpressions: 0,
+    totalEngagements: 0,
+    totalClicks: 0,
+    byPlatform: {} as Record<string, { impressions: number; engagements: number; clicks: number }>,
+  };
+
+  for (const metric of allAnalytics) {
+    summary.totalImpressions += metric.impressions || 0;
+    summary.totalEngagements += metric.engagements || 0;
+    summary.totalClicks += metric.clicks || 0;
+
+    if (!summary.byPlatform[metric.platform]) {
+      summary.byPlatform[metric.platform] = { impressions: 0, engagements: 0, clicks: 0 };
+    }
+    summary.byPlatform[metric.platform].impressions += metric.impressions || 0;
+    summary.byPlatform[metric.platform].engagements += metric.engagements || 0;
+    summary.byPlatform[metric.platform].clicks += metric.clicks || 0;
+  }
+
+  return summary;
 }
