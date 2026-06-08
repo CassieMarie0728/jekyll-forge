@@ -12,6 +12,7 @@ import {
   scheduledPosts, InsertScheduledPost,
   reusableBlocks, InsertReusableBlock,
   frontMatterTemplates,
+  repurposedContent, InsertRepurposedContent, RepurposedContent,
 } from "../drizzle/schema";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -26,6 +27,48 @@ export async function getDb() {
     }
   }
   return _db;
+}
+
+// ─── Repurposed Content ───────────────────────────────────────────────────────
+export async function createRepurposedContent(data: InsertRepurposedContent): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const result = await db.insert(repurposedContent).values(data);
+  return result[0].insertId as number;
+}
+
+export async function getRepurposedContentByPostId(postId: number, userId: number): Promise<RepurposedContent[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select()
+    .from(repurposedContent)
+    .where(and(eq(repurposedContent.postId, postId), eq(repurposedContent.userId, userId)))
+    .orderBy(desc(repurposedContent.createdAt));
+}
+
+export async function getRepurposedContentById(id: number, userId: number): Promise<RepurposedContent | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select()
+    .from(repurposedContent)
+    .where(and(eq(repurposedContent.id, id), eq(repurposedContent.userId, userId)))
+    .limit(1);
+  return result[0];
+}
+
+export async function updateRepurposedContent(id: number, userId: number, data: Partial<RepurposedContent>): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(repurposedContent)
+    .set({ ...data, updatedAt: new Date() })
+    .where(and(eq(repurposedContent.id, id), eq(repurposedContent.userId, userId)));
+}
+
+export async function deleteRepurposedContent(id: number, userId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.delete(repurposedContent)
+    .where(and(eq(repurposedContent.id, id), eq(repurposedContent.userId, userId)));
 }
 
 // ─── Users ────────────────────────────────────────────────────────────────────

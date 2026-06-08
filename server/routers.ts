@@ -10,6 +10,7 @@ import { aiRouter } from "./routers/ai";
 import { snapshotsRouter } from "./routers/snapshots";
 import { schedulerRouter } from "./routers/scheduler";
 import { blocksRouter } from "./routers/blocks";
+import { repurposingRouter } from "./routers/repurposing";
 
 export const appRouter = router({
   system: systemRouter,
@@ -29,6 +30,7 @@ export const appRouter = router({
   snapshots: snapshotsRouter,
   scheduler: schedulerRouter,
   blocks: blocksRouter,
+  repurposing: repurposingRouter,
 });
 
 export type AppRouter = typeof appRouter;

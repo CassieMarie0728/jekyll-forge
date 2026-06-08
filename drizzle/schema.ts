@@ -233,3 +233,28 @@ export const frontMatterTemplates = mysqlTable("front_matter_templates", {
 });
 
 export type FrontMatterTemplate = typeof frontMatterTemplates.$inferSelect;
+
+// ─── Repurposed Content ───────────────────────────────────────────────────────
+export const repurposedContent = mysqlTable("repurposed_content", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  siteId: int("siteId").notNull(),
+  postId: int("postId").notNull(),
+  postTitle: varchar("postTitle", { length: 512 }),
+  postSlug: varchar("postSlug", { length: 256 }),
+  /** Format type: twitter, linkedin, tiktok, youtube, newsletter, email, podcast, slides */
+  format: mysqlEnum("format", ["twitter", "linkedin", "tiktok", "youtube", "newsletter", "email", "podcast", "slides"]).notNull(),
+  /** The repurposed content */
+  content: text("content").notNull(),
+  /** Metadata specific to format (e.g., character count, thread count, etc.) */
+  metadata: json("metadata").$type<Record<string, unknown>>(),
+  /** Whether this content has been edited by user */
+  isCustomized: boolean("isCustomized").default(false),
+  /** Status: generated, approved, published, archived */
+  status: mysqlEnum("status", ["generated", "approved", "published", "archived"]).default("generated"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type RepurposedContent = typeof repurposedContent.$inferSelect;
+export type InsertRepurposedContent = typeof repurposedContent.$inferInsert;

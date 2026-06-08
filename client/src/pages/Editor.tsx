@@ -16,7 +16,7 @@ import {
   AlignLeft, Hash, Image, Link2, Bold, Italic, List, ListOrdered,
   Quote, Minus, Table, Code, Heading1, Heading2, Heading3, X,
   CheckCircle2, AlertCircle, Info, Wand2, RefreshCw, Layers,
-  RotateCcw, Download, Upload, Settings2, Globe, ArrowLeft,
+  RotateCcw, Download, Upload, Settings2, Globe, ArrowLeft, Share2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
@@ -32,6 +32,7 @@ import AIAssistant from "@/components/AIAssistant";
 import PublishDialog from "@/components/PublishDialog";
 import SnapshotManager from "@/components/SnapshotManager";
 import FileBrowser from "@/components/FileBrowser";
+import { RepurposingModal } from "@/components/RepurposingModal";
 import { Link } from "wouter";
 
 type EditorMode = "visual" | "markdown" | "split";
@@ -118,6 +119,7 @@ export default function Editor() {
   const [showAI, setShowAI] = useState(false);
   const [showPublish, setShowPublish] = useState(false);
   const [showSnapshots, setShowSnapshots] = useState(false);
+  const [showRepurposing, setShowRepurposing] = useState(false);
   const [showFileBrowser, setShowFileBrowser] = useState(true);
   const [selectedFile, setSelectedFile] = useState<string | null>(postPath || null);
   const [isLoadingFile, setIsLoadingFile] = useState(false);
@@ -424,6 +426,13 @@ export default function Editor() {
             <Wand2 className="w-3 h-3 text-forge-violet" />
             <span className="hidden md:inline">AI</span>
           </Button>
+          <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 flex-shrink-0 hidden sm:flex" onClick={() => {
+            if (!currentPostId) { toast.error("Save the post first"); return; }
+            setShowRepurposing(true);
+          }}>
+            <Share2 className="w-3 h-3 text-forge-violet" />
+            <span className="hidden md:inline">Repurpose</span>
+          </Button>
           <Button variant="outline" size="sm" className="h-7 text-xs gap-1 flex-shrink-0" onClick={handleSaveLocal}>
             <Save className="w-3 h-3" />
             <span className="hidden sm:inline">Save</span>
@@ -497,6 +506,17 @@ export default function Editor() {
           />
         </SheetContent>
       </Sheet>
+
+      {/* Repurposing Modal */}
+      {currentPostId && (
+        <RepurposingModal
+          open={showRepurposing}
+          onOpenChange={setShowRepurposing}
+          postId={currentPostId}
+          siteId={Number(siteId)}
+          postTitle={String(frontMatter.title || "Untitled")}
+        />
+      )}
 
       {/* Publish Dialog - Responsive */}
       <PublishDialog

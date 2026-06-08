@@ -147,6 +147,21 @@
 - [x] TypeScript strict mode (zero errors)
 - [x] Prettier code formatting
 
+## AI Content Repurposing Engine — NEW
+- [x] Database schema: repurposed_content table with format, content, metadata, status tracking
+- [x] 8 repurposing formats: Twitter thread, LinkedIn article, TikTok script, YouTube description, newsletter, email campaign, podcast outline, slide deck
+- [x] Backend tRPC procedures: generate, getByPost, getById, update, delete, regenerate
+- [x] LLM-powered generation: specialized prompts for each format
+- [x] Format-specific metadata: character count, word count, estimated duration, email count, etc.
+- [x] Frontend RepurposingModal component with tabbed UI for all formats
+- [x] Copy-to-clipboard functionality for generated content
+- [x] Regenerate button for each format
+- [x] Editor integration: Repurpose button in toolbar
+- [x] Status tracking: generated, approved, published, archived
+- [x] Customization tracking: marks when user edits generated content
+- [x] Comprehensive tests: 25 tests covering prompts, metadata, database operations
+- [x] All tests passing (57 passed, 7 skipped)
+
 ## Additional Features Implemented
 - [x] Image optimization pipeline (sharp: resize, compress, WEBP conversion, EXIF strip, responsive sizes)
 - [x] Re-optimize existing assets endpoint

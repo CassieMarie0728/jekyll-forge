@@ -1,8 +1,8 @@
 {
   "build_command": "pnpm run build",
   "capabilities": [
-    "server",
     "db",
+    "server",
     "user"
   ],
   "dev_command": "pnpm run dev",
@@ -14,10 +14,10 @@
   ],
   "git_remote": {
     "repo_url": "s3://vida-prod-gitrepo/webdev-git/310519663677930309/5wkBquEUPqEsiikipJdWYy",
-    "access_key_id": "ASIAZV3A2ECZHP5S3T2C",
-    "secret_access_key": "JE859J+6Idexlm7uVNJGt8rwUOxW/ADmumd9siUl",
-    "session_token": "IQoJb3JpZ2luX2VjEBwaCXVzLWVhc3QtMSJGMEQCIFMAj4wTM8J21RbpENTGQ/OoLIwIgLGmSNSsnUZUQ+r6AiBAxz5vMGVYACHXOdSCoRJAGjmBHWK6QTEsJFC8Vfu61yr/Awjl//////////8BEAQaDDY2NTM4NjA5ODg2NiIMZ9QE4fERBPzpJ4oIKtMDWStPESrSf41Q6QGZqPBOdhg+qezNO7RGpmoS+lM1drmOgSk2sPj51VUjdgmccsOrp2b4VpJ14y4D2RK6vPvQewMmmo2Ul4PlUM1vNqmZfO8RB8zkU0SJ4F4CkEYlyyQ1P9uQRcx8wCx+gZcSR4uRFfT1hTZHuu2g9U45z5nfEA2gX/XbyJ4i6sdD9opBFx+Ekmw8msK8quconmATGxkyBvhUDcE+RN8ytDgdqrsVTGlsLvBi0nWqQPTqyDX68VOENuDgXYi4BI05gxqT8UGltUhsSoI9huCSfiR2sCG7H3ElYcG0c7+xpjYy+XhoQsD9F5ZUuNBEYBdABOzR+XRQjYWPLM6xFOYU5aNfL/PKB6RoGtJ8ZVxR9ioxjMZecRzGgHpNOOo2kO2UNm8XVXFlFYsyp4RaVE03O+zakG2Im8ZaDSdcC9dzGjcQbd9SVf/7zEv/FFkVekZ7gXLopzrkRzadc2V+Jy2dNLIJnXD3ZqR/DvAV/7CyY33RUsqkUWbAvn7slqpCF/NGqGSNAUFMPHOn4KU9SY/W13DmmJ+iVPbKjG0eNaJxHIzGQH0aYf+yNSSzcoNDU6RoqRIbAlVHiG3DWRhbVwKWZ1HMrWEBPikq7QowhtW00AY6ngEQ3vR1Gf46kLlePSilLejoUDISZozzYlu5lniv93KB3mX1N8WoErEY8nqogLgkcOng65qMwKwLJU/tqTozv+ln89BdLTRC2NDx56TvZVqZQ4HK0pp64GJpzRrfIRdO4lypfqLi/ZrQV7aL7JeVKm+IpOT1n8rYeYdF03nN6L/1TYs/uvqhxjUngf8JkotVGqWR+gsb9GSL5xghYLvilg==",
-    "expiration": "2026-05-20T15:29:10.000Z"
+    "access_key_id": "ASIAZV3A2ECZP4TXGO36",
+    "secret_access_key": "jJDFjeG3oImG7b2bOLzJdFXJqCIs71tA3b/TIliW",
+    "session_token": "IQoJb3JpZ2luX2VjEJj//////////wEaCXVzLWVhc3QtMSJIMEYCIQDvpw6/CpPGgS3V7GSZNz2HGd1/fVQywEZlPiS/NmGR4wIhAN3vbEfkCeqCXko8Gmw0pcduaCloBGRBHyODQtwtzlXHKvYDCGEQBBoMNjY1Mzg2MDk4ODY2IgwWote9Re2/8bOd9tgq0wOYh6pHzmHZWq8IL/kdkDijRIZg9Bwao++t9F9Y0vrBEtaFyWFclkxDPOVR9sXR5R8STrkqiKkKBPqLr+x6rBvhfvclMaIj8No3Z0uno+sYP1W+t9y1s5/idW5KX42vccGq9+BrC4geIST3cEMUoFrDSRDaPa2XUoX/8i4AbrrDR6RTDbCygTpjmuUg9nI7CuCnA39lcwEK4Ewu8cqXQcVPcnzPWEXYa5lUnL4ACAySv4jV2/N4+NVR5MhFqhvHRiVTjguh39TtK1qlkPH7jABjNMkKwI7oPMKsn1HIGw2wtRxbCoxmfXKYEbQtcUSvuN8SlaAp96gwVJ80sI3k3tz8gATwAYhtSWrFB7dwXFsQytlhOsoVtGdrgyXag6HcyNRq5ehaySQyoDbDZxkiB2NB0otkBjHKy/kKCCG4ObzDBlKNX22DQ42Myp55psFxO/LCFQww92alR1WnzM7lptDOMzAzV9jbZEpiJ7++eC/bHManW8TZAESUMKw/bS+4s2ON81EtnOfL2Y/yvdoaGN3Df3gTzEQ/VVjt6LVrt7dgAi3FvLEKqDF3edSYTa2wOgHDm6kj9NEeY4PjDP12+sLNqsyZZbOrwM8WQGEdQ6kKuF3PlDDalojRBjqcAVb+IHML7Oeo5LfltZb0hZmD9zuIHzVOoS9D/ws7wxeDToCRtSO00snr3OXjuwQGnxNbsgV8S1IzODQt1kWKE95lt5ANs66xS7Q2Uw54dTBYnvAnTzgWRKnCWTPpxBJllWvlKTSCMCQ5dFLTZ1Zcx1XygqKgwapvyVIne/su3Sb6wWXxyl0A6UHhZelnIUaPXfa/c+bkn1XRRK8VkA==",
+    "expiration": "2026-06-05T11:33:46.000Z"
   },
   "name": "jekyll-forge",
   "path": "/home/ubuntu/jekyll-forge",
