@@ -6,8 +6,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
-import { Copy, RefreshCw, Check, Twitter, Linkedin, Share2, Youtube, Mail, Podcast, Presentation, MessageSquare } from "lucide-react";
+import { Copy, RefreshCw, Check, Twitter, Linkedin, Share2, Youtube, Mail, Podcast, Presentation, MessageSquare, Zap } from "lucide-react";
 import { SocialMediaPanel } from "./SocialMediaPanel";
+import { BatchPublishDialog } from "./BatchPublishDialog";
 
 type RepurposingFormat = "twitter" | "linkedin" | "tiktok" | "youtube" | "newsletter" | "email" | "podcast" | "slides";
 
@@ -83,6 +84,7 @@ export function RepurposingModal({
   const [generatedContent, setGeneratedContent] = useState<Record<RepurposingFormat, string>>({} as any);
   const [loadingFormat, setLoadingFormat] = useState<RepurposingFormat | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [showBatchPublish, setShowBatchPublish] = useState(false);
 
   const generateMutation = trpc.repurposing.generate.useMutation();
   const getByPostQuery = trpc.repurposing.getByPost.useQuery({ postId }, { enabled: open });
@@ -247,11 +249,26 @@ export function RepurposingModal({
           ))}
         </Tabs>
 
-        <div className="flex justify-end gap-2 pt-4">
+        <div className="flex justify-between gap-2 pt-4">
+          <Button
+            onClick={() => setShowBatchPublish(true)}
+            variant="default"
+            className="gap-2"
+          >
+            <Zap className="w-4 h-4" />
+            Batch Publish
+          </Button>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Close
           </Button>
         </div>
+
+        {/* Batch Publish Dialog */}
+        <BatchPublishDialog
+          open={showBatchPublish}
+          onOpenChange={setShowBatchPublish}
+          repurposedContentId={postId}
+        />
       </DialogContent>
     </Dialog>
   );

@@ -229,12 +229,20 @@
 - [x] Token refresh mechanism for expired credentials
 - [x] Error handling for OAuth failures
 
+## Batch Publishing & Analytics Page — COMPLETED
+- [x] Batch publishing to multiple platforms simultaneously
+- [x] BatchPublishDialog component with platform selection
+- [x] Social media account analytics page (SocialAnalytics.tsx)
+- [x] AnalyticsDashboard integrated into analytics page
+- [x] Route added to App.tsx for /social-analytics/:siteId
+- [x] Performance tips section on analytics page
+
 ## Future Enhancements for Social Media
-- [ ] Batch publishing to multiple platforms simultaneously
 - [ ] Scheduled social media posts (publish at specific time)
-- [ ] Social media account analytics page in dashboard
 - [ ] Rate limit handling and retry logic
 - [ ] Post preview before publishing
 - [ ] Integration tests for social publishing and analytics sync
 - [ ] Auto-refresh of expired OAuth tokens
 - [ ] Support for more platforms (TikTok, Instagram, Bluesky)
+- [ ] Content calendar view
+- [ ] A/B testing for different post variations

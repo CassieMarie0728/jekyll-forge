@@ -13,6 +13,7 @@ import ThemeManager from "./pages/ThemeManager";
 import AISettings from "./pages/AISettings";
 import SiteHealth from "./pages/SiteHealth";
 import Scheduler from "./pages/Scheduler";
+import SocialAnalytics from "./pages/SocialAnalytics";
 import AppLayout from "./components/AppLayout";
 import { WorkspaceProvider } from "./contexts/WorkspaceContext";
 
@@ -29,6 +30,7 @@ function Router() {
       <Route path="/themes/:siteId" component={() => <AppLayout><ThemeManager /></AppLayout>} />
       <Route path="/health/:siteId" component={() => <AppLayout><SiteHealth /></AppLayout>} />
       <Route path="/ai-settings/:siteId" component={() => <AppLayout><AISettings /></AppLayout>} />
+      <Route path="/social-analytics/:siteId" component={() => <AppLayout><SocialAnalytics /></AppLayout>} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
