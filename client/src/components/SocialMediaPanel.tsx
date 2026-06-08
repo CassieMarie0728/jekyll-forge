@@ -6,7 +6,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
-import { Twitter, Linkedin, Trash2, Share2, BarChart3, Loader } from "lucide-react";
+import { Twitter, Linkedin, Trash2, Share2, BarChart3, Loader, Plus } from "lucide-react";
+import { SocialMediaConnectionFlow } from "./SocialMediaConnectionFlow";
 
 interface SocialMediaPanelProps {
   repurposedContentId: number;
@@ -15,6 +16,7 @@ interface SocialMediaPanelProps {
 
 export function SocialMediaPanel({ repurposedContentId, format }: SocialMediaPanelProps) {
   const [showPublishDialog, setShowPublishDialog] = useState(false);
+  const [showConnectionFlow, setShowConnectionFlow] = useState(false);
   const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null);
   const [publishingTo, setPublishingTo] = useState<number | null>(null);
 
@@ -102,7 +104,17 @@ export function SocialMediaPanel({ repurposedContentId, format }: SocialMediaPan
         </CardHeader>
         <CardContent className="space-y-3">
           {accounts.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No accounts connected yet</p>
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">No accounts connected yet</p>
+              <Button
+                onClick={() => setShowConnectionFlow(true)}
+                className="w-full gap-2"
+                variant="outline"
+              >
+                <Plus className="w-4 h-4" />
+                Connect Account
+              </Button>
+            </div>
           ) : (
             accounts.map((account) => (
               <div
@@ -212,6 +224,16 @@ export function SocialMediaPanel({ repurposedContentId, format }: SocialMediaPan
           </CardContent>
         </Card>
       )}
+
+      {/* Connection Flow Dialog */}
+      <SocialMediaConnectionFlow
+        open={showConnectionFlow}
+        onOpenChange={setShowConnectionFlow}
+        onConnected={() => {
+          accountsQuery.refetch();
+          setShowConnectionFlow(false);
+        }}
+      />
 
       {/* Publish Dialog */}
       <Dialog open={showPublishDialog} onOpenChange={setShowPublishDialog}>

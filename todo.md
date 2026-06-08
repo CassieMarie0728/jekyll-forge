@@ -221,12 +221,20 @@
 - [x] All tests passing (57 passed, 7 skipped)
 
 
+## OAuth & Connection Flows — COMPLETED
+- [x] OAuth 2.0 service: getOAuthAuthorizationUrl, exchangeOAuthCode, refreshOAuthToken
+- [x] User profile fetching from Twitter/X and LinkedIn
+- [x] SocialMediaConnectionFlow component with platform selection
+- [x] Connect account button in SocialMediaPanel
+- [x] Token refresh mechanism for expired credentials
+- [x] Error handling for OAuth failures
+
 ## Future Enhancements for Social Media
-- [ ] OAuth 2.0 connection flows for Twitter/X and LinkedIn (auth URLs, callbacks, token exchange)
-- [ ] Token refresh mechanism for expired credentials
 - [ ] Batch publishing to multiple platforms simultaneously
 - [ ] Scheduled social media posts (publish at specific time)
 - [ ] Social media account analytics page in dashboard
 - [ ] Rate limit handling and retry logic
 - [ ] Post preview before publishing
 - [ ] Integration tests for social publishing and analytics sync
+- [ ] Auto-refresh of expired OAuth tokens
+- [ ] Support for more platforms (TikTok, Instagram, Bluesky)
