@@ -8,6 +8,7 @@ import {
   boolean,
   json,
   bigint,
+  decimal,
 } from "drizzle-orm/mysql-core";
 
 // ─── Users ──────────────────────────────────────────────────────────────────
@@ -304,3 +305,65 @@ export const contentAnalytics = mysqlTable("content_analytics", {
 
 export type ContentAnalytics = typeof contentAnalytics.$inferSelect;
 export type InsertContentAnalytics = typeof contentAnalytics.$inferInsert;
+
+
+// ─── Content Variations (A/B Testing) ──────────────────────────────────────────
+export const contentVariations = mysqlTable("content_variations", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  postId: int("postId").notNull(),
+  variationIndex: int("variationIndex").notNull(), // 0 = original, 1-N = variations
+  headline: text("headline").notNull(),
+  content: text("content").notNull(),
+  tone: varchar("tone", { length: 64 }), // e.g., "professional", "casual", "humorous"
+  angle: varchar("angle", { length: 256 }), // e.g., "beginner-friendly", "advanced", "contrarian"
+  status: mysqlEnum("status", ["draft", "published", "archived"]).default("draft").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ContentVariation = typeof contentVariations.$inferSelect;
+export type InsertContentVariation = typeof contentVariations.$inferInsert;
+
+// ─── A/B Test Results ─────────────────────────────────────────────────────────
+export const abTestResults = mysqlTable("ab_test_results", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  postId: int("postId").notNull(),
+  variationIndex: int("variationIndex").notNull(),
+  platform: mysqlEnum("platform", ["twitter", "linkedin", "facebook", "instagram", "email", "direct"]).notNull(),
+  externalPostId: varchar("externalPostId", { length: 256 }),
+  impressions: int("impressions").default(0),
+  engagements: int("engagements").default(0),
+  clicks: int("clicks").default(0),
+  shares: int("shares").default(0),
+  likes: int("likes").default(0),
+  replies: int("replies").default(0),
+  engagementRate: decimal("engagementRate", { precision: 5, scale: 2 }).default("0"), // percentage
+  status: mysqlEnum("status", ["active", "completed", "paused"]).default("active").notNull(),
+  startedAt: timestamp("startedAt").defaultNow().notNull(),
+  endedAt: timestamp("endedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AbTestResult = typeof abTestResults.$inferSelect;
+export type InsertAbTestResult = typeof abTestResults.$inferInsert;
+
+// ─── A/B Test Summary ─────────────────────────────────────────────────────────
+export const abTestSummary = mysqlTable("ab_test_summary", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  postId: int("postId").notNull(),
+  winningVariationIndex: int("winningVariationIndex"),
+  totalVariations: int("totalVariations").notNull(),
+  testDurationDays: int("testDurationDays").default(7),
+  winningMetric: varchar("winningMetric", { length: 64 }), // "engagement_rate", "clicks", "shares", etc.
+  status: mysqlEnum("status", ["running", "completed", "archived"]).default("running").notNull(),
+  insights: json("insights").$type<Record<string, unknown>>(), // JSON with detailed insights
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AbTestSummary = typeof abTestSummary.$inferSelect;
+export type InsertAbTestSummary = typeof abTestSummary.$inferInsert;

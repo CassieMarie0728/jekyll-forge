@@ -15,6 +15,7 @@ import {
   repurposedContent, InsertRepurposedContent, RepurposedContent,
   socialMediaAccounts, InsertSocialMediaAccount, SocialMediaAccount,
   contentAnalytics, InsertContentAnalytics, ContentAnalytics,
+  contentVariations, abTestResults, abTestSummary, ContentVariation, AbTestResult, AbTestSummary,
 } from "../drizzle/schema";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -486,4 +487,138 @@ export async function getAnalyticsSummary(userId: number): Promise<{
   }
 
   return summary;
+}
+
+
+// ─── A/B Testing Helpers ────────────────────────────────────────────────────────
+
+export async function createContentVariation(
+  userId: number,
+  postId: number,
+  variationIndex: number,
+  headline: string,
+  content: string,
+  tone?: string,
+  angle?: string
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.insert(contentVariations).values({
+    userId,
+    postId,
+    variationIndex,
+    headline,
+    content,
+    tone,
+    angle,
+    status: "draft",
+  });
+}
+
+export async function getContentVariations(postId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.select().from(contentVariations).where(eq(contentVariations.postId, postId));
+}
+
+export async function updateVariationStatus(variationId: number, status: "draft" | "published" | "archived") {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db
+    .update(contentVariations)
+    .set({ status, updatedAt: new Date() })
+    .where(eq(contentVariations.id, variationId));
+}
+
+export async function createAbTestResult(
+  userId: number,
+  postId: number,
+  variationIndex: number,
+  platform: string,
+  externalPostId?: string
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.insert(abTestResults).values({
+    userId,
+    postId,
+    variationIndex,
+    platform: platform as any,
+    externalPostId,
+    status: "active",
+  });
+}
+
+export async function updateAbTestMetrics(
+  testResultId: number,
+  metrics: {
+    impressions?: number;
+    engagements?: number;
+    clicks?: number;
+    shares?: number;
+    likes?: number;
+    replies?: number;
+  }
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const engagementRate = metrics.engagements && metrics.impressions ? (metrics.engagements / metrics.impressions) * 100 : 0;
+
+  return db
+    .update(abTestResults)
+    .set({
+      ...metrics,
+      engagementRate: engagementRate.toString() as any,
+      updatedAt: new Date(),
+    })
+    .where(eq(abTestResults.id, testResultId));
+}
+
+export async function getAbTestResults(postId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.select().from(abTestResults).where(eq(abTestResults.postId, postId));
+}
+
+export async function createAbTestSummary(
+  userId: number,
+  postId: number,
+  totalVariations: number,
+  testDurationDays: number = 7
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.insert(abTestSummary).values({
+    userId,
+    postId,
+    totalVariations,
+    testDurationDays,
+    status: "running",
+  });
+}
+
+export async function updateAbTestSummary(
+  summaryId: number,
+  winningVariationIndex: number,
+  winningMetric: string,
+  insights: Record<string, unknown>
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db
+    .update(abTestSummary)
+    .set({
+      winningVariationIndex,
+      winningMetric,
+      insights,
+      status: "completed",
+      updatedAt: new Date(),
+    })
+    .where(eq(abTestSummary.id, summaryId));
+}
+
+export async function getAbTestSummary(postId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.select().from(abTestSummary).where(eq(abTestSummary.postId, postId)).limit(1);
 }

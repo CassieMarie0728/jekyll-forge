@@ -50,6 +50,13 @@
       "when": 1780993854422,
       "tag": "0006_bright_christian_walker",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1780994496925,
+      "tag": "0007_sad_killraven",
+      "breakpoints": true
     }
   ]
 }
