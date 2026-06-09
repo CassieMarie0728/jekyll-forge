@@ -1,0 +1,2 @@
+ALTER TABLE `content_analytics` MODIFY COLUMN `platform` enum('twitter','linkedin','facebook','instagram') NOT NULL;--> statement-breakpoint
+ALTER TABLE `social_media_accounts` MODIFY COLUMN `platform` enum('twitter','linkedin','facebook','instagram') NOT NULL;

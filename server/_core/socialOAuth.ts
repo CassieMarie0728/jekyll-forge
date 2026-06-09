@@ -6,7 +6,7 @@
 import { TRPCError } from "@trpc/server";
 
 export interface OAuthConfig {
-  platform: "twitter" | "linkedin";
+  platform: "twitter" | "linkedin" | "facebook" | "instagram";
   clientId: string;
   clientSecret: string;
   redirectUri: string;
@@ -23,7 +23,7 @@ export interface OAuthToken {
  * Generate OAuth authorization URL for user to click
  */
 export function getOAuthAuthorizationUrl(
-  platform: "twitter" | "linkedin",
+  platform: "twitter" | "linkedin" | "facebook" | "instagram",
   clientId: string,
   redirectUri: string,
   state: string
@@ -31,28 +31,36 @@ export function getOAuthAuthorizationUrl(
   const scopes =
     platform === "twitter"
       ? ["tweet.read", "tweet.write", "users.read", "tweet.moderate.write"]
-      : ["w_member_social", "r_basicprofile"];
+      : platform === "linkedin"
+      ? ["w_member_social", "r_basicprofile"]
+      : platform === "facebook"
+      ? ["pages_manage_posts", "pages_read_engagement", "pages_read_user_content"]
+      : ["instagram_business_basic", "instagram_business_content_publish", "instagram_business_manage_messages"];
 
   const params = new URLSearchParams({
     client_id: clientId,
     redirect_uri: redirectUri,
     response_type: "code",
-    scope: scopes.join(" "),
+    scope: scopes.join(","),
     state,
   });
 
   if (platform === "twitter") {
     return `https://twitter.com/i/oauth2/authorize?${params.toString()}`;
-  } else {
+  } else if (platform === "linkedin") {
     return `https://www.linkedin.com/oauth/v2/authorization?${params.toString()}`;
+  } else if (platform === "facebook" || platform === "instagram") {
+    // Facebook and Instagram use the same OAuth endpoint
+    return `https://www.facebook.com/v18.0/dialog/oauth?${params.toString()}`;
   }
+  throw new Error(`Unknown platform: ${platform}`);
 }
 
 /**
  * Exchange OAuth code for access token
  */
 export async function exchangeOAuthCode(
-  platform: "twitter" | "linkedin",
+  platform: "twitter" | "linkedin" | "facebook" | "instagram",
   code: string,
   clientId: string,
   clientSecret: string,
@@ -62,7 +70,9 @@ export async function exchangeOAuthCode(
     const tokenUrl =
       platform === "twitter"
         ? "https://api.twitter.com/2/oauth2/token"
-        : "https://www.linkedin.com/oauth/v2/accessToken";
+        : platform === "linkedin"
+        ? "https://www.linkedin.com/oauth/v2/accessToken"
+        : "https://graph.facebook.com/v18.0/oauth/access_token";
 
     const body = new URLSearchParams({
       grant_type: "authorization_code",
@@ -109,7 +119,7 @@ export async function exchangeOAuthCode(
  * Refresh OAuth token when expired
  */
 export async function refreshOAuthToken(
-  platform: "twitter" | "linkedin",
+  platform: "twitter" | "linkedin" | "facebook" | "instagram",
   refreshToken: string,
   clientId: string,
   clientSecret: string
@@ -118,7 +128,9 @@ export async function refreshOAuthToken(
     const tokenUrl =
       platform === "twitter"
         ? "https://api.twitter.com/2/oauth2/token"
-        : "https://www.linkedin.com/oauth/v2/accessToken";
+        : platform === "linkedin"
+        ? "https://www.linkedin.com/oauth/v2/accessToken"
+        : "https://graph.facebook.com/v18.0/oauth/access_token";
 
     const body = new URLSearchParams({
       grant_type: "refresh_token",

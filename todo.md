@@ -246,3 +246,16 @@
 - [ ] Support for more platforms (TikTok, Instagram, Bluesky)
 - [ ] Content calendar view
 - [ ] A/B testing for different post variations
+
+
+## Facebook & Instagram Integration — COMPLETED
+- [x] Update schema: add facebook and instagram to platform enum
+- [x] FacebookService: OAuth integration, post creation, metrics retrieval
+- [x] InstagramService: OAuth integration, post creation, metrics retrieval
+- [x] Update SocialMediaConnectionFlow to include Facebook and Instagram with real OAuth
+- [x] Update BatchPublishDialog to support Facebook and Instagram
+- [x] SocialMediaPanel automatically supports all platforms
+- [x] AnalyticsDashboard automatically shows all platform metrics
+- [x] OAuth service updated: getOAuthAuthorizationUrl, exchangeOAuthCode, refreshOAuthToken
+- [x] All TypeScript errors resolved, zero compilation errors
+- [x] Real OAuth flow implemented in SocialMediaConnectionFlow (redirects to provider)

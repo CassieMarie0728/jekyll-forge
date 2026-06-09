@@ -263,7 +263,7 @@ export type InsertRepurposedContent = typeof repurposedContent.$inferInsert;
 export const socialMediaAccounts = mysqlTable("social_media_accounts", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),
-  platform: mysqlEnum("platform", ["twitter", "linkedin"]).notNull(),
+  platform: mysqlEnum("platform", ["twitter", "linkedin", "facebook", "instagram"]).notNull(),
   accountId: varchar("accountId", { length: 256 }).notNull(),
   username: varchar("username", { length: 256 }),
   displayName: varchar("displayName", { length: 256 }),
@@ -284,7 +284,7 @@ export const contentAnalytics = mysqlTable("content_analytics", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),
   repurposedContentId: int("repurposedContentId").notNull(),
-  platform: mysqlEnum("platform", ["twitter", "linkedin"]).notNull(),
+  platform: mysqlEnum("platform", ["twitter", "linkedin", "facebook", "instagram"]).notNull(),
   externalPostId: varchar("externalPostId", { length: 256 }),
   externalUrl: text("externalUrl"),
   impressions: int("impressions").default(0),

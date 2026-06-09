@@ -5,7 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
-import { Twitter, Linkedin, CheckCircle2, AlertCircle } from "lucide-react";
+import { Twitter, Linkedin, Facebook, Instagram, CheckCircle2, AlertCircle } from "lucide-react";
 
 interface BatchPublishDialogProps {
   open: boolean;
@@ -15,7 +15,7 @@ interface BatchPublishDialogProps {
 }
 
 interface PublishResult {
-  platform: "twitter" | "linkedin";
+  platform: "twitter" | "linkedin" | "facebook" | "instagram";
   success: boolean;
   postId?: string;
   error?: string;
@@ -27,8 +27,8 @@ export function BatchPublishDialog({
   repurposedContentId,
   onPublished,
 }: BatchPublishDialogProps) {
-  const [selectedPlatforms, setSelectedPlatforms] = useState<Set<"twitter" | "linkedin">>(
-    new Set(["twitter", "linkedin"])
+  const [selectedPlatforms, setSelectedPlatforms] = useState<Set<"twitter" | "linkedin" | "facebook" | "instagram">>(
+    new Set(["twitter", "linkedin", "facebook", "instagram"])
   );
   const [isPublishing, setIsPublishing] = useState(false);
   const [results, setResults] = useState<PublishResult[]>([]);
@@ -36,9 +36,11 @@ export function BatchPublishDialog({
   const platforms = [
     { id: "twitter" as const, name: "Twitter/X", icon: Twitter },
     { id: "linkedin" as const, name: "LinkedIn", icon: Linkedin },
+    { id: "facebook" as const, name: "Facebook", icon: Facebook },
+    { id: "instagram" as const, name: "Instagram", icon: Instagram },
   ];
 
-  const togglePlatform = (platform: "twitter" | "linkedin") => {
+  const togglePlatform = (platform: "twitter" | "linkedin" | "facebook" | "instagram") => {
     const newSelected = new Set(selectedPlatforms);
     if (newSelected.has(platform)) {
       newSelected.delete(platform);

@@ -22,7 +22,7 @@ export const socialMediaRouter = router({
    */
   connectAccount: protectedProcedure
     .input(z.object({
-      platform: z.enum(["twitter", "linkedin"]),
+      platform: z.enum(["twitter", "linkedin", "facebook", "instagram"]),
       accessToken: z.string(),
       refreshToken: z.string().optional(),
       expiresAt: z.date().optional(),
@@ -101,7 +101,7 @@ export const socialMediaRouter = router({
 
       try {
         // Get the appropriate service
-        const service = getSocialMediaService(account.platform, account.accessToken);
+        const service = getSocialMediaService(account.platform as "twitter" | "linkedin" | "facebook" | "instagram", account.accessToken);
 
         // Publish based on format
         let result;
