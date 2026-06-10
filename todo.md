@@ -289,3 +289,15 @@
 - [x] Beautiful landing page with hero, features, workflow, CTA sections
 - [x] Sign In and Sign Up buttons in header and throughout page
 - [x] All TypeScript errors resolved
+
+
+## User Profile Settings Page
+- [x] Create tRPC procedures: getAccounts, disconnectAccount, getAccountDetails
+- [x] Build UserSettings page component with tabs (Profile, Connected Accounts, Security)
+- [x] Create AccountCard component for displaying connected social accounts
+- [x] Add connect/disconnect buttons with confirmation dialogs
+- [x] Display account details (username, email, profile picture, connection date)
+- [x] Integrate settings page into app navigation
+- [x] Add settings route to App.tsx (/settings)
+- [x] Add Account Settings link in user dropdown menu
+- [x] All TypeScript errors resolved

@@ -224,4 +224,17 @@ export const socialMediaRouter = router({
   getAnalyticsSummary: protectedProcedure.query(async ({ ctx }) => {
     return getAnalyticsSummary(ctx.user.id);
   }),
+
+  /**
+   * Get details for a specific connected account
+   */
+  getAccountDetails: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const account = await getSocialMediaAccount(input.id, ctx.user.id);
+      if (!account) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Account not found" });
+      }
+      return account;
+    }),
 });
