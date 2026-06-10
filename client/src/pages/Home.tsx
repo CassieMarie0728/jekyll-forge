@@ -1,7 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { getLoginUrl } from "@/const";
+import { getLoginUrl, getSignUpUrl } from "@/const";
 import { useLocation } from "wouter";
 import { useEffect } from "react";
 import {
@@ -33,6 +33,20 @@ export default function Home() {
     }
   }, [isAuthenticated, loading, navigate]);
 
+  // Show loading state while checking auth
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center mx-auto mb-4 animate-pulse">
+            <Zap className="w-4 h-4 text-primary-foreground" />
+          </div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       {/* Nav */}
@@ -44,10 +58,15 @@ export default function Home() {
             </div>
             <span className="font-display font-bold text-lg tracking-tight">Jekyll Forge</span>
           </div>
-          <Button onClick={() => window.location.href = getLoginUrl()} size="sm" className="gap-2">
-            <Github className="w-4 h-4" />
-            Sign In
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button onClick={() => window.location.href = getLoginUrl()} variant="ghost" size="sm" className="gap-2">
+              Sign In
+            </Button>
+            <Button onClick={() => window.location.href = getSignUpUrl()} size="sm" className="gap-2">
+              <Github className="w-4 h-4" />
+              Sign Up
+            </Button>
+          </div>
         </div>
       </nav>
 
@@ -86,16 +105,16 @@ export default function Home() {
           >
             <Button
               size="lg"
-              onClick={() => window.location.href = getLoginUrl()}
+              onClick={() => window.location.href = getSignUpUrl()}
               className="gap-2 text-base h-12 px-8"
             >
               <Github className="w-5 h-5" />
-              Connect GitHub & Start
+              Get Started Free
               <ArrowRight className="w-4 h-4" />
             </Button>
-            <Button variant="outline" size="lg" className="gap-2 text-base h-12 px-8">
+            <Button variant="outline" size="lg" className="gap-2 text-base h-12 px-8" onClick={() => window.location.href = getLoginUrl()}>
               <BookOpen className="w-4 h-4" />
-              View Docs
+              Sign In
             </Button>
           </motion.div>
         </div>
@@ -172,7 +191,7 @@ export default function Home() {
           <p className="text-muted-foreground mb-8">Connect your GitHub account and start managing your Jekyll blog from the browser.</p>
           <Button
             size="lg"
-            onClick={() => window.location.href = getLoginUrl()}
+            onClick={() => window.location.href = getSignUpUrl()}
             className="gap-2 text-base h-12 px-10"
           >
             <Github className="w-5 h-5" />

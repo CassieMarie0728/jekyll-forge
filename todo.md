@@ -278,3 +278,14 @@
 - [x] Frontend: Real-time results dashboard
 - [x] Analytics aggregation and winner detection
 - [x] All TypeScript errors resolved
+
+
+## Landing Page Integration with Web App
+- [x] Create integrated LandingPage component with auth detection
+- [x] Add Sign up/Login buttons with OAuth redirect (getSignUpUrl and getLoginUrl)
+- [x] Set landing page as default home route (Home.tsx is at /)
+- [x] Redirect authenticated users to dashboard (/repos for repo picker, then /dashboard/:siteId)
+- [x] Add loading state while checking authentication
+- [x] Beautiful landing page with hero, features, workflow, CTA sections
+- [x] Sign In and Sign Up buttons in header and throughout page
+- [x] All TypeScript errors resolved
