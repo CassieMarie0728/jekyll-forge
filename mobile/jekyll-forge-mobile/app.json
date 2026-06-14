@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "Jekyll Forge",
+    "slug": "jekyll-forge",
+    "version": "1.0.0",
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTabletMode": true,
+      "bundleIdentifier": "com.jekyllforge.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.jekyllforge.app",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.INTERNET"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Jekyll Forge to access your photos.",
+          "cameraPermission": "Allow Jekyll Forge to access your camera."
+        }
+      ]
+    ],
+    "scheme": "jekyllforge"
+  }
+}
