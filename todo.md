@@ -320,9 +320,9 @@
 - [x] Add AI assistant to mobile editor (AIAssistantScreen with 6 task types)
 - [x] Implement repurposing engine UI for mobile (RepurposingScreen with 8 formats)
 - [x] Implement A/B testing UI for mobile (ABTestingScreen with variation generation)
-- [ ] Add offline support with AsyncStorage
-- [ ] Implement local draft caching
-- [ ] Build scheduled posts management for mobile
+- [x] Add offline support with AsyncStorage (offlineStorage service with drafts, sync queue, assets, settings)
+- [x] Implement local draft caching (useDraftCache hook with auto-save, 2-second debounce)
+- [x] Build scheduled posts management for mobile (ScheduledPostsScreen with filter, reschedule, cancel)
 - [ ] Implement push notifications
 - [ ] Testing and optimization
 - [ ] Production build and Android app signing
