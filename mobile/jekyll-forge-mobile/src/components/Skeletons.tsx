@@ -1,7 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { Animated, View, StyleSheet, Dimensions } from 'react-native';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+import { useEffect, useRef } from 'react';
+import { Animated, View, StyleSheet } from 'react-native';
 
 // Shimmer animation for loading states
 function ShimmerEffect({ width, height, borderRadius = 8 }: { width: number | string; height: number; borderRadius?: number }) {

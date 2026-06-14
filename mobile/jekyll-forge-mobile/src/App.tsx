@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { httpBatchLink } from '@trpc/client';
 import superjson from 'superjson';
@@ -36,8 +36,12 @@ const getTrpcClient = () => {
   });
 };
 
-function AppContent() {
-  const { isAuthenticated, isLoading, checkAuth } = useAuthStore();
+interface AppContentProps {
+  isAuthenticated: boolean;
+}
+
+function AppContent({ isAuthenticated }: AppContentProps) {
+  const { isLoading, checkAuth } = useAuthStore();
   const trpcClient = getTrpcClient();
 
   useEffect(() => {
@@ -63,9 +67,10 @@ function AppContent() {
 }
 
 export default function App() {
+  const { isAuthenticated } = useAuthStore();
   return (
     <ToastProvider>
-      <AppContent />
+      <AppContent isAuthenticated={isAuthenticated} />
     </ToastProvider>
   );
 }
