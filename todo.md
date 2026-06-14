@@ -316,10 +316,10 @@
 - [x] Add social media analytics screen (SocialAnalyticsScreen)
 - [x] Create SocialAccountManager component
 - [x] Implement custom hooks for social operations
-- [ ] Implement publishing workflow for mobile
-- [ ] Add AI assistant to mobile editor
-- [ ] Implement repurposing engine UI for mobile
-- [ ] Implement A/B testing UI for mobile
+- [x] Implement publishing workflow for mobile (PublishScreen with draft/publish options)
+- [x] Add AI assistant to mobile editor (AIAssistantScreen with 6 task types)
+- [x] Implement repurposing engine UI for mobile (RepurposingScreen with 8 formats)
+- [x] Implement A/B testing UI for mobile (ABTestingScreen with variation generation)
 - [ ] Add offline support with AsyncStorage
 - [ ] Implement local draft caching
 - [ ] Build scheduled posts management for mobile
