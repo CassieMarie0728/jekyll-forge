@@ -3,36 +3,61 @@
     "name": "Jekyll Forge",
     "slug": "jekyll-forge",
     "version": "1.0.0",
-    "assetBundlePatterns": ["**/*"],
-    "ios": {
-      "supportsTabletMode": true,
-      "bundleIdentifier": "com.jekyllforge.app"
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0f172a"
     },
+    "assetBundlePatterns": ["**/*"],
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#0f172a"
       },
       "package": "com.jekyllforge.app",
+      "versionCode": 1,
       "permissions": [
-        "android.permission.CAMERA",
-        "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.INTERNET"
-      ]
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "INTERNET",
+        "VIBRATE",
+        "RECEIVE_BOOT_COMPLETED"
+      ],
+      "googleServicesFile": "./google-services.json"
     },
     "plugins": [
+      "expo-secure-store",
       [
         "expo-image-picker",
         {
-          "photosPermission": "Allow Jekyll Forge to access your photos.",
-          "cameraPermission": "Allow Jekyll Forge to access your camera."
+          "photosPermission": "Allow Jekyll Forge to access your photos to upload assets.",
+          "cameraPermission": "Allow Jekyll Forge to use your camera to capture images."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#3b82f6",
+          "sounds": []
         }
       ]
     ],
-    "scheme": "jekyllforge"
+    "scheme": "jekyllforge",
+    "extra": {
+      "eas": {
+        "projectId": "your-project-id"
+      }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/your-project-id"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    }
   }
 }
