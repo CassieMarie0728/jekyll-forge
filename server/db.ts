@@ -7,13 +7,12 @@ import {
   snapshots, InsertSnapshot,
   assets, InsertAsset,
   aiSettings, InsertAiSetting,
-  aiVoiceProfiles,
-  aiPromptTemplates,
   scheduledPosts, InsertScheduledPost,
   reusableBlocks, InsertReusableBlock,
   frontMatterTemplates,
   repurposedContent, InsertRepurposedContent, RepurposedContent,
   socialMediaAccounts, InsertSocialMediaAccount, SocialMediaAccount,
+  scheduledSocialPosts, InsertScheduledSocialPost, ScheduledSocialPost,
   contentAnalytics, InsertContentAnalytics, ContentAnalytics,
   contentVariations, abTestResults, abTestSummary, ContentVariation, AbTestResult, AbTestSummary,
 } from "../drizzle/schema";
@@ -281,21 +280,7 @@ export async function incrementAiUsage(userId: number, inputTokens: number, outp
   }).where(eq(aiSettings.userId, userId));
 }
 
-// ─── AI Voice Profiles ────────────────────────────────────────────────────────
-export async function getVoiceProfiles(userId: number) {
-  const db = await getDb();
-  if (!db) return [];
-  return db.select().from(aiVoiceProfiles).where(eq(aiVoiceProfiles.userId, userId)).orderBy(asc(aiVoiceProfiles.name));
-}
-
-// ─── AI Prompt Templates ──────────────────────────────────────────────────────
-export async function getPromptTemplates(userId: number) {
-  const db = await getDb();
-  if (!db) return [];
-  return db.select().from(aiPromptTemplates).where(eq(aiPromptTemplates.userId, userId)).orderBy(asc(aiPromptTemplates.name));
-}
-
-// ─── Scheduled Posts ─────────────────────────────────────────────────────────
+// ─── Scheduled Posts ─────────────────────────────────────────────────────
 export async function getPendingScheduledPosts(before: Date) {
   const db = await getDb();
   if (!db) return [];
@@ -322,6 +307,51 @@ export async function getScheduledPostsBySite(siteId: number, userId: number) {
   return db.select().from(scheduledPosts)
     .where(and(eq(scheduledPosts.siteId, siteId), eq(scheduledPosts.userId, userId)))
     .orderBy(asc(scheduledPosts.scheduledAt));
+}
+
+// ─── Scheduled Social Media Posts ────────────────────────────────────────────
+export async function getPendingScheduledSocialPosts(before: Date) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(scheduledSocialPosts)
+    .where(and(eq(scheduledSocialPosts.status, "pending"), lt(scheduledSocialPosts.scheduledAt, before)));
+}
+
+export async function createScheduledSocialPost(data: InsertScheduledSocialPost): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const result = await db.insert(scheduledSocialPosts).values(data);
+  return Number((result as unknown as { insertId: number }).insertId);
+}
+
+export async function getScheduledSocialPostById(id: number, userId: number): Promise<ScheduledSocialPost | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(scheduledSocialPosts)
+    .where(and(eq(scheduledSocialPosts.id, id), eq(scheduledSocialPosts.userId, userId)));
+  return result[0] || null;
+}
+
+export async function updateScheduledSocialPost(id: number, userId: number, data: Partial<InsertScheduledSocialPost>): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(scheduledSocialPosts).set(data)
+    .where(and(eq(scheduledSocialPosts.id, id), eq(scheduledSocialPosts.userId, userId)));
+}
+
+export async function getScheduledSocialPostsByRepurposedContent(repurposedContentId: number, userId: number): Promise<ScheduledSocialPost[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(scheduledSocialPosts)
+    .where(and(eq(scheduledSocialPosts.repurposedContentId, repurposedContentId), eq(scheduledSocialPosts.userId, userId)))
+    .orderBy(asc(scheduledSocialPosts.scheduledAt));
+}
+
+export async function cancelScheduledSocialPost(id: number, userId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(scheduledSocialPosts).set({ status: "cancelled" })
+    .where(and(eq(scheduledSocialPosts.id, id), eq(scheduledSocialPosts.userId, userId)));
 }
 
 // ─── Reusable Blocks ─────────────────────────────────────────────────────────

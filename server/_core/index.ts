@@ -9,6 +9,7 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { scheduledPublishHandler } from "../scheduledPublishHandler";
+import { registerHeartbeatJobs } from "./heartbeatJobs";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -63,6 +64,8 @@ async function startServer() {
 
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
+    // Register periodic heartbeat jobs
+    registerHeartbeatJobs();
   });
 }
 

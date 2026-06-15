@@ -238,8 +238,10 @@
 - [x] Performance tips section on analytics page
 
 ## Future Enhancements for Social Media
-- [ ] Scheduled social media posts (publish at specific time)
-- [ ] Rate limit handling and retry logic
+- [x] Scheduled social media posts (publish at specific time, reschedule, cancel)
+- [x] Execution handler for scheduled social posts (heartbeat job that publishes pending posts)
+- [x] Retry logic with exponential backoff for failed publishes
+- [ ] Rate limit handling (API-specific rate limit detection and backoff)
 - [ ] Post preview before publishing
 - [ ] Integration tests for social publishing and analytics sync
 - [ ] Auto-refresh of expired OAuth tokens

@@ -12,6 +12,11 @@ import {
   updateContentAnalytics,
   getAnalyticsSummary,
   getRepurposedContentById,
+  createScheduledSocialPost,
+  getScheduledSocialPostById,
+  updateScheduledSocialPost,
+  getScheduledSocialPostsByRepurposedContent,
+  cancelScheduledSocialPost,
 } from "../db";
 import { getSocialMediaService } from "../_core/socialMediaService";
 import { TRPCError } from "@trpc/server";
@@ -236,5 +241,128 @@ export const socialMediaRouter = router({
         throw new TRPCError({ code: "NOT_FOUND", message: "Account not found" });
       }
       return account;
+    }),
+
+  /**
+   * Schedule social media post for later publishing
+   */
+  schedulePost: protectedProcedure
+    .input(z.object({
+      repurposedContentId: z.number(),
+      socialMediaAccountId: z.number(),
+      scheduledAt: z.date(),
+      timezone: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const content = await getRepurposedContentById(input.repurposedContentId, ctx.user.id);
+        if (!content) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Content not found" });
+        }
+
+        const account = await getSocialMediaAccount(input.socialMediaAccountId, ctx.user.id);
+        if (!account) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Account not found" });
+        }
+
+        const postId = await createScheduledSocialPost({
+          userId: ctx.user.id,
+          repurposedContentId: input.repurposedContentId,
+          socialMediaAccountId: input.socialMediaAccountId,
+          platform: account.platform,
+          content: content.content,
+          scheduledAt: input.scheduledAt,
+          timezone: input.timezone || "UTC",
+          status: "pending",
+        });
+
+        return { success: true, postId };
+      } catch (error) {
+        if (error instanceof TRPCError) throw error;
+        console.error("[SocialMedia] Schedule error:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to schedule post",
+        });
+      }
+    }),
+
+  /**
+   * Get scheduled posts for repurposed content
+   */
+  getScheduledPosts: protectedProcedure
+    .input(z.object({ repurposedContentId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      return getScheduledSocialPostsByRepurposedContent(input.repurposedContentId, ctx.user.id);
+    }),
+
+  /**
+   * Reschedule an existing post
+   */
+  reschedulePost: protectedProcedure
+    .input(z.object({
+      postId: z.number(),
+      scheduledAt: z.date(),
+      timezone: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const post = await getScheduledSocialPostById(input.postId, ctx.user.id);
+        if (!post) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Scheduled post not found" });
+        }
+
+        if (post.status !== "pending") {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Can only reschedule pending posts",
+          });
+        }
+
+        await updateScheduledSocialPost(input.postId, ctx.user.id, {
+          scheduledAt: input.scheduledAt,
+          timezone: input.timezone,
+        });
+
+        return { success: true };
+      } catch (error) {
+        if (error instanceof TRPCError) throw error;
+        console.error("[SocialMedia] Reschedule error:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to reschedule post",
+        });
+      }
+    }),
+
+  /**
+   * Cancel a scheduled post
+   */
+  cancelScheduledPost: protectedProcedure
+    .input(z.object({ postId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const post = await getScheduledSocialPostById(input.postId, ctx.user.id);
+        if (!post) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Scheduled post not found" });
+        }
+
+        if (post.status !== "pending") {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Can only cancel pending posts",
+          });
+        }
+
+        await cancelScheduledSocialPost(input.postId, ctx.user.id);
+        return { success: true };
+      } catch (error) {
+        if (error instanceof TRPCError) throw error;
+        console.error("[SocialMedia] Cancel error:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to cancel post",
+        });
+      }
     }),
 });

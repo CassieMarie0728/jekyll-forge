@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
-import { getAiSettings, upsertAiSettings, incrementAiUsage, getVoiceProfiles, getPromptTemplates } from "../db";
+import { getAiSettings, upsertAiSettings, incrementAiUsage } from "../db";
 import { invokeLLM } from "../_core/llm";
 import { TRPCError } from "@trpc/server";
 
@@ -103,10 +103,6 @@ export const aiRouter = router({
         },
       };
     }),
-
-  getVoiceProfiles: protectedProcedure.query(({ ctx }) => getVoiceProfiles(ctx.user.id)),
-
-  getPromptTemplates: protectedProcedure.query(({ ctx }) => getPromptTemplates(ctx.user.id)),
 
   getUsageStats: protectedProcedure.query(async ({ ctx }) => {
     const settings = await getAiSettings(ctx.user.id);

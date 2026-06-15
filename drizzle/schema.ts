@@ -149,42 +149,7 @@ export const aiSettings = mysqlTable("ai_settings", {
 export type AiSetting = typeof aiSettings.$inferSelect;
 export type InsertAiSetting = typeof aiSettings.$inferInsert;
 
-// ─── AI Voice Profiles ────────────────────────────────────────────────────────
-export const aiVoiceProfiles = mysqlTable("ai_voice_profiles", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  name: varchar("name", { length: 128 }).notNull(),
-  tone: varchar("tone", { length: 64 }),
-  formality: varchar("formality", { length: 64 }),
-  humorLevel: varchar("humorLevel", { length: 32 }),
-  readingLevel: varchar("readingLevel", { length: 64 }),
-  forbiddenPhrases: json("forbiddenPhrases").$type<string[]>(),
-  requiredPhrases: json("requiredPhrases").$type<string[]>(),
-  brandRules: text("brandRules"),
-  exampleSamples: text("exampleSamples"),
-  systemPrompt: text("systemPrompt"),
-  isDefault: boolean("isDefault").default(false),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
-
-export type AiVoiceProfile = typeof aiVoiceProfiles.$inferSelect;
-
-// ─── AI Prompt Templates ──────────────────────────────────────────────────────
-export const aiPromptTemplates = mysqlTable("ai_prompt_templates", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  name: varchar("name", { length: 128 }).notNull(),
-  category: varchar("category", { length: 64 }),
-  template: text("template").notNull(),
-  variables: json("variables").$type<string[]>(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
-
-export type AiPromptTemplate = typeof aiPromptTemplates.$inferSelect;
-
-// ─── Scheduled Posts ─────────────────────────────────────────────────────────
+// ─── Scheduled Posts ───────────────────────────────────────────────────────────
 export const scheduledPosts = mysqlTable("scheduled_posts", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),
@@ -279,6 +244,32 @@ export const socialMediaAccounts = mysqlTable("social_media_accounts", {
 
 export type SocialMediaAccount = typeof socialMediaAccounts.$inferSelect;
 export type InsertSocialMediaAccount = typeof socialMediaAccounts.$inferInsert;
+
+// ─── Scheduled Social Media Posts ──────────────────────────────────────────────
+export const scheduledSocialPosts = mysqlTable("scheduled_social_posts", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  repurposedContentId: int("repurposedContentId").notNull(),
+  socialMediaAccountId: int("socialMediaAccountId").notNull(),
+  platform: mysqlEnum("platform", ["twitter", "linkedin", "facebook", "instagram"]).notNull(),
+  content: text("content").notNull(),
+  scheduledAt: timestamp("scheduledAt").notNull(),
+  timezone: varchar("timezone", { length: 64 }).default("UTC"),
+  status: mysqlEnum("status", ["pending", "processing", "published", "failed", "cancelled"]).default("pending"),
+  externalPostId: varchar("externalPostId", { length: 256 }),
+  externalUrl: text("externalUrl"),
+  errorMessage: text("errorMessage"),
+  retryCount: int("retryCount").default(0),
+  maxRetries: int("maxRetries").default(3),
+  lastRetryAt: timestamp("lastRetryAt"),
+  publishedAt: timestamp("publishedAt"),
+  scheduleCronTaskUid: varchar("scheduleCronTaskUid", { length: 65 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ScheduledSocialPost = typeof scheduledSocialPosts.$inferSelect;
+export type InsertScheduledSocialPost = typeof scheduledSocialPosts.$inferInsert;
 
 // ─── Content Analytics ────────────────────────────────────────────────────────
 export const contentAnalytics = mysqlTable("content_analytics", {
