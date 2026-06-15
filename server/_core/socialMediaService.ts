@@ -52,6 +52,15 @@ export class TwitterService {
         body: JSON.stringify({ text: content }),
       });
 
+      // Check for rate limit response (429 Too Many Requests)
+      if (response.status === 429) {
+        const retryAfter = response.headers.get("retry-after");
+        const error = new Error(`Twitter rate limit exceeded`);
+        (error as any).isRateLimit = true;
+        (error as any).retryAfter = retryAfter ? parseInt(retryAfter) : 900; // 15 minutes default
+        throw error;
+      }
+
       if (!response.ok) {
         const error = await response.json();
         throw new Error(`Twitter API error: ${error.detail || response.statusText}`);

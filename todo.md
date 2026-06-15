@@ -241,13 +241,13 @@
 - [x] Scheduled social media posts (publish at specific time, reschedule, cancel)
 - [x] Execution handler for scheduled social posts (heartbeat job that publishes pending posts)
 - [x] Retry logic with exponential backoff for failed publishes
-- [ ] Rate limit handling (API-specific rate limit detection and backoff)
-- [ ] Post preview before publishing
+- [x] Rate limit handling (API-specific rate limit detection and backoff)
+- [ ] Post preview before publishing (UI component for reviewing before scheduling)
 - [ ] Integration tests for social publishing and analytics sync
-- [ ] Auto-refresh of expired OAuth tokens
+- [ ] Auto-refresh of expired OAuth tokens (token refresh mechanism)
 - [ ] Support for more platforms (TikTok, Instagram, Bluesky)
-- [ ] Content calendar view
-- [ ] A/B testing for different post variations
+- [ ] Content calendar view (calendar UI for scheduled posts)
+- [ ] A/B testing for different post variations (test variations, track performance)
 
 
 ## Facebook & Instagram Integration — COMPLETED

@@ -12,6 +12,13 @@ import {
 } from "../db";
 import { getSocialMediaService } from "./socialMediaService";
 import { notifyOwner } from "./notification";
+import {
+  isRateLimited,
+  getRetryWaitTime,
+  calculateBackoffDelay,
+  storeRateLimit,
+  parseRateLimitHeaders,
+} from "./rateLimitHandler";
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 5000; // 5 seconds between retries
@@ -30,6 +37,20 @@ export async function processPendingScheduledSocialPosts() {
 
     for (const post of pendingPosts) {
       try {
+        // Check rate limit before publishing
+        if (isRateLimited(post.userId, post.platform)) {
+          const waitTime = getRetryWaitTime(post.userId, post.platform);
+          console.log(
+            `[ScheduledSocialPosts] Rate limited for ${post.platform}, waiting ${Math.round(waitTime / 1000)}s`
+          );
+          // Reschedule for later
+          const nextAttempt = new Date(Date.now() + waitTime);
+          await updateScheduledSocialPost(post.id, post.userId, {
+            scheduledAt: nextAttempt,
+          });
+          continue;
+        }
+
         await publishScheduledPost(post);
       } catch (error) {
         console.error(`[ScheduledSocialPosts] Error publishing post ${post.id}:`, error);
@@ -99,10 +120,23 @@ async function handlePostError(post: any, error: unknown) {
   const errorMessage = error instanceof Error ? error.message : String(error);
   const retryCount = post.retryCount || 0;
   const maxRetries = post.maxRetries || MAX_RETRIES;
+  const isRateLimitError = (error as any)?.isRateLimit === true;
+  const retryAfter = (error as any)?.retryAfter || 0;
 
   if (retryCount < maxRetries) {
+    // Calculate retry delay
+    let delayMs = RETRY_DELAY_MS * (retryCount + 1);
+    
+    // If rate limited, use the server's suggested retry-after or calculate backoff
+    if (isRateLimitError) {
+      delayMs = (retryAfter || 900) * 1000; // Convert seconds to ms
+      console.log(`[ScheduledSocialPosts] Rate limit detected, retrying after ${retryAfter}s`);
+    } else {
+      delayMs = calculateBackoffDelay(post.platform, retryCount + 1);
+    }
+
     // Schedule retry
-    const nextRetryAt = new Date(Date.now() + RETRY_DELAY_MS * (retryCount + 1));
+    const nextRetryAt = new Date(Date.now() + delayMs);
     await updateScheduledSocialPost(post.id, post.userId, {
       status: "pending",
       retryCount: retryCount + 1,
