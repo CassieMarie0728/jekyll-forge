@@ -3,7 +3,8 @@
  * Scheduled tasks that run periodically to process background work
  */
 
-import { processPendingScheduledSocialPosts, refreshExpiredTokens } from "./scheduledSocialPostsHandler";
+import { processPendingScheduledSocialPosts } from "./scheduledSocialPostsHandler";
+import { refreshAllExpiringTokens } from "./tokenRefreshManager";
 
 /**
  * Process scheduled social posts every 5 minutes
@@ -23,7 +24,7 @@ export async function scheduledSocialPostsJob() {
  */
 export async function tokenRefreshJob() {
   try {
-    await refreshExpiredTokens();
+    await refreshAllExpiringTokens();
   } catch (error) {
     console.error("[HeartbeatJob] Token refresh error:", error);
   }

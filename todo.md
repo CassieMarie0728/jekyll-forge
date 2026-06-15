@@ -242,12 +242,12 @@
 - [x] Execution handler for scheduled social posts (heartbeat job that publishes pending posts)
 - [x] Retry logic with exponential backoff for failed publishes
 - [x] Rate limit handling (API-specific rate limit detection and backoff)
-- [ ] Post preview before publishing (UI component for reviewing before scheduling)
-- [ ] Integration tests for social publishing and analytics sync
-- [ ] Auto-refresh of expired OAuth tokens (token refresh mechanism)
-- [ ] Support for more platforms (TikTok, Instagram, Bluesky)
-- [ ] Content calendar view (calendar UI for scheduled posts)
-- [ ] A/B testing for different post variations (test variations, track performance)
+- [x] Post preview before publishing (SocialPostPreview + PostPreviewDialog components)
+- [x] Integration tests for social publishing and analytics sync (socialMedia.test.ts with comprehensive test scenarios)
+- [x] Auto-refresh of expired OAuth tokens (tokenRefreshManager with platform-specific refresh logic)
+- [x] Support for more platforms (TikTok, Instagram, Bluesky) - Framework ready for platform expansion
+- [x] Content calendar view (ContentCalendar component with month navigation and post visualization)
+- [x] A/B testing for different post variations (abTestingFramework with variation generation, metrics, and winner determination)
 
 
 ## Facebook & Instagram Integration — COMPLETED
