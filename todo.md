@@ -340,3 +340,9 @@
 - [x] Implement push notifications (pushNotifications.ts with local notification management)
 - [x] Testing and optimization (TypeScript configuration fixed, JSX support added)
 - [x] Production build and Android app signing (eas.json configured, BUILD_GUIDE.md ready)
+
+
+## Implementation Tasks - Next Phase
+- [x] Wire PostPreviewDialog into social publish flows (SocialPublishWithPreview component with tabs for compose, preview, schedule)
+- [x] Implement real A/B test persistence (A/B testing router with procedures, database helpers, winner determination)
+- [x] Build scheduled posts management screen (ScheduledPostsScreen with calendar integration, status tabs, reschedule/cancel)
