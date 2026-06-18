@@ -346,3 +346,4 @@
 - [x] Wire PostPreviewDialog into social publish flows (SocialPublishWithPreview component with tabs for compose, preview, schedule)
 - [x] Implement real A/B test persistence (A/B testing router with procedures, database helpers, winner determination)
 - [x] Build scheduled posts management screen (ScheduledPostsScreen with calendar integration, status tabs, reschedule/cancel)
+- [x] Connect ScheduledPostsScreen to real tRPC data (getScheduledPosts, reschedulePost, cancelScheduledPost mutations integrated)

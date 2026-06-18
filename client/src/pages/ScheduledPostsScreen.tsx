@@ -21,7 +21,7 @@ interface ScheduledPost {
   status: "pending" | "published" | "failed" | "cancelled";
   externalUrl?: string;
   repurposedContentId: number;
-  errorMessage?: string;
+  errorMessage?: string | null;
   retryCount?: number;
 }
 
@@ -30,35 +30,31 @@ export const ScheduledPostsScreen: React.FC = () => {
   const [showDetails, setShowDetails] = useState(false);
   const [showReschedule, setShowReschedule] = useState(false);
   const [newScheduleDate, setNewScheduleDate] = useState("");
+  const [isRescheduling, setIsRescheduling] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
 
-  // Mock data - in real implementation, fetch from tRPC
-  const [scheduledPosts] = useState<ScheduledPost[]>([
-    {
-      id: 1,
-      platform: "twitter",
-      content: "Just published a new blog post on React hooks!",
-      scheduledAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-      status: "pending",
-      repurposedContentId: 1,
-    },
-    {
-      id: 2,
-      platform: "linkedin",
-      content: "Excited to share insights on modern web development practices",
-      scheduledAt: new Date(Date.now() + 48 * 60 * 60 * 1000),
-      status: "pending",
-      repurposedContentId: 2,
-    },
-    {
-      id: 3,
-      platform: "facebook",
-      content: "Check out our latest article on productivity tips",
-      scheduledAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
-      status: "published",
-      externalUrl: "https://facebook.com/posts/123456",
-      repurposedContentId: 3,
-    },
-  ]);
+  // Fetch all scheduled posts from tRPC - using a generic query since getAllScheduledPosts may not exist
+  const { data: allScheduledPosts = [], isLoading, refetch } = trpc.socialMedia.getScheduledPosts.useQuery(
+    { repurposedContentId: 0 } // Fetch all by using 0 as filter
+  );
+  
+  const reschedulePostMutation = trpc.socialMedia.reschedulePost.useMutation();
+  const cancelPostMutation = trpc.socialMedia.cancelScheduledPost.useMutation();
+
+
+
+  // Transform data to match ScheduledPost interface
+  const scheduledPosts: ScheduledPost[] = (allScheduledPosts || []).map((post: any) => ({
+    id: post.id,
+    platform: post.platform,
+    content: post.content,
+    scheduledAt: new Date(post.scheduledAt),
+    status: post.status,
+    externalUrl: post.externalUrl,
+    repurposedContentId: post.repurposedContentId,
+    errorMessage: post.errorMessage,
+    retryCount: post.retryCount,
+  }));
 
   const statusConfig = {
     pending: { icon: Clock, color: "bg-yellow-100 dark:bg-yellow-900", textColor: "text-yellow-800 dark:text-yellow-200" },
@@ -73,25 +69,36 @@ export const ScheduledPostsScreen: React.FC = () => {
       return;
     }
 
+    setIsRescheduling(true);
     try {
-      // TODO: Call tRPC reschedule mutation
+      await reschedulePostMutation.mutateAsync({
+        postId: selectedPost.id,
+        scheduledAt: new Date(newScheduleDate),
+      });
       toast.success(`Post rescheduled for ${format(new Date(newScheduleDate), "MMM d, yyyy HH:mm")}`);
       setShowReschedule(false);
       setNewScheduleDate("");
+      await refetch();
     } catch (error) {
-      toast.error("Failed to reschedule post");
+      toast.error(error instanceof Error ? error.message : "Failed to reschedule post");
+    } finally {
+      setIsRescheduling(false);
     }
   };
 
   const handleCancel = async () => {
     if (!selectedPost) return;
 
+    setIsCancelling(true);
     try {
-      // TODO: Call tRPC cancel mutation
+      await cancelPostMutation.mutateAsync({ postId: selectedPost.id });
       toast.success("Post cancelled successfully");
       setShowDetails(false);
+      await refetch();
     } catch (error) {
-      toast.error("Failed to cancel post");
+      toast.error(error instanceof Error ? error.message : "Failed to cancel post");
+    } finally {
+      setIsCancelling(false);
     }
   };
 
@@ -108,92 +115,214 @@ export const ScheduledPostsScreen: React.FC = () => {
         </p>
       </div>
 
-      <Tabs defaultValue="calendar" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="calendar">Calendar</TabsTrigger>
-          <TabsTrigger value="pending">
-            Pending
-            {pendingPosts.length > 0 && (
-              <Badge className="ml-2 bg-yellow-600">{pendingPosts.length}</Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="published">
-            Published
-            {publishedPosts.length > 0 && (
-              <Badge className="ml-2 bg-green-600">{publishedPosts.length}</Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="failed">
-            Failed
-            {failedPosts.length > 0 && (
-              <Badge className="ml-2 bg-red-600">{failedPosts.length}</Badge>
-            )}
-          </TabsTrigger>
-        </TabsList>
+      {isLoading && (
+        <Card>
+          <CardContent className="pt-6 flex items-center justify-center h-32">
+            <Spinner className="w-6 h-6" />
+          </CardContent>
+        </Card>
+      )}
 
-        {/* Calendar View */}
-        <TabsContent value="calendar" className="mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Content Calendar</CardTitle>
-              <CardDescription>
-                Visual overview of all your scheduled posts
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ContentCalendar
-                posts={scheduledPosts}
-                onPostClick={(post) => {
-                  setSelectedPost(post as any);
-                  setShowDetails(true);
-                }}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
+      {!isLoading && scheduledPosts.length === 0 && (
+        <Card>
+          <CardContent className="pt-6 text-center">
+            <Calendar className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-2" />
+            <p className="text-slate-600 dark:text-slate-400">No scheduled posts yet</p>
+          </CardContent>
+        </Card>
+      )}
 
-        {/* Pending Posts */}
-        <TabsContent value="pending" className="mt-4 space-y-4">
-          {pendingPosts.length === 0 ? (
+      {!isLoading && scheduledPosts.length > 0 && (
+        <Tabs defaultValue="calendar" className="w-full">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="calendar">Calendar</TabsTrigger>
+            <TabsTrigger value="pending">
+              Pending
+              {pendingPosts.length > 0 && (
+                <Badge className="ml-2 bg-yellow-600">{pendingPosts.length}</Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="published">
+              Published
+              {publishedPosts.length > 0 && (
+                <Badge className="ml-2 bg-green-600">{publishedPosts.length}</Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="failed">
+              Failed
+              {failedPosts.length > 0 && (
+                <Badge className="ml-2 bg-red-600">{failedPosts.length}</Badge>
+              )}
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Calendar View */}
+          <TabsContent value="calendar" className="mt-4">
             <Card>
-              <CardContent className="pt-6 text-center">
-                <Calendar className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-2" />
-                <p className="text-slate-600 dark:text-slate-400">No pending posts</p>
+              <CardHeader>
+                <CardTitle>Content Calendar</CardTitle>
+                <CardDescription>
+                  Visual overview of all your scheduled posts
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ContentCalendar
+                  posts={scheduledPosts}
+                  onPostClick={(post) => {
+                    setSelectedPost(post as any);
+                    setShowDetails(true);
+                  }}
+                />
               </CardContent>
             </Card>
-          ) : (
-            pendingPosts.map((post) => (
-              <Card key={post.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="pt-6">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Badge className="capitalize">{post.platform}</Badge>
-                        <Badge variant="outline" className="bg-yellow-50 text-yellow-800">
-                          Pending
-                        </Badge>
+          </TabsContent>
+
+          {/* Pending Posts */}
+          <TabsContent value="pending" className="mt-4 space-y-4">
+            {pendingPosts.length === 0 ? (
+              <Card>
+                <CardContent className="pt-6 text-center">
+                  <Clock className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-2" />
+                  <p className="text-slate-600 dark:text-slate-400">No pending posts</p>
+                </CardContent>
+              </Card>
+            ) : (
+              pendingPosts.map((post) => (
+                <Card key={post.id} className="hover:shadow-md transition-shadow">
+                  <CardContent className="pt-6">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge className="capitalize">{post.platform}</Badge>
+                          <Badge variant="outline" className="bg-yellow-50 text-yellow-800">
+                            Pending
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-slate-700 dark:text-slate-300 mb-3 line-clamp-2">
+                          {post.content}
+                        </p>
+                        <div className="flex items-center gap-4 text-xs text-slate-500">
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {format(new Date(post.scheduledAt), "MMM d, yyyy HH:mm")}
+                          </span>
+                        </div>
                       </div>
-                      <p className="text-sm text-slate-700 dark:text-slate-300 mb-3 line-clamp-2">
-                        {post.content}
-                      </p>
-                      <div className="flex items-center gap-4 text-xs text-slate-500">
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {format(new Date(post.scheduledAt), "MMM d, yyyy HH:mm")}
-                        </span>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedPost(post);
+                            setShowDetails(true);
+                          }}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedPost(post);
+                            setShowReschedule(true);
+                          }}
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
                       </div>
                     </div>
-                    <div className="flex gap-2">
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </TabsContent>
+
+          {/* Published Posts */}
+          <TabsContent value="published" className="mt-4 space-y-4">
+            {publishedPosts.length === 0 ? (
+              <Card>
+                <CardContent className="pt-6 text-center">
+                  <CheckCircle className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-2" />
+                  <p className="text-slate-600 dark:text-slate-400">No published posts</p>
+                </CardContent>
+              </Card>
+            ) : (
+              publishedPosts.map((post) => (
+                <Card key={post.id} className="hover:shadow-md transition-shadow">
+                  <CardContent className="pt-6">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge className="capitalize">{post.platform}</Badge>
+                          <Badge variant="outline" className="bg-green-50 text-green-800">
+                            Published
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-slate-700 dark:text-slate-300 mb-3 line-clamp-2">
+                          {post.content}
+                        </p>
+                        <div className="flex items-center gap-4 text-xs text-slate-500">
+                          <span className="flex items-center gap-1">
+                            <CheckCircle className="w-3 h-3" />
+                            {format(new Date(post.scheduledAt), "MMM d, yyyy HH:mm")}
+                          </span>
+                        </div>
+                      </div>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          setSelectedPost(post);
-                          setShowDetails(true);
+                          if (post.externalUrl) {
+                            window.open(post.externalUrl, "_blank");
+                          }
                         }}
+                        disabled={!post.externalUrl}
                       >
-                        <Eye className="w-4 h-4" />
+                        View
                       </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </TabsContent>
+
+          {/* Failed Posts */}
+          <TabsContent value="failed" className="mt-4 space-y-4">
+            {failedPosts.length === 0 ? (
+              <Card>
+                <CardContent className="pt-6 text-center">
+                  <XCircle className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-2" />
+                  <p className="text-slate-600 dark:text-slate-400">No failed posts</p>
+                </CardContent>
+              </Card>
+            ) : (
+              failedPosts.map((post) => (
+                <Card key={post.id} className="hover:shadow-md transition-shadow border-red-200 dark:border-red-800">
+                  <CardContent className="pt-6">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge className="capitalize">{post.platform}</Badge>
+                          <Badge variant="outline" className="bg-red-50 text-red-800">
+                            Failed
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-slate-700 dark:text-slate-300 mb-3 line-clamp-2">
+                          {post.content}
+                        </p>
+                        {post.errorMessage && (
+                          <p className="text-xs text-red-600 dark:text-red-400 mb-2">
+                            Error: {post.errorMessage}
+                          </p>
+                        )}
+                        <div className="flex items-center gap-4 text-xs text-slate-500">
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {format(new Date(post.scheduledAt), "MMM d, yyyy HH:mm")}
+                          </span>
+                        </div>
+                      </div>
                       <Button
                         variant="outline"
                         size="sm"
@@ -202,119 +331,16 @@ export const ScheduledPostsScreen: React.FC = () => {
                           setShowReschedule(true);
                         }}
                       >
-                        <Edit2 className="w-4 h-4" />
+                        Retry
                       </Button>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </TabsContent>
-
-        {/* Published Posts */}
-        <TabsContent value="published" className="mt-4 space-y-4">
-          {publishedPosts.length === 0 ? (
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <CheckCircle className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-2" />
-                <p className="text-slate-600 dark:text-slate-400">No published posts</p>
-              </CardContent>
-            </Card>
-          ) : (
-            publishedPosts.map((post) => (
-              <Card key={post.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="pt-6">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Badge className="capitalize">{post.platform}</Badge>
-                        <Badge variant="outline" className="bg-green-50 text-green-800">
-                          Published
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-slate-700 dark:text-slate-300 mb-3 line-clamp-2">
-                        {post.content}
-                      </p>
-                      <div className="flex items-center gap-4 text-xs text-slate-500">
-                        <span className="flex items-center gap-1">
-                          <CheckCircle className="w-3 h-3" />
-                          {format(new Date(post.scheduledAt), "MMM d, yyyy HH:mm")}
-                        </span>
-                      </div>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        if (post.externalUrl) {
-                          window.open(post.externalUrl, "_blank");
-                        }
-                      }}
-                      disabled={!post.externalUrl}
-                    >
-                      View
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </TabsContent>
-
-        {/* Failed Posts */}
-        <TabsContent value="failed" className="mt-4 space-y-4">
-          {failedPosts.length === 0 ? (
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <XCircle className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-2" />
-                <p className="text-slate-600 dark:text-slate-400">No failed posts</p>
-              </CardContent>
-            </Card>
-          ) : (
-            failedPosts.map((post) => (
-              <Card key={post.id} className="hover:shadow-md transition-shadow border-red-200 dark:border-red-800">
-                <CardContent className="pt-6">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Badge className="capitalize">{post.platform}</Badge>
-                        <Badge variant="outline" className="bg-red-50 text-red-800">
-                          Failed
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-slate-700 dark:text-slate-300 mb-3 line-clamp-2">
-                        {post.content}
-                      </p>
-                      {post.errorMessage && (
-                        <p className="text-xs text-red-600 dark:text-red-400 mb-2">
-                          Error: {post.errorMessage}
-                        </p>
-                      )}
-                      <div className="flex items-center gap-4 text-xs text-slate-500">
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {format(new Date(post.scheduledAt), "MMM d, yyyy HH:mm")}
-                        </span>
-                      </div>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedPost(post);
-                        setShowReschedule(true);
-                      }}
-                    >
-                      Retry
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </TabsContent>
-      </Tabs>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </TabsContent>
+        </Tabs>
+      )}
 
       {/* Post Details Dialog */}
       <Dialog open={showDetails} onOpenChange={setShowDetails}>
@@ -374,10 +400,40 @@ export const ScheduledPostsScreen: React.FC = () => {
                   </a>
                 </div>
               )}
+
+              {selectedPost.status === "failed" && (
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-3">
+                  <p className="text-xs font-semibold text-red-800 dark:text-red-200 mb-2">Failed Post</p>
+                  <p className="text-xs text-red-700 dark:text-red-300">
+                    {selectedPost.errorMessage || "An error occurred while publishing this post"}
+                  </p>
+                  <Button
+                    size="sm"
+                    className="mt-2"
+                    onClick={() => {
+                      setShowDetails(false);
+                      setSelectedPost(selectedPost);
+                      setShowReschedule(true);
+                    }}
+                  >
+                    Retry Publishing
+                  </Button>
+                </div>
+              )}
             </div>
           )}
 
-          <DialogFooter>
+          <DialogFooter className="gap-2">
+            {selectedPost?.status === "pending" && (
+              <Button
+                variant="destructive"
+                onClick={handleCancel}
+                disabled={isCancelling}
+              >
+                {isCancelling ? <Spinner className="w-4 h-4 mr-2" /> : null}
+                Cancel Post
+              </Button>
+            )}
             <Button variant="outline" onClick={() => setShowDetails(false)}>
               Close
             </Button>
@@ -416,7 +472,13 @@ export const ScheduledPostsScreen: React.FC = () => {
             >
               Cancel
             </Button>
-            <Button onClick={handleReschedule}>Reschedule</Button>
+            <Button
+              onClick={handleReschedule}
+              disabled={isRescheduling}
+            >
+              {isRescheduling ? <Spinner className="w-4 h-4 mr-2" /> : null}
+              Reschedule
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
