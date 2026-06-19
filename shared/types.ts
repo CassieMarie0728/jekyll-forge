@@ -66,7 +66,15 @@ export type JekyllPost = {
 export type FrontMatterField = {
   key: string;
   value: unknown;
-  type: "string" | "number" | "boolean" | "date" | "list" | "object" | "image" | "url";
+  type:
+    | "string"
+    | "number"
+    | "boolean"
+    | "date"
+    | "list"
+    | "object"
+    | "image"
+    | "url";
 };
 
 // ─── Editor Types ─────────────────────────────────────────────────────────────
@@ -84,12 +92,30 @@ export type EditorState = {
 
 // ─── AI Types ─────────────────────────────────────────────────────────────────
 export type AITask =
-  | "title" | "outline" | "draft" | "rewrite" | "continue"
-  | "shorter" | "longer" | "tone" | "grammar" | "seo"
-  | "tags" | "categories" | "slug" | "excerpt" | "alt-text"
-  | "markdown-cleanup" | "front-matter-cleanup" | "faq"
-  | "social" | "summary" | "internal-links" | "callout"
-  | "toc" | "convert-html";
+  | "title"
+  | "outline"
+  | "draft"
+  | "rewrite"
+  | "continue"
+  | "shorter"
+  | "longer"
+  | "tone"
+  | "grammar"
+  | "seo"
+  | "tags"
+  | "categories"
+  | "slug"
+  | "excerpt"
+  | "alt-text"
+  | "markdown-cleanup"
+  | "front-matter-cleanup"
+  | "faq"
+  | "social"
+  | "summary"
+  | "internal-links"
+  | "callout"
+  | "toc"
+  | "convert-html";
 
 export type AIRequest = {
   task: AITask;
@@ -133,7 +159,13 @@ export type DiffResult = {
 };
 
 // ─── Asset Types ─────────────────────────────────────────────────────────────
-export type AssetType = "image" | "document" | "audio" | "video" | "archive" | "other";
+export type AssetType =
+  | "image"
+  | "document"
+  | "audio"
+  | "video"
+  | "archive"
+  | "other";
 
 export type OptimizationOptions = {
   resize?: { width?: number; height?: number };
@@ -172,7 +204,13 @@ export type SiteHealthStatus = {
 };
 
 // ─── Snapshot Types ───────────────────────────────────────────────────────────
-export type SnapshotReason = "manual" | "autosave" | "before-ai" | "before-publish" | "before-theme" | "before-plugin";
+export type SnapshotReason =
+  | "manual"
+  | "autosave"
+  | "before-ai"
+  | "before-publish"
+  | "before-theme"
+  | "before-plugin";
 
 // ─── Plugin Compatibility ─────────────────────────────────────────────────────
 export const GITHUB_PAGES_SUPPORTED_PLUGINS = [

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect } from "react";
 import {
   View,
   Text,
@@ -6,10 +6,10 @@ import {
   StyleSheet,
   SafeAreaView,
   ActivityIndicator,
-} from 'react-native';
-import * as WebBrowser from 'expo-web-browser';
-import * as SecureStore from 'expo-secure-store';
-import { useAuthStore } from '../stores/authStore';
+} from "react-native";
+import * as WebBrowser from "expo-web-browser";
+import * as SecureStore from "expo-secure-store";
+import { useAuthStore } from "../stores/authStore";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -20,13 +20,13 @@ export default function LoginScreen() {
   const handleLogin = async () => {
     setLoading(true);
     try {
-      const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
-      const redirectUrl = 'jekyllforge://auth-callback';
+      const apiUrl = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
+      const redirectUrl = "jekyllforge://auth-callback";
 
       // Construct OAuth URL
       const oauthUrl = new URL(`${apiUrl}/api/oauth/authorize`);
-      oauthUrl.searchParams.append('redirect_uri', redirectUrl);
-      oauthUrl.searchParams.append('response_type', 'code');
+      oauthUrl.searchParams.append("redirect_uri", redirectUrl);
+      oauthUrl.searchParams.append("response_type", "code");
 
       // Open browser for OAuth
       const result = await WebBrowser.openAuthSessionAsync(
@@ -34,29 +34,29 @@ export default function LoginScreen() {
         redirectUrl
       );
 
-      if (result.type === 'success') {
+      if (result.type === "success") {
         const url = new URL(result.url);
-        const code = url.searchParams.get('code');
+        const code = url.searchParams.get("code");
 
         if (code) {
           // Exchange code for token
           const response = await fetch(`${apiUrl}/api/oauth/callback`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ code }),
           });
 
           const data = await response.json();
 
           if (data.token && data.user) {
-            await SecureStore.setItemAsync('authToken', data.token);
+            await SecureStore.setItemAsync("authToken", data.token);
             setToken(data.token);
             setUser(data.user);
           }
         }
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error("Login error:", error);
     } finally {
       setLoading(false);
     }
@@ -87,38 +87,38 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: "#0f172a",
   },
   content: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
   },
   title: {
     fontSize: 32,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
     marginBottom: 10,
   },
   subtitle: {
     fontSize: 16,
-    color: '#9ca3af',
+    color: "#9ca3af",
     marginBottom: 40,
-    textAlign: 'center',
+    textAlign: "center",
   },
   button: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: "#3b82f6",
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
     minWidth: 200,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   buttonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

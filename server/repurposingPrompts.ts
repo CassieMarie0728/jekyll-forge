@@ -3,7 +3,15 @@
  * Specialized prompts for transforming blog posts into different formats
  */
 
-export type RepurposingFormat = "twitter" | "linkedin" | "tiktok" | "youtube" | "newsletter" | "email" | "podcast" | "slides";
+export type RepurposingFormat =
+  | "twitter"
+  | "linkedin"
+  | "tiktok"
+  | "youtube"
+  | "newsletter"
+  | "email"
+  | "podcast"
+  | "slides";
 
 export const repurposingPrompts: Record<RepurposingFormat, string> = {
   twitter: `Transform the following blog post into a Twitter thread (5-7 tweets). Each tweet should be engaging, under 280 characters, and build on the previous one. Use relevant hashtags and emojis. Format as a numbered list (1/, 2/, etc.).
@@ -93,7 +101,10 @@ Slide Deck:`,
 /**
  * Get repurposing prompt for a specific format
  */
-export function getRepurposingPrompt(format: RepurposingFormat, postContent: string): string {
+export function getRepurposingPrompt(
+  format: RepurposingFormat,
+  postContent: string
+): string {
   const template = repurposingPrompts[format];
   if (!template) {
     throw new Error(`Unknown repurposing format: ${format}`);
@@ -104,7 +115,10 @@ export function getRepurposingPrompt(format: RepurposingFormat, postContent: str
 /**
  * Get metadata template for a format
  */
-export function getFormatMetadata(format: RepurposingFormat, content: string): Record<string, unknown> {
+export function getFormatMetadata(
+  format: RepurposingFormat,
+  content: string
+): Record<string, unknown> {
   const charCount = content.length;
   const wordCount = content.split(/\s+/).length;
   const lineCount = content.split("\n").length;

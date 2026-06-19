@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { create } from "zustand";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface User {
   id: string;
@@ -19,7 +19,7 @@ interface AuthStore {
   checkAuth: () => Promise<void>;
 }
 
-export const useAuthStore = create<AuthStore>((set) => ({
+export const useAuthStore = create<AuthStore>(set => ({
   isAuthenticated: false,
   isLoading: true,
   user: null,
@@ -30,20 +30,20 @@ export const useAuthStore = create<AuthStore>((set) => ({
   },
 
   setToken: async (token: string) => {
-    await AsyncStorage.setItem('authToken', token);
+    await AsyncStorage.setItem("authToken", token);
     set({ token, isAuthenticated: true });
   },
 
   logout: async () => {
-    await AsyncStorage.removeItem('authToken');
-    await AsyncStorage.removeItem('user');
+    await AsyncStorage.removeItem("authToken");
+    await AsyncStorage.removeItem("user");
     set({ isAuthenticated: false, user: null, token: null });
   },
 
   checkAuth: async () => {
     try {
-      const token = await AsyncStorage.getItem('authToken');
-      const userJson = await AsyncStorage.getItem('user');
+      const token = await AsyncStorage.getItem("authToken");
+      const userJson = await AsyncStorage.getItem("user");
 
       if (token && userJson) {
         const user = JSON.parse(userJson);
@@ -52,7 +52,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
         set({ isLoading: false });
       }
     } catch (error) {
-      console.error('Auth check failed:', error);
+      console.error("Auth check failed:", error);
       set({ isLoading: false });
     }
   },

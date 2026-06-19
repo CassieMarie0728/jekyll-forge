@@ -6,7 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
@@ -20,13 +26,23 @@ export default function AISettings() {
   const [language, setLanguage] = useState("en");
   const [systemPrompt, setSystemPrompt] = useState("");
   const [autoSnapshot, setAutoSnapshot] = useState(true);
-  const [testPrompt, setTestPrompt] = useState("Write a one-sentence blog post introduction about Jekyll.");
+  const [testPrompt, setTestPrompt] = useState(
+    "Write a one-sentence blog post introduction about Jekyll."
+  );
   const [testResult, setTestResult] = useState("");
   const [testing, setTesting] = useState(false);
 
   const testMutation = trpcClient.ai.generate.useMutation({
-    onSuccess: (data) => { setTestResult(typeof data.text === "string" ? data.text : String(data.text ?? "")); setTesting(false); },
-    onError: (err) => { toast.error(err.message); setTesting(false); },
+    onSuccess: data => {
+      setTestResult(
+        typeof data.text === "string" ? data.text : String(data.text ?? "")
+      );
+      setTesting(false);
+    },
+    onError: err => {
+      toast.error(err.message);
+      setTesting(false);
+    },
   });
 
   const handleTest = () => {
@@ -48,7 +64,9 @@ export default function AISettings() {
           <Wand2 className="w-6 h-6 text-forge-violet" />
           AI Settings
         </h1>
-        <p className="text-sm text-muted-foreground mt-0.5">Configure the AI writing assistant behavior</p>
+        <p className="text-sm text-muted-foreground mt-0.5">
+          Configure the AI writing assistant behavior
+        </p>
       </div>
 
       {/* Security Notice */}
@@ -57,11 +75,14 @@ export default function AISettings() {
           <div className="flex items-start gap-3">
             <Shield className="w-5 h-5 text-forge-violet flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-forge-violet">Server-Side AI Processing</p>
+              <p className="text-sm font-medium text-forge-violet">
+                Server-Side AI Processing
+              </p>
               <p className="text-xs text-muted-foreground mt-1">
-                All AI requests are processed server-side through the platform's LLM integration layer.
-                No API keys are exposed to the browser. Your content is sent securely to the AI model
-                and results are returned directly to the editor.
+                All AI requests are processed server-side through the platform's
+                LLM integration layer. No API keys are exposed to the browser.
+                Your content is sent securely to the AI model and results are
+                returned directly to the editor.
               </p>
             </div>
           </div>
@@ -84,8 +105,19 @@ export default function AISettings() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {["professional", "casual", "technical", "friendly", "formal", "conversational", "humorous", "academic"].map(t => (
-                  <SelectItem key={t} value={t} className="text-sm capitalize">{t}</SelectItem>
+                {[
+                  "professional",
+                  "casual",
+                  "technical",
+                  "friendly",
+                  "formal",
+                  "conversational",
+                  "humorous",
+                  "academic",
+                ].map(t => (
+                  <SelectItem key={t} value={t} className="text-sm capitalize">
+                    {t}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -107,28 +139,38 @@ export default function AISettings() {
                   { value: "ja", label: "Japanese" },
                   { value: "zh", label: "Chinese" },
                 ].map(({ value, label }) => (
-                  <SelectItem key={value} value={value} className="text-sm">{label}</SelectItem>
+                  <SelectItem key={value} value={value} className="text-sm">
+                    {label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
           <div>
-            <Label className="text-xs mb-1.5 block">System Prompt (optional)</Label>
+            <Label className="text-xs mb-1.5 block">
+              System Prompt (optional)
+            </Label>
             <Textarea
               value={systemPrompt}
-              onChange={(e) => setSystemPrompt(e.target.value)}
+              onChange={e => setSystemPrompt(e.target.value)}
               placeholder="Additional context for the AI, e.g., 'This blog focuses on web development tutorials for beginners. Always include code examples.'"
               className="text-sm min-h-[80px] resize-none"
               rows={4}
             />
-            <p className="text-xs text-muted-foreground mt-1">This context is prepended to every AI request for this site.</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              This context is prepended to every AI request for this site.
+            </p>
           </div>
 
           <div className="flex items-center justify-between">
             <div>
-              <Label className="text-sm">Auto-snapshot before AI rewrites</Label>
-              <p className="text-xs text-muted-foreground">Creates a named snapshot before any AI rewrite operation</p>
+              <Label className="text-sm">
+                Auto-snapshot before AI rewrites
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Creates a named snapshot before any AI rewrite operation
+              </p>
             </div>
             <Switch checked={autoSnapshot} onCheckedChange={setAutoSnapshot} />
           </div>
@@ -148,23 +190,35 @@ export default function AISettings() {
             <Label className="text-xs mb-1.5 block">Test Prompt</Label>
             <Textarea
               value={testPrompt}
-              onChange={(e) => setTestPrompt(e.target.value)}
+              onChange={e => setTestPrompt(e.target.value)}
               className="text-sm min-h-[60px] resize-none"
               rows={2}
             />
           </div>
-          <Button onClick={handleTest} disabled={testing} className="gap-2 w-full">
+          <Button
+            onClick={handleTest}
+            disabled={testing}
+            className="gap-2 w-full"
+          >
             {testing ? (
-              <><div className="animate-spin w-3 h-3 border-2 border-primary-foreground border-t-transparent rounded-full" />Testing...</>
+              <>
+                <div className="animate-spin w-3 h-3 border-2 border-primary-foreground border-t-transparent rounded-full" />
+                Testing...
+              </>
             ) : (
-              <><Sparkles className="w-4 h-4" />Run Test</>
+              <>
+                <Sparkles className="w-4 h-4" />
+                Run Test
+              </>
             )}
           </Button>
           {testResult && (
             <div className="bg-muted/30 rounded-lg p-3 text-sm">
               <div className="flex items-center gap-2 mb-2 text-forge-emerald">
                 <CheckCircle2 className="w-3.5 h-3.5" />
-                <span className="text-xs font-medium">AI responded successfully</span>
+                <span className="text-xs font-medium">
+                  AI responded successfully
+                </span>
               </div>
               <p className="text-sm">{testResult}</p>
             </div>
@@ -183,13 +237,31 @@ export default function AISettings() {
         <CardContent>
           <div className="grid grid-cols-2 gap-2">
             {[
-              "Generate Titles", "Write Outline", "Write Draft", "Continue Writing",
-              "Rewrite & Improve", "Make Shorter", "Make Longer", "Fix Grammar",
-              "Generate SEO Meta", "Generate Tags", "Write Excerpt", "Generate Slug",
-              "Summarize Post", "Social Media Posts", "Generate FAQ", "Table of Contents",
-              "Clean Markdown", "Internal Link Suggestions", "Add Callout", "Alt Text for Images",
+              "Generate Titles",
+              "Write Outline",
+              "Write Draft",
+              "Continue Writing",
+              "Rewrite & Improve",
+              "Make Shorter",
+              "Make Longer",
+              "Fix Grammar",
+              "Generate SEO Meta",
+              "Generate Tags",
+              "Write Excerpt",
+              "Generate Slug",
+              "Summarize Post",
+              "Social Media Posts",
+              "Generate FAQ",
+              "Table of Contents",
+              "Clean Markdown",
+              "Internal Link Suggestions",
+              "Add Callout",
+              "Alt Text for Images",
             ].map(task => (
-              <div key={task} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <div
+                key={task}
+                className="flex items-center gap-1.5 text-xs text-muted-foreground"
+              >
                 <CheckCircle2 className="w-3 h-3 text-forge-emerald flex-shrink-0" />
                 {task}
               </div>

@@ -1,9 +1,21 @@
 import React, { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -26,7 +38,9 @@ interface SocialPublishWithPreviewProps {
   isLoading?: boolean;
 }
 
-export const SocialPublishWithPreview: React.FC<SocialPublishWithPreviewProps> = ({
+export const SocialPublishWithPreview: React.FC<
+  SocialPublishWithPreviewProps
+> = ({
   open,
   onOpenChange,
   content,
@@ -121,7 +135,7 @@ export const SocialPublishWithPreview: React.FC<SocialPublishWithPreviewProps> =
                 </Label>
                 <Textarea
                   value={localContent}
-                  onChange={(e) => handleContentChange(e.target.value)}
+                  onChange={e => handleContentChange(e.target.value)}
                   placeholder="Write your social media post..."
                   className="min-h-32"
                 />
@@ -136,7 +150,7 @@ export const SocialPublishWithPreview: React.FC<SocialPublishWithPreviewProps> =
                 </Label>
                 <div className="grid grid-cols-2 gap-2">
                   {["twitter", "linkedin", "facebook", "instagram"].map(
-                    (platform) => (
+                    platform => (
                       <Button
                         key={platform}
                         variant={
@@ -171,7 +185,7 @@ export const SocialPublishWithPreview: React.FC<SocialPublishWithPreviewProps> =
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {Array.from(selectedPlatforms).map((platform) => (
+                    {Array.from(selectedPlatforms).map(platform => (
                       <SelectItem key={platform} value={platform}>
                         {(platform as string).charAt(0).toUpperCase() +
                           (platform as string).slice(1)}
@@ -200,7 +214,9 @@ export const SocialPublishWithPreview: React.FC<SocialPublishWithPreviewProps> =
             <TabsContent value="schedule" className="space-y-4 mt-4">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">Publishing Options</CardTitle>
+                  <CardTitle className="text-base">
+                    Publishing Options
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex gap-2">
@@ -212,9 +228,7 @@ export const SocialPublishWithPreview: React.FC<SocialPublishWithPreviewProps> =
                       Publish Now
                     </Button>
                     <Button
-                      variant={
-                        scheduleMode === "later" ? "default" : "outline"
-                      }
+                      variant={scheduleMode === "later" ? "default" : "outline"}
                       onClick={() => setScheduleMode("later")}
                       className="flex-1"
                     >
@@ -231,7 +245,7 @@ export const SocialPublishWithPreview: React.FC<SocialPublishWithPreviewProps> =
                       <input
                         type="datetime-local"
                         value={scheduledDate}
-                        onChange={(e) => setScheduledDate(e.target.value)}
+                        onChange={e => setScheduledDate(e.target.value)}
                         className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
                       />
                     </div>

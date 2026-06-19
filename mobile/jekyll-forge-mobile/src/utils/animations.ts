@@ -1,4 +1,4 @@
-import { Animated, Easing } from 'react-native';
+import { Animated, Easing } from "react-native";
 
 // Custom easing curves for a polished native feel
 export const EASINGS = {
@@ -131,7 +131,9 @@ export function springBounce(
 }
 
 // Button press animation (scale down to 0.97)
-export function buttonPress(animatedValue: Animated.Value): Animated.CompositeAnimation {
+export function buttonPress(
+  animatedValue: Animated.Value
+): Animated.CompositeAnimation {
   return Animated.timing(animatedValue, {
     toValue: 0.97,
     duration: DURATIONS.instant,
@@ -141,7 +143,9 @@ export function buttonPress(animatedValue: Animated.Value): Animated.CompositeAn
 }
 
 // Button release animation
-export function buttonRelease(animatedValue: Animated.Value): Animated.CompositeAnimation {
+export function buttonRelease(
+  animatedValue: Animated.Value
+): Animated.CompositeAnimation {
   return Animated.spring(animatedValue, {
     toValue: 1,
     friction: 5,
@@ -158,7 +162,7 @@ export function staggeredEntrance(
 ): Animated.CompositeAnimation {
   return Animated.stagger(
     staggerDelay,
-    animatedValues.map((value) =>
+    animatedValues.map(value =>
       Animated.timing(value, {
         toValue: 1,
         duration,
@@ -170,7 +174,9 @@ export function staggeredEntrance(
 }
 
 // Shake animation for error feedback
-export function shake(animatedValue: Animated.Value): Animated.CompositeAnimation {
+export function shake(
+  animatedValue: Animated.Value
+): Animated.CompositeAnimation {
   return Animated.sequence([
     Animated.timing(animatedValue, {
       toValue: 10,
@@ -206,7 +212,9 @@ export function shake(animatedValue: Animated.Value): Animated.CompositeAnimatio
 }
 
 // Pulse animation for attention
-export function pulse(animatedValue: Animated.Value): Animated.CompositeAnimation {
+export function pulse(
+  animatedValue: Animated.Value
+): Animated.CompositeAnimation {
   return Animated.loop(
     Animated.sequence([
       Animated.timing(animatedValue, {
@@ -226,7 +234,9 @@ export function pulse(animatedValue: Animated.Value): Animated.CompositeAnimatio
 }
 
 // Shimmer effect for loading states
-export function shimmer(animatedValue: Animated.Value): Animated.CompositeAnimation {
+export function shimmer(
+  animatedValue: Animated.Value
+): Animated.CompositeAnimation {
   return Animated.loop(
     Animated.timing(animatedValue, {
       toValue: 1,

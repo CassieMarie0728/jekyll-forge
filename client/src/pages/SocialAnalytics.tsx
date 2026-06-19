@@ -1,5 +1,11 @@
 import { AnalyticsDashboard } from "@/components/AnalyticsDashboard";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { BarChart3, TrendingUp } from "lucide-react";
 
 export default function SocialAnalyticsPage() {
@@ -15,11 +21,10 @@ export default function SocialAnalyticsPage() {
           Track the performance of your repurposed content across all platforms
         </p>
       </div>
-
       {/* Main Analytics Dashboard */}
       <AnalyticsDashboard />
-
-      {/* Tips Card */}\n      <Card>
+      {/* Tips Card */}\n{" "}
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="w-5 h-5" />
@@ -30,19 +35,22 @@ export default function SocialAnalyticsPage() {
           <div>
             <h4 className="font-medium">Twitter/X Threads</h4>
             <p className="text-sm text-muted-foreground">
-              Break down complex ideas into 5-7 tweets. Use hooks in the first tweet to capture attention.
+              Break down complex ideas into 5-7 tweets. Use hooks in the first
+              tweet to capture attention.
             </p>
           </div>
           <div>
             <h4 className="font-medium">LinkedIn Articles</h4>
             <p className="text-sm text-muted-foreground">
-              Share professional insights and industry trends. Articles perform best when published on weekdays.
+              Share professional insights and industry trends. Articles perform
+              best when published on weekdays.
             </p>
           </div>
           <div>
             <h4 className="font-medium">Engagement Tips</h4>
             <p className="text-sm text-muted-foreground">
-              Respond to comments quickly, ask questions, and encourage shares to boost engagement metrics.
+              Respond to comments quickly, ask questions, and encourage shares
+              to boost engagement metrics.
             </p>
           </div>
         </CardContent>

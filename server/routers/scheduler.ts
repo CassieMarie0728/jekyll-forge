@@ -2,7 +2,11 @@ import { z } from "zod";
 import { parse as parseCookie } from "cookie";
 import { COOKIE_NAME } from "@shared/const";
 import { protectedProcedure, router } from "../_core/trpc";
-import { createHeartbeatJob, deleteHeartbeatJob, listHeartbeatJobs } from "../_core/heartbeat";
+import {
+  createHeartbeatJob,
+  deleteHeartbeatJob,
+  listHeartbeatJobs,
+} from "../_core/heartbeat";
 import {
   createScheduledPost,
   getScheduledPostsBySite,
@@ -31,7 +35,9 @@ export const schedulerRouter = router({
    */
   list: protectedProcedure
     .input(z.object({ siteId: z.number() }))
-    .query(({ ctx, input }) => getScheduledPostsBySite(input.siteId, ctx.user.id)),
+    .query(({ ctx, input }) =>
+      getScheduledPostsBySite(input.siteId, ctx.user.id)
+    ),
 
   /**
    * Schedule a post for future publishing.
@@ -40,15 +46,17 @@ export const schedulerRouter = router({
    * In dev mode, we still create the DB row but skip the heartbeat creation.
    */
   schedule: protectedProcedure
-    .input(z.object({
-      siteId: z.number(),
-      postId: z.number().optional(),
-      draftPath: z.string(),
-      targetPath: z.string(),
-      scheduledAt: z.date(),
-      timezone: z.string().default("UTC"),
-      commitMessage: z.string().optional(),
-    }))
+    .input(
+      z.object({
+        siteId: z.number(),
+        postId: z.number().optional(),
+        draftPath: z.string(),
+        targetPath: z.string(),
+        scheduledAt: z.date(),
+        timezone: z.string().default("UTC"),
+        commitMessage: z.string().optional(),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       // Create the DB row first
       const id = await createScheduledPost({
@@ -66,26 +74,42 @@ export const schedulerRouter = router({
       // Attempt to create the heartbeat job
       // This will fail in dev (sandbox not deployed) — we catch and log
       try {
-        const sessionToken = parseCookie(ctx.req.headers.cookie ?? "")[COOKIE_NAME] ?? "";
+        const sessionToken =
+          parseCookie(ctx.req.headers.cookie ?? "")[COOKIE_NAME] ?? "";
         const cron = dateToCron(input.scheduledAt);
         const filename = input.targetPath.split("/").pop() || input.targetPath;
 
-        const job = await createHeartbeatJob({
-          name: `jekyll-publish-${id}`,
-          cron,
-          path: "/api/scheduled/publish-post",
-          payload: { scheduledPostId: id },
-          description: `Scheduled publish: ${filename} at ${input.scheduledAt.toISOString()}`,
-        }, sessionToken);
+        const job = await createHeartbeatJob(
+          {
+            name: `jekyll-publish-${id}`,
+            cron,
+            path: "/api/scheduled/publish-post",
+            payload: { scheduledPostId: id },
+            description: `Scheduled publish: ${filename} at ${input.scheduledAt.toISOString()}`,
+          },
+          sessionToken
+        );
 
         // Persist the taskUid so the handler can look up by it
         await updateScheduledPost(id, { scheduleCronTaskUid: job.taskUid });
 
-        return { id, taskUid: job.taskUid, nextExecutionAt: job.nextExecutionAt };
+        return {
+          id,
+          taskUid: job.taskUid,
+          nextExecutionAt: job.nextExecutionAt,
+        };
       } catch (err) {
         // In dev or if heartbeat fails, the DB row exists but no cron is registered.
-        console.warn("[Scheduler] Could not create heartbeat job (site may not be deployed):", err instanceof Error ? err.message : err);
-        return { id, taskUid: null, warning: "Heartbeat job not created — deploy the site first to activate scheduling." };
+        console.warn(
+          "[Scheduler] Could not create heartbeat job (site may not be deployed):",
+          err instanceof Error ? err.message : err
+        );
+        return {
+          id,
+          taskUid: null,
+          warning:
+            "Heartbeat job not created — deploy the site first to activate scheduling.",
+        };
       }
     }),
 
@@ -105,10 +129,14 @@ export const schedulerRouter = router({
       // Delete the heartbeat job if we have a taskUid
       if (row.scheduleCronTaskUid) {
         try {
-          const sessionToken = parseCookie(ctx.req.headers.cookie ?? "")[COOKIE_NAME] ?? "";
+          const sessionToken =
+            parseCookie(ctx.req.headers.cookie ?? "")[COOKIE_NAME] ?? "";
           await deleteHeartbeatJob(row.scheduleCronTaskUid, sessionToken);
         } catch (err) {
-          console.warn("[Scheduler] Could not delete heartbeat job:", err instanceof Error ? err.message : err);
+          console.warn(
+            "[Scheduler] Could not delete heartbeat job:",
+            err instanceof Error ? err.message : err
+          );
         }
       }
 
@@ -123,7 +151,8 @@ export const schedulerRouter = router({
     .input(z.object({ siteId: z.number() }))
     .mutation(async ({ ctx, input }) => {
       const jobs = await getScheduledPostsBySite(input.siteId, ctx.user.id);
-      const sessionToken = parseCookie(ctx.req.headers.cookie ?? "")[COOKIE_NAME] ?? "";
+      const sessionToken =
+        parseCookie(ctx.req.headers.cookie ?? "")[COOKIE_NAME] ?? "";
 
       let cancelled = 0;
       for (const job of jobs) {
@@ -131,7 +160,9 @@ export const schedulerRouter = router({
         if (job.scheduleCronTaskUid) {
           try {
             await deleteHeartbeatJob(job.scheduleCronTaskUid, sessionToken);
-          } catch { /* ignore */ }
+          } catch {
+            /* ignore */
+          }
         }
         await updateScheduledPost(job.id, { status: "cancelled" });
         cancelled++;
@@ -144,11 +175,20 @@ export const schedulerRouter = router({
    * Useful for debugging and admin view.
    */
   listHeartbeatJobs: protectedProcedure
-    .input(z.object({ page: z.number().default(1), pageSize: z.number().default(20) }))
+    .input(
+      z.object({
+        page: z.number().default(1),
+        pageSize: z.number().default(20),
+      })
+    )
     .query(async ({ ctx, input }) => {
       try {
-        const sessionToken = parseCookie(ctx.req.headers.cookie ?? "")[COOKIE_NAME] ?? "";
-        return await listHeartbeatJobs(sessionToken, { page: input.page, pageSize: input.pageSize });
+        const sessionToken =
+          parseCookie(ctx.req.headers.cookie ?? "")[COOKIE_NAME] ?? "";
+        return await listHeartbeatJobs(sessionToken, {
+          page: input.page,
+          pageSize: input.pageSize,
+        });
       } catch {
         // Not deployed yet or no jobs
         return { total: 0, actorUserId: "", jobs: [] };
@@ -160,7 +200,12 @@ export const schedulerRouter = router({
    */
   markPublished: protectedProcedure
     .input(z.object({ id: z.number() }))
-    .mutation(({ input }) => updateScheduledPost(input.id, { status: "published", publishedAt: new Date() })),
+    .mutation(({ input }) =>
+      updateScheduledPost(input.id, {
+        status: "published",
+        publishedAt: new Date(),
+      })
+    ),
 
   /**
    * Manually mark a scheduled post as failed with an error message.
@@ -168,7 +213,10 @@ export const schedulerRouter = router({
   markFailed: protectedProcedure
     .input(z.object({ id: z.number(), errorMessage: z.string() }))
     .mutation(async ({ input }) => {
-      await updateScheduledPost(input.id, { status: "failed", errorMessage: input.errorMessage });
+      await updateScheduledPost(input.id, {
+        status: "failed",
+        errorMessage: input.errorMessage,
+      });
       await notifyOwner({
         title: "Jekyll Forge: Scheduled publish failed",
         content: `Scheduled post failed to publish.\nError: ${input.errorMessage}`,

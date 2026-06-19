@@ -3,7 +3,10 @@
  * Handles automatic refresh of expired OAuth tokens for social media accounts
  */
 
-import { getSocialMediaAccountsByUserId, updateSocialMediaAccount } from "../db";
+import {
+  getSocialMediaAccountsByUserId,
+  updateSocialMediaAccount,
+} from "../db";
 import { notifyOwner } from "./notification";
 
 export interface TokenRefreshResult {
@@ -17,7 +20,10 @@ export interface TokenRefreshResult {
 /**
  * Check if token is expired or expiring soon
  */
-export function isTokenExpiringSoon(expiresAt: Date | null, bufferMinutes = 30): boolean {
+export function isTokenExpiringSoon(
+  expiresAt: Date | null,
+  bufferMinutes = 30
+): boolean {
   if (!expiresAt) return false;
 
   const now = new Date();
@@ -50,10 +56,12 @@ export async function refreshTwitterToken(
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(`Twitter token refresh failed: ${error.error_description || response.statusText}`);
+      throw new Error(
+        `Twitter token refresh failed: ${error.error_description || response.statusText}`
+      );
     }
 
-    const data = await response.json() as any;
+    const data = (await response.json()) as any;
     return {
       accessToken: data.access_token,
       expiresIn: data.expires_in,
@@ -72,25 +80,30 @@ export async function refreshLinkedInToken(
   refreshToken: string
 ): Promise<{ accessToken: string; expiresIn: number }> {
   try {
-    const response = await fetch("https://www.linkedin.com/oauth/v2/accessToken", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
-        grant_type: "refresh_token",
-        refresh_token: refreshToken,
-        client_id: process.env.LINKEDIN_CLIENT_ID || "",
-        client_secret: process.env.LINKEDIN_CLIENT_SECRET || "",
-      }).toString(),
-    });
+    const response = await fetch(
+      "https://www.linkedin.com/oauth/v2/accessToken",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          grant_type: "refresh_token",
+          refresh_token: refreshToken,
+          client_id: process.env.LINKEDIN_CLIENT_ID || "",
+          client_secret: process.env.LINKEDIN_CLIENT_SECRET || "",
+        }).toString(),
+      }
+    );
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(`LinkedIn token refresh failed: ${error.error_description || response.statusText}`);
+      throw new Error(
+        `LinkedIn token refresh failed: ${error.error_description || response.statusText}`
+      );
     }
 
-    const data = await response.json() as any;
+    const data = (await response.json()) as any;
     return {
       accessToken: data.access_token,
       expiresIn: data.expires_in,
@@ -109,18 +122,21 @@ export async function refreshFacebookToken(
   accessToken: string
 ): Promise<{ accessToken: string; expiresIn: number }> {
   try {
-    const response = await fetch("https://graph.facebook.com/v18.0/oauth/access_token", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await fetch(
+      "https://graph.facebook.com/v18.0/oauth/access_token",
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`Facebook token refresh failed: ${response.statusText}`);
     }
 
-    const data = await response.json() as any;
+    const data = (await response.json()) as any;
     return {
       accessToken: data.access_token,
       expiresIn: data.expires_in,
@@ -188,7 +204,9 @@ export async function refreshTokenForPlatform(
 /**
  * Refresh all expiring tokens for a user
  */
-export async function refreshUserTokens(userId: number): Promise<TokenRefreshResult[]> {
+export async function refreshUserTokens(
+  userId: number
+): Promise<TokenRefreshResult[]> {
   try {
     const accounts = await getSocialMediaAccountsByUserId(userId);
     const results: TokenRefreshResult[] = [];
@@ -199,7 +217,9 @@ export async function refreshUserTokens(userId: number): Promise<TokenRefreshRes
         continue;
       }
 
-      console.log(`[TokenRefresh] Refreshing ${account.platform} token for user ${userId}`);
+      console.log(
+        `[TokenRefresh] Refreshing ${account.platform} token for user ${userId}`
+      );
 
       try {
         const result = await refreshTokenForPlatform(
@@ -215,7 +235,9 @@ export async function refreshUserTokens(userId: number): Promise<TokenRefreshRes
             expiresAt: result.newExpiresAt,
           });
 
-          console.log(`[TokenRefresh] Successfully refreshed ${account.platform} token`);
+          console.log(
+            `[TokenRefresh] Successfully refreshed ${account.platform} token`
+          );
         } else {
           // Notify owner of token refresh failure
           await notifyOwner({
@@ -223,12 +245,17 @@ export async function refreshUserTokens(userId: number): Promise<TokenRefreshRes
             content: `Failed to refresh ${account.platform} token for account ${account.displayName || account.username}. Error: ${result.error}. Please reconnect your account.`,
           });
 
-          console.error(`[TokenRefresh] Failed to refresh ${account.platform} token: ${result.error}`);
+          console.error(
+            `[TokenRefresh] Failed to refresh ${account.platform} token: ${result.error}`
+          );
         }
 
         results.push(result);
       } catch (error) {
-        console.error(`[TokenRefresh] Error refreshing ${account.platform} token:`, error);
+        console.error(
+          `[TokenRefresh] Error refreshing ${account.platform} token:`,
+          error
+        );
         results.push({
           success: false,
           accountId: account.id,

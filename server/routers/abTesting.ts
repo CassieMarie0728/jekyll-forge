@@ -117,7 +117,14 @@ export const abTestingRouter = router({
         postId: z.number(),
         variationIndex: z.number(),
         platforms: z.array(
-          z.enum(["twitter", "linkedin", "facebook", "instagram", "email", "direct"])
+          z.enum([
+            "twitter",
+            "linkedin",
+            "facebook",
+            "instagram",
+            "email",
+            "direct",
+          ])
         ),
       })
     )
@@ -181,7 +188,7 @@ export const abTestingRouter = router({
       try {
         const results = await getAbTestResults(input.postId);
         const testResult = results.find(
-          (r) =>
+          r =>
             r.variationIndex === input.variationIndex &&
             r.platform === input.platform
         );
@@ -219,7 +226,7 @@ export const abTestingRouter = router({
         const summary = await getAbTestSummary(input.postId);
 
         // Format results for frontend
-        const formattedResults = (results || []).map((r) => ({
+        const formattedResults = (results || []).map(r => ({
           ...r,
           engagementRate: r.engagementRate || "0",
         }));
@@ -255,15 +262,18 @@ export const abTestingRouter = router({
         }
 
         // Calculate winner based on engagement rates
-        const formattedResults = results.map((r) => ({
+        const formattedResults = results.map(r => ({
           variationIndex: r.variationIndex,
           engagementRate: r.engagementRate || "0",
           engagements: r.engagements || 0,
           clicks: r.clicks || 0,
         }));
 
-        const { winningVariationIndex, winningMetric, engagementRateDifference } =
-          determineWinner(formattedResults);
+        const {
+          winningVariationIndex,
+          winningMetric,
+          engagementRateDifference,
+        } = determineWinner(formattedResults);
 
         // Generate insights
         const insights = {
@@ -271,7 +281,9 @@ export const abTestingRouter = router({
           winningMetric,
           engagementRateDifference,
           totalVariations: results.length,
-          topPerformer: results.find((r) => r.variationIndex === winningVariationIndex),
+          topPerformer: results.find(
+            r => r.variationIndex === winningVariationIndex
+          ),
           allResults: formattedResults,
           completedAt: new Date().toISOString(),
         };
@@ -313,7 +325,7 @@ export const abTestingRouter = router({
       try {
         const variations = await getContentVariations(input.postId);
         const winner = variations.find(
-          (v) => v.variationIndex === input.winningVariationIndex
+          v => v.variationIndex === input.winningVariationIndex
         );
 
         if (!winner) {

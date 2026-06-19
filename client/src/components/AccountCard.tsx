@@ -1,8 +1,32 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Github, Twitter, Linkedin, Facebook, Instagram, Trash2, ExternalLink, Clock } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
+  Github,
+  Twitter,
+  Linkedin,
+  Facebook,
+  Instagram,
+  Trash2,
+  ExternalLink,
+  Clock,
+} from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
@@ -67,7 +91,7 @@ export function AccountCard({ account, onDisconnected }: AccountCardProps) {
       toast.success(`Disconnected from ${config.label}`);
       onDisconnected?.();
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message || "Failed to disconnect account");
     },
   });
@@ -132,7 +156,11 @@ export function AccountCard({ account, onDisconnected }: AccountCardProps) {
                 <Clock className="w-3 h-3" />
                 Connected
               </span>
-              <span>{formatDistanceToNow(new Date(account.connectedAt), { addSuffix: true })}</span>
+              <span>
+                {formatDistanceToNow(new Date(account.connectedAt), {
+                  addSuffix: true,
+                })}
+              </span>
             </div>
           )}
 
@@ -140,7 +168,9 @@ export function AccountCard({ account, onDisconnected }: AccountCardProps) {
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">Token expires:</span>
               <span className="text-amber-600 dark:text-amber-400">
-                {formatDistanceToNow(new Date(account.expiresAt), { addSuffix: true })}
+                {formatDistanceToNow(new Date(account.expiresAt), {
+                  addSuffix: true,
+                })}
               </span>
             </div>
           )}
@@ -176,7 +206,8 @@ export function AccountCard({ account, onDisconnected }: AccountCardProps) {
               <AlertDialogHeader>
                 <AlertDialogTitle>Disconnect {config.label}?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will remove your {config.label} account connection. You can reconnect anytime.
+                  This will remove your {config.label} account connection. You
+                  can reconnect anytime.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <div className="flex gap-3">
@@ -186,7 +217,9 @@ export function AccountCard({ account, onDisconnected }: AccountCardProps) {
                   disabled={disconnectMutation.isPending}
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                 >
-                  {disconnectMutation.isPending ? "Disconnecting..." : "Disconnect"}
+                  {disconnectMutation.isPending
+                    ? "Disconnecting..."
+                    : "Disconnect"}
                 </AlertDialogAction>
               </div>
             </AlertDialogContent>

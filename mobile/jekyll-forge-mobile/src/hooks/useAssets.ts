@@ -1,4 +1,4 @@
-import { trpc } from '../utils/trpc';
+import { trpc } from "../utils/trpc";
 
 export function useAssets(siteId: string) {
   return trpc.assets.list.useQuery({ siteId });

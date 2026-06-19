@@ -41,11 +41,16 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
 
   return (
-    <WorkspaceContext.Provider value={{
-      activeSite, setActiveSite,
-      activeBranch, setActiveBranch,
-      commandPaletteOpen, setCommandPaletteOpen,
-    }}>
+    <WorkspaceContext.Provider
+      value={{
+        activeSite,
+        setActiveSite,
+        activeBranch,
+        setActiveBranch,
+        commandPaletteOpen,
+        setCommandPaletteOpen,
+      }}
+    >
       {children}
     </WorkspaceContext.Provider>
   );

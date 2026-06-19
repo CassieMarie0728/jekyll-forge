@@ -29,6 +29,76 @@ export interface AnalyticsData {
   shares?: number;
 }
 
+// Twitter API Response Types
+interface TwitterTweetResponse {
+  data: {
+    id: string;
+    text: string;
+    author_id?: string;
+    public_metrics?: {
+      impression_count?: number;
+      like_count?: number;
+      reply_count?: number;
+      retweet_count?: number;
+      url_click_count?: number;
+    };
+  };
+}
+
+interface TwitterErrorResponse {
+  detail?: string;
+  errors?: Array<{ message: string }>;
+}
+
+interface LinkedInEngagement {
+  impressionCount?: number;
+  engagementCount?: number;
+  clickCount?: number;
+  shareCount?: number;
+}
+
+interface LinkedInResponse {
+  id?: string;
+  data?: {
+    id: string;
+  };
+  like_count?: number;
+  comments_count?: number;
+  likes?: number;
+  comments?: number;
+  shares?: number;
+  engagement?: LinkedInEngagement;
+}
+
+interface FacebookResponse {
+  id: string;
+}
+
+interface FacebookMetricsResponse {
+  likes?: {
+    summary?: {
+      total_count: number;
+    };
+  };
+  comments?: {
+    summary?: {
+      total_count: number;
+    };
+  };
+  shares?: {
+    data?: Array<Record<string, unknown>>;
+  };
+}
+
+interface InstagramResponse {
+  id: string;
+}
+
+interface RateLimitError extends Error {
+  isRateLimit: boolean;
+  retryAfter: number;
+}
+
 /**
  * Twitter/X API Service
  */
@@ -43,30 +113,36 @@ export class TwitterService {
 
   async postTweet(content: string): Promise<PostResult> {
     try {
-      const response = await fetch(`${this.baseUrl}/${this.apiVersion}/tweets`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${this.accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ text: content }),
-      });
+      const response = await fetch(
+        `${this.baseUrl}/${this.apiVersion}/tweets`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${this.accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ text: content }),
+        }
+      );
 
       // Check for rate limit response (429 Too Many Requests)
       if (response.status === 429) {
         const retryAfter = response.headers.get("retry-after");
         const error = new Error(`Twitter rate limit exceeded`);
-        (error as any).isRateLimit = true;
-        (error as any).retryAfter = retryAfter ? parseInt(retryAfter) : 900; // 15 minutes default
+        const rateLimitError = error as RateLimitError;
+        rateLimitError.isRateLimit = true;
+        rateLimitError.retryAfter = retryAfter ? parseInt(retryAfter) : 900; // 15 minutes default
         throw error;
       }
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(`Twitter API error: ${error.detail || response.statusText}`);
+        throw new Error(
+          `Twitter API error: ${error.detail || response.statusText}`
+        );
       }
 
-      const data = await response.json() as any;
+      const data = (await response.json()) as TwitterTweetResponse;
       const tweetId = data.data?.id;
       const username = data.data?.author_id; // Note: This is simplified; actual implementation needs user lookup
 
@@ -96,21 +172,24 @@ export class TwitterService {
           body.reply = { in_reply_to_tweet_id: previousTweetId };
         }
 
-        const response = await fetch(`${this.baseUrl}/${this.apiVersion}/tweets`, {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${this.accessToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(body),
-        });
+        const response = await fetch(
+          `${this.baseUrl}/${this.apiVersion}/tweets`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${this.accessToken}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(body),
+          }
+        );
 
         if (!response.ok) {
           throw new Error(`Failed to post tweet: ${response.statusText}`);
         }
 
-        const data = await response.json() as any;
-        const tweetId = data.data?.id;
+        const data = (await response.json()) as TwitterTweetResponse;
+        const tweetId = data.data?.id || '';
         previousTweetId = tweetId;
         if (!firstTweetId) firstTweetId = tweetId;
       }
@@ -135,7 +214,7 @@ export class TwitterService {
       const response = await fetch(
         `${this.baseUrl}/${this.apiVersion}/tweets/${tweetId}?tweet.fields=public_metrics`,
         {
-          headers: { "Authorization": `Bearer ${this.accessToken}` },
+          headers: { Authorization: `Bearer ${this.accessToken}` },
         }
       );
 
@@ -143,12 +222,15 @@ export class TwitterService {
         throw new Error(`Failed to fetch metrics: ${response.statusText}`);
       }
 
-      const data = await response.json() as any;
+      const data = (await response.json()) as TwitterTweetResponse;
       const metrics = data.data?.public_metrics || {};
 
       return {
         impressions: metrics.impression_count || 0,
-        engagements: (metrics.like_count || 0) + (metrics.reply_count || 0) + (metrics.retweet_count || 0),
+        engagements:
+          (metrics.like_count || 0) +
+          (metrics.reply_count || 0) +
+          (metrics.retweet_count || 0),
         clicks: metrics.url_click_count || 0,
         likes: metrics.like_count || 0,
         replies: metrics.reply_count || 0,
@@ -176,21 +258,21 @@ export class LinkedInService {
     try {
       // First, get the current user's URN
       const meResponse = await fetch(`${this.baseUrl}/me`, {
-        headers: { "Authorization": `Bearer ${this.accessToken}` },
+        headers: { Authorization: `Bearer ${this.accessToken}` },
       });
 
       if (!meResponse.ok) {
         throw new Error("Failed to get user info");
       }
 
-      const meData = await meResponse.json() as any;
+      const meData = (await meResponse.json()) as any;
       const userUrn = meData.id;
 
       // Create the article post
       const response = await fetch(`${this.baseUrl}/posts`, {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${this.accessToken}`,
+          Authorization: `Bearer ${this.accessToken}`,
           "Content-Type": "application/json",
           "LinkedIn-Version": "202405",
         },
@@ -225,8 +307,8 @@ export class LinkedInService {
         throw new Error(`LinkedIn API error: ${JSON.stringify(error)}`);
       }
 
-      const data = await response.json() as any;
-      const postId = data.id;
+      const data = (await response.json()) as LinkedInResponse;
+      const postId = data.id || '';
 
       return {
         success: true,
@@ -248,7 +330,7 @@ export class LinkedInService {
       const response = await fetch(
         `${this.baseUrl}/posts/${postId}?fields=engagement`,
         {
-          headers: { "Authorization": `Bearer ${this.accessToken}` },
+          headers: { Authorization: `Bearer ${this.accessToken}` },
         }
       );
 
@@ -256,7 +338,7 @@ export class LinkedInService {
         throw new Error(`Failed to fetch metrics: ${response.statusText}`);
       }
 
-      const data = await response.json() as any;
+      const data = (await response.json()) as LinkedInResponse;
       const engagement = data.engagement || {};
 
       return {
@@ -284,9 +366,13 @@ export class FacebookService {
     this.accessToken = accessToken;
   }
 
-  async postToPage(pageId: string, content: string, imageUrl?: string): Promise<PostResult> {
+  async postToPage(
+    pageId: string,
+    content: string,
+    imageUrl?: string
+  ): Promise<PostResult> {
     try {
-      const payload: any = {
+      const payload: Record<string, unknown> = {
         message: content,
         access_token: this.accessToken,
       };
@@ -295,21 +381,31 @@ export class FacebookService {
         payload.link = imageUrl;
       }
 
-      const response = await fetch(`${this.baseUrl}/${this.apiVersion}/${pageId}/feed`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams(payload),
+      const urlParams = new URLSearchParams();
+      Object.entries(payload).forEach(([key, value]) => {
+        if (typeof value === 'string' || typeof value === 'number') {
+          urlParams.append(key, String(value));
+        }
       });
+
+      const response = await fetch(
+        `${this.baseUrl}/${this.apiVersion}/${pageId}/feed`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: urlParams,
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`Facebook API error: ${response.statusText}`);
       }
 
-      const data = await response.json() as any;
+      const data = (await response.json()) as FacebookResponse;
 
       return {
         success: true,
-        externalPostId: data.id,
+        externalPostId: data.id || '',
         externalUrl: `https://facebook.com/${data.id}`,
         platform: "facebook",
       };
@@ -329,11 +425,13 @@ export class FacebookService {
         throw new Error(`Facebook API error: ${response.statusText}`);
       }
 
-      const data = await response.json() as any;
+      const data = (await response.json()) as FacebookMetricsResponse;
 
       return {
         impressions: data.likes?.summary?.total_count || 0,
-        engagements: (data.likes?.summary?.total_count || 0) + (data.comments?.summary?.total_count || 0),
+        engagements:
+          (data.likes?.summary?.total_count || 0) +
+          (data.comments?.summary?.total_count || 0),
         clicks: 0,
         likes: data.likes?.summary?.total_count,
         shares: data.shares?.data?.length || 0,
@@ -359,7 +457,7 @@ export class InstagramService {
 
   async postToFeed(caption: string, imageUrl?: string): Promise<PostResult> {
     try {
-      const payload: any = {
+      const payload: Record<string, unknown> = {
         caption,
         access_token: this.accessToken,
       };
@@ -368,21 +466,31 @@ export class InstagramService {
         payload.image_url = imageUrl;
       }
 
-      const response = await fetch(`${this.baseUrl}/${this.apiVersion}/me/media`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams(payload),
+      const urlParams = new URLSearchParams();
+      Object.entries(payload).forEach(([key, value]) => {
+        if (typeof value === 'string' || typeof value === 'number') {
+          urlParams.append(key, String(value));
+        }
       });
+
+      const response = await fetch(
+        `${this.baseUrl}/${this.apiVersion}/me/media`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: urlParams,
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`Instagram API error: ${response.statusText}`);
       }
 
-      const data = await response.json() as any;
+      const data = (await response.json()) as InstagramResponse;
 
       return {
         success: true,
-        externalPostId: data.id,
+        externalPostId: data.id || '',
         externalUrl: `https://instagram.com/p/${data.id}`,
         platform: "instagram",
       };
@@ -402,7 +510,7 @@ export class InstagramService {
         throw new Error(`Instagram API error: ${response.statusText}`);
       }
 
-      const data = await response.json() as any;
+      const data = (await response.json()) as LinkedInResponse;
 
       return {
         impressions: data.like_count || 0,
@@ -420,7 +528,10 @@ export class InstagramService {
 /**
  * Factory function to get the appropriate service
  */
-export function getSocialMediaService(platform: "twitter" | "linkedin" | "facebook" | "instagram", accessToken: string) {
+export function getSocialMediaService(
+  platform: "twitter" | "linkedin" | "facebook" | "instagram",
+  accessToken: string
+) {
   if (platform === "twitter") {
     return new TwitterService(accessToken);
   } else if (platform === "linkedin") {

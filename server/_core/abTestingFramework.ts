@@ -49,7 +49,10 @@ export interface ABTestResults {
 /**
  * Create A/B test variations
  */
-export function createVariations(baseContent: string, count: number = 3): PostVariation[] {
+export function createVariations(
+  baseContent: string,
+  count: number = 3
+): PostVariation[] {
   const variations: PostVariation[] = [];
 
   // Variation 1: Original
@@ -76,7 +79,10 @@ export function createVariations(baseContent: string, count: number = 3): PostVa
 
   // Variation 4: Shorter version
   if (count >= 4) {
-    const shortened = baseContent.substring(0, Math.floor(baseContent.length * 0.8));
+    const shortened = baseContent.substring(
+      0,
+      Math.floor(baseContent.length * 0.8)
+    );
     variations.push({
       id: "var-4",
       content: shortened,
@@ -125,7 +131,9 @@ export function determineWinner(
   const runner = sorted[1];
 
   // Simple confidence calculation (Chi-square test approximation)
-  const engagementDiff = Math.abs(winner.engagementRate - runner.engagementRate);
+  const engagementDiff = Math.abs(
+    winner.engagementRate - runner.engagementRate
+  );
   const confidence = Math.min(100, engagementDiff * 10);
 
   // Consider significant if confidence > 85% and engagement difference > 10%

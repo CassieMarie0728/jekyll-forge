@@ -40,7 +40,9 @@ export const SocialPostPreview: React.FC<SocialPostPreviewProps> = ({
           <div className="flex items-start gap-3 mb-3">
             <div className="w-12 h-12 rounded-full bg-slate-300 dark:bg-slate-700 flex-shrink-0" />
             <div className="flex-1">
-              <div className="font-bold text-slate-900 dark:text-white">{accountName}</div>
+              <div className="font-bold text-slate-900 dark:text-white">
+                {accountName}
+              </div>
               <div className="text-sm text-slate-500">@username</div>
             </div>
           </div>
@@ -90,7 +92,9 @@ export const SocialPostPreview: React.FC<SocialPostPreviewProps> = ({
           <div className="flex items-start gap-3 mb-3">
             <div className="w-12 h-12 rounded-full bg-slate-300 dark:bg-slate-700 flex-shrink-0" />
             <div className="flex-1">
-              <div className="font-bold text-slate-900 dark:text-white text-sm">{accountName}</div>
+              <div className="font-bold text-slate-900 dark:text-white text-sm">
+                {accountName}
+              </div>
               <div className="text-xs text-slate-500">Connected • Now</div>
             </div>
           </div>
@@ -137,7 +141,9 @@ export const SocialPostPreview: React.FC<SocialPostPreviewProps> = ({
           <div className="flex items-start gap-3 mb-3">
             <div className="w-10 h-10 rounded-full bg-slate-300 dark:bg-slate-700 flex-shrink-0" />
             <div className="flex-1">
-              <div className="font-bold text-slate-900 dark:text-white text-sm">{accountName}</div>
+              <div className="font-bold text-slate-900 dark:text-white text-sm">
+                {accountName}
+              </div>
               <div className="text-xs text-slate-500">Now</div>
             </div>
           </div>
@@ -185,7 +191,9 @@ export const SocialPostPreview: React.FC<SocialPostPreviewProps> = ({
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-slate-300 dark:bg-slate-700" />
               <div>
-                <div className="font-bold text-sm text-slate-900 dark:text-white">{accountName}</div>
+                <div className="font-bold text-sm text-slate-900 dark:text-white">
+                  {accountName}
+                </div>
               </div>
             </div>
             <div className="text-slate-500 cursor-pointer">•••</div>
@@ -203,7 +211,9 @@ export const SocialPostPreview: React.FC<SocialPostPreviewProps> = ({
               <MessageCircle className="w-5 h-5 cursor-pointer hover:text-slate-600 dark:hover:text-slate-400" />
               <Share className="w-5 h-5 cursor-pointer hover:text-slate-600 dark:hover:text-slate-400" />
             </div>
-            <div className="text-sm font-bold text-slate-900 dark:text-white">0 likes</div>
+            <div className="text-sm font-bold text-slate-900 dark:text-white">
+              0 likes
+            </div>
           </div>
 
           {/* Caption */}

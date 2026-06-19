@@ -1,5 +1,11 @@
 import React from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { SocialPostPreview } from "./SocialPostPreview";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -52,8 +58,12 @@ export const PostPreviewDialog: React.FC<PostPreviewDialogProps> = ({
         <div className="space-y-4">
           {/* Content Summary */}
           <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
-            <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Content:</p>
-            <p className="text-sm text-slate-600 dark:text-slate-400 break-words">{content}</p>
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+              Content:
+            </p>
+            <p className="text-sm text-slate-600 dark:text-slate-400 break-words">
+              {content}
+            </p>
             {scheduledAt && (
               <p className="text-xs text-slate-500 mt-2">
                 Scheduled for:{" "}
@@ -71,16 +81,29 @@ export const PostPreviewDialog: React.FC<PostPreviewDialogProps> = ({
           {/* Platform Previews */}
           {platforms.length > 1 ? (
             <Tabs defaultValue={platforms[0]} className="w-full">
-              <TabsList className="grid w-full" style={{ gridTemplateColumns: `repeat(${Math.min(platforms.length, 4)}, 1fr)` }}>
-                {platforms.map((platform) => (
-                  <TabsTrigger key={platform} value={platform} className="capitalize">
+              <TabsList
+                className="grid w-full"
+                style={{
+                  gridTemplateColumns: `repeat(${Math.min(platforms.length, 4)}, 1fr)`,
+                }}
+              >
+                {platforms.map(platform => (
+                  <TabsTrigger
+                    key={platform}
+                    value={platform}
+                    className="capitalize"
+                  >
                     {platform}
                   </TabsTrigger>
                 ))}
               </TabsList>
 
-              {platforms.map((platform) => (
-                <TabsContent key={platform} value={platform} className="flex justify-center mt-4">
+              {platforms.map(platform => (
+                <TabsContent
+                  key={platform}
+                  value={platform}
+                  className="flex justify-center mt-4"
+                >
                   <SocialPostPreview
                     platform={platform}
                     content={content}
@@ -107,7 +130,11 @@ export const PostPreviewDialog: React.FC<PostPreviewDialogProps> = ({
             Cancel
           </Button>
           <Button onClick={handleConfirm} disabled={isLoading}>
-            {isLoading ? "Processing..." : scheduledAt ? "Schedule Post" : "Publish Now"}
+            {isLoading
+              ? "Processing..."
+              : scheduledAt
+                ? "Schedule Post"
+                : "Publish Now"}
           </Button>
         </DialogFooter>
       </DialogContent>

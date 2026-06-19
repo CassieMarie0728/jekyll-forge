@@ -1,4 +1,4 @@
-import { offlineStorage } from './offlineStorage';
+import { offlineStorage } from "./offlineStorage";
 
 export interface SyncStatus {
   isOnline: boolean;
@@ -41,7 +41,7 @@ class SyncService {
 
   private notifyListeners() {
     const status = this.getSyncStatus();
-    this.syncListeners.forEach((listener) => listener(status));
+    this.syncListeners.forEach(listener => listener(status));
   }
 
   getSyncStatus(): SyncStatus {
@@ -57,7 +57,7 @@ class SyncService {
   onSyncStatusChange(listener: (status: SyncStatus) => void): () => void {
     this.syncListeners.push(listener);
     return () => {
-      this.syncListeners = this.syncListeners.filter((l) => l !== listener);
+      this.syncListeners = this.syncListeners.filter(l => l !== listener);
     };
   }
 
@@ -100,13 +100,13 @@ class SyncService {
   private async processSyncItem(item: any) {
     // This would call your tRPC procedures
     // For now, we'll simulate the sync
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       setTimeout(resolve, 500);
     });
   }
 
   async queueAction(
-    action: 'create' | 'update' | 'delete' | 'publish',
+    action: "create" | "update" | "delete" | "publish",
     data: any
   ) {
     const item = {

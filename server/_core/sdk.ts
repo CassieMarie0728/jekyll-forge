@@ -134,12 +134,11 @@ class SDKServer {
     const data = await this.oauthService.getUserInfoByToken({
       accessToken,
     } as ExchangeTokenResponse);
-    const loginMethod = this.deriveLoginMethod(
-      (data as any)?.platforms,
-      (data as any)?.platform ?? data.platform ?? null
-    );
+    const platforms = (data as unknown as Record<string, unknown>)?.platforms as string[] | undefined;
+    const platform = ((data as unknown as Record<string, unknown>)?.platform ?? data.platform ?? null) as string | null;
+    const loginMethod = this.deriveLoginMethod(platforms, platform);
     return {
-      ...(data as any),
+      ...(data as unknown as Record<string, unknown>),
       platform: loginMethod,
       loginMethod,
     } as GetUserInfoResponse;

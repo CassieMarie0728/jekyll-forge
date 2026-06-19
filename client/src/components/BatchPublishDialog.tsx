@@ -1,11 +1,24 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
-import { Twitter, Linkedin, Facebook, Instagram, CheckCircle2, AlertCircle } from "lucide-react";
+import {
+  Twitter,
+  Linkedin,
+  Facebook,
+  Instagram,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react";
 
 interface BatchPublishDialogProps {
   open: boolean;
@@ -27,9 +40,9 @@ export function BatchPublishDialog({
   repurposedContentId,
   onPublished,
 }: BatchPublishDialogProps) {
-  const [selectedPlatforms, setSelectedPlatforms] = useState<Set<"twitter" | "linkedin" | "facebook" | "instagram">>(
-    new Set(["twitter", "linkedin", "facebook", "instagram"])
-  );
+  const [selectedPlatforms, setSelectedPlatforms] = useState<
+    Set<"twitter" | "linkedin" | "facebook" | "instagram">
+  >(new Set(["twitter", "linkedin", "facebook", "instagram"]));
   const [isPublishing, setIsPublishing] = useState(false);
   const [results, setResults] = useState<PublishResult[]>([]);
 
@@ -40,7 +53,9 @@ export function BatchPublishDialog({
     { id: "instagram" as const, name: "Instagram", icon: Instagram },
   ];
 
-  const togglePlatform = (platform: "twitter" | "linkedin" | "facebook" | "instagram") => {
+  const togglePlatform = (
+    platform: "twitter" | "linkedin" | "facebook" | "instagram"
+  ) => {
     const newSelected = new Set(selectedPlatforms);
     if (newSelected.has(platform)) {
       newSelected.delete(platform);
@@ -67,7 +82,7 @@ export function BatchPublishDialog({
         try {
           // In a real implementation, this would call the backend API
           // For now, simulate the publishing process
-          await new Promise((resolve) => setTimeout(resolve, 1000));
+          await new Promise(resolve => setTimeout(resolve, 1000));
 
           publishResults.push({
             platform,
@@ -75,7 +90,9 @@ export function BatchPublishDialog({
             postId: `${platform}_${Date.now()}`,
           });
 
-          toast.success(`Published to ${platform === "twitter" ? "Twitter/X" : "LinkedIn"}`);
+          toast.success(
+            `Published to ${platform === "twitter" ? "Twitter/X" : "LinkedIn"}`
+          );
         } catch (error) {
           publishResults.push({
             platform,
@@ -90,7 +107,7 @@ export function BatchPublishDialog({
       setResults(publishResults);
 
       // Check if all succeeded
-      const allSucceeded = publishResults.every((r) => r.success);
+      const allSucceeded = publishResults.every(r => r.success);
       if (allSucceeded) {
         toast.success("All platforms published successfully!");
         setTimeout(() => {
@@ -117,8 +134,10 @@ export function BatchPublishDialog({
           <div className="space-y-4">
             {/* Platform Selection */}
             <div className="space-y-2">
-              <p className="text-sm font-medium">Select platforms to publish to:</p>
-              {platforms.map((platform) => {
+              <p className="text-sm font-medium">
+                Select platforms to publish to:
+              </p>
+              {platforms.map(platform => {
                 const Icon = platform.icon;
                 return (
                   <div
@@ -165,8 +184,8 @@ export function BatchPublishDialog({
         ) : (
           <div className="space-y-3">
             {/* Results */}
-            {results.map((result) => {
-              const platform = platforms.find((p) => p.id === result.platform);
+            {results.map(result => {
+              const platform = platforms.find(p => p.id === result.platform);
               const Icon = platform?.icon;
 
               return (
@@ -184,7 +203,9 @@ export function BatchPublishDialog({
                           <p className="font-medium">{platform?.name}</p>
                         </div>
                         {result.success ? (
-                          <p className="text-sm text-green-600">Published successfully</p>
+                          <p className="text-sm text-green-600">
+                            Published successfully
+                          </p>
                         ) : (
                           <p className="text-sm text-red-600">{result.error}</p>
                         )}

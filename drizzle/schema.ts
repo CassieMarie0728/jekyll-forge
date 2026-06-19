@@ -45,7 +45,9 @@ export const sites = mysqlTable("sites", {
   isFavorite: boolean("isFavorite").default(false),
   timezone: varchar("timezone", { length: 64 }).default("UTC"),
   defaultLayout: varchar("defaultLayout", { length: 128 }).default("post"),
-  defaultAssetPath: varchar("defaultAssetPath", { length: 256 }).default("/assets/images"),
+  defaultAssetPath: varchar("defaultAssetPath", { length: 256 }).default(
+    "/assets/images"
+  ),
   aiVoiceProfile: varchar("aiVoiceProfile", { length: 64 }).default("default"),
   settings: json("settings").$type<Record<string, unknown>>(),
   lastAccessedAt: timestamp("lastAccessedAt").defaultNow(),
@@ -65,7 +67,14 @@ export const posts = mysqlTable("posts", {
   filename: varchar("filename", { length: 256 }),
   slug: varchar("slug", { length: 256 }),
   title: text("title"),
-  status: mysqlEnum("status", ["draft", "published", "modified", "new", "scheduled", "archived"]).default("new"),
+  status: mysqlEnum("status", [
+    "draft",
+    "published",
+    "modified",
+    "new",
+    "scheduled",
+    "archived",
+  ]).default("new"),
   frontMatter: json("frontMatter").$type<Record<string, unknown>>(),
   markdown: text("markdown"),
   sha: varchar("sha", { length: 64 }),
@@ -73,7 +82,9 @@ export const posts = mysqlTable("posts", {
   publishedAt: timestamp("publishedAt"),
   lastAutosaveAt: timestamp("lastAutosaveAt"),
   autosaveContent: text("autosaveContent"),
-  autosaveFrontMatter: json("autosaveFrontMatter").$type<Record<string, unknown>>(),
+  autosaveFrontMatter: json("autosaveFrontMatter").$type<
+    Record<string, unknown>
+  >(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -89,7 +100,14 @@ export const snapshots = mysqlTable("snapshots", {
   postId: int("postId"),
   postPath: varchar("postPath", { length: 512 }),
   label: varchar("label", { length: 256 }).notNull(),
-  reason: mysqlEnum("reason", ["manual", "autosave", "before-ai", "before-publish", "before-theme", "before-plugin"]).default("manual"),
+  reason: mysqlEnum("reason", [
+    "manual",
+    "autosave",
+    "before-ai",
+    "before-publish",
+    "before-theme",
+    "before-plugin",
+  ]).default("manual"),
   markdown: text("markdown"),
   frontMatter: json("frontMatter").$type<Record<string, unknown>>(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -116,7 +134,11 @@ export const assets = mysqlTable("assets", {
   hash: varchar("hash", { length: 64 }),
   optimized: boolean("optimized").default(false),
   /** JSON: { thumbnail?: string, medium?: string, large?: string } — S3 URLs for responsive variants */
-  variants: json("variants").$type<{ thumbnail?: string; medium?: string; large?: string }>(),
+  variants: json("variants").$type<{
+    thumbnail?: string;
+    medium?: string;
+    large?: string;
+  }>(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -159,7 +181,13 @@ export const scheduledPosts = mysqlTable("scheduled_posts", {
   targetPath: varchar("targetPath", { length: 512 }).notNull(),
   scheduledAt: timestamp("scheduledAt").notNull(),
   timezone: varchar("timezone", { length: 64 }).default("UTC"),
-  status: mysqlEnum("status", ["pending", "processing", "published", "failed", "cancelled"]).default("pending"),
+  status: mysqlEnum("status", [
+    "pending",
+    "processing",
+    "published",
+    "failed",
+    "cancelled",
+  ]).default("pending"),
   commitMessage: text("commitMessage"),
   errorMessage: text("errorMessage"),
   publishedAt: timestamp("publishedAt"),
@@ -178,7 +206,9 @@ export const reusableBlocks = mysqlTable("reusable_blocks", {
   name: varchar("name", { length: 128 }).notNull(),
   category: varchar("category", { length: 64 }),
   content: text("content").notNull(),
-  contentType: mysqlEnum("contentType", ["markdown", "html", "liquid"]).default("markdown"),
+  contentType: mysqlEnum("contentType", ["markdown", "html", "liquid"]).default(
+    "markdown"
+  ),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -209,7 +239,16 @@ export const repurposedContent = mysqlTable("repurposed_content", {
   postTitle: varchar("postTitle", { length: 512 }),
   postSlug: varchar("postSlug", { length: 256 }),
   /** Format type: twitter, linkedin, tiktok, youtube, newsletter, email, podcast, slides */
-  format: mysqlEnum("format", ["twitter", "linkedin", "tiktok", "youtube", "newsletter", "email", "podcast", "slides"]).notNull(),
+  format: mysqlEnum("format", [
+    "twitter",
+    "linkedin",
+    "tiktok",
+    "youtube",
+    "newsletter",
+    "email",
+    "podcast",
+    "slides",
+  ]).notNull(),
   /** The repurposed content */
   content: text("content").notNull(),
   /** Metadata specific to format (e.g., character count, thread count, etc.) */
@@ -217,7 +256,12 @@ export const repurposedContent = mysqlTable("repurposed_content", {
   /** Whether this content has been edited by user */
   isCustomized: boolean("isCustomized").default(false),
   /** Status: generated, approved, published, archived */
-  status: mysqlEnum("status", ["generated", "approved", "published", "archived"]).default("generated"),
+  status: mysqlEnum("status", [
+    "generated",
+    "approved",
+    "published",
+    "archived",
+  ]).default("generated"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -229,7 +273,12 @@ export type InsertRepurposedContent = typeof repurposedContent.$inferInsert;
 export const socialMediaAccounts = mysqlTable("social_media_accounts", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),
-  platform: mysqlEnum("platform", ["twitter", "linkedin", "facebook", "instagram"]).notNull(),
+  platform: mysqlEnum("platform", [
+    "twitter",
+    "linkedin",
+    "facebook",
+    "instagram",
+  ]).notNull(),
   accountId: varchar("accountId", { length: 256 }).notNull(),
   username: varchar("username", { length: 256 }),
   displayName: varchar("displayName", { length: 256 }),
@@ -251,11 +300,22 @@ export const scheduledSocialPosts = mysqlTable("scheduled_social_posts", {
   userId: int("userId").notNull(),
   repurposedContentId: int("repurposedContentId").notNull(),
   socialMediaAccountId: int("socialMediaAccountId").notNull(),
-  platform: mysqlEnum("platform", ["twitter", "linkedin", "facebook", "instagram"]).notNull(),
+  platform: mysqlEnum("platform", [
+    "twitter",
+    "linkedin",
+    "facebook",
+    "instagram",
+  ]).notNull(),
   content: text("content").notNull(),
   scheduledAt: timestamp("scheduledAt").notNull(),
   timezone: varchar("timezone", { length: 64 }).default("UTC"),
-  status: mysqlEnum("status", ["pending", "processing", "published", "failed", "cancelled"]).default("pending"),
+  status: mysqlEnum("status", [
+    "pending",
+    "processing",
+    "published",
+    "failed",
+    "cancelled",
+  ]).default("pending"),
   externalPostId: varchar("externalPostId", { length: 256 }),
   externalUrl: text("externalUrl"),
   errorMessage: text("errorMessage"),
@@ -269,14 +329,20 @@ export const scheduledSocialPosts = mysqlTable("scheduled_social_posts", {
 });
 
 export type ScheduledSocialPost = typeof scheduledSocialPosts.$inferSelect;
-export type InsertScheduledSocialPost = typeof scheduledSocialPosts.$inferInsert;
+export type InsertScheduledSocialPost =
+  typeof scheduledSocialPosts.$inferInsert;
 
 // ─── Content Analytics ────────────────────────────────────────────────────────
 export const contentAnalytics = mysqlTable("content_analytics", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),
   repurposedContentId: int("repurposedContentId").notNull(),
-  platform: mysqlEnum("platform", ["twitter", "linkedin", "facebook", "instagram"]).notNull(),
+  platform: mysqlEnum("platform", [
+    "twitter",
+    "linkedin",
+    "facebook",
+    "instagram",
+  ]).notNull(),
   externalPostId: varchar("externalPostId", { length: 256 }),
   externalUrl: text("externalUrl"),
   impressions: int("impressions").default(0),
@@ -297,7 +363,6 @@ export const contentAnalytics = mysqlTable("content_analytics", {
 export type ContentAnalytics = typeof contentAnalytics.$inferSelect;
 export type InsertContentAnalytics = typeof contentAnalytics.$inferInsert;
 
-
 // ─── Content Variations (A/B Testing) ──────────────────────────────────────────
 export const contentVariations = mysqlTable("content_variations", {
   id: int("id").autoincrement().primaryKey(),
@@ -308,7 +373,9 @@ export const contentVariations = mysqlTable("content_variations", {
   content: text("content").notNull(),
   tone: varchar("tone", { length: 64 }), // e.g., "professional", "casual", "humorous"
   angle: varchar("angle", { length: 256 }), // e.g., "beginner-friendly", "advanced", "contrarian"
-  status: mysqlEnum("status", ["draft", "published", "archived"]).default("draft").notNull(),
+  status: mysqlEnum("status", ["draft", "published", "archived"])
+    .default("draft")
+    .notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -322,7 +389,14 @@ export const abTestResults = mysqlTable("ab_test_results", {
   userId: int("userId").notNull(),
   postId: int("postId").notNull(),
   variationIndex: int("variationIndex").notNull(),
-  platform: mysqlEnum("platform", ["twitter", "linkedin", "facebook", "instagram", "email", "direct"]).notNull(),
+  platform: mysqlEnum("platform", [
+    "twitter",
+    "linkedin",
+    "facebook",
+    "instagram",
+    "email",
+    "direct",
+  ]).notNull(),
   externalPostId: varchar("externalPostId", { length: 256 }),
   impressions: int("impressions").default(0),
   engagements: int("engagements").default(0),
@@ -330,8 +404,12 @@ export const abTestResults = mysqlTable("ab_test_results", {
   shares: int("shares").default(0),
   likes: int("likes").default(0),
   replies: int("replies").default(0),
-  engagementRate: decimal("engagementRate", { precision: 5, scale: 2 }).default("0"), // percentage
-  status: mysqlEnum("status", ["active", "completed", "paused"]).default("active").notNull(),
+  engagementRate: decimal("engagementRate", { precision: 5, scale: 2 }).default(
+    "0"
+  ), // percentage
+  status: mysqlEnum("status", ["active", "completed", "paused"])
+    .default("active")
+    .notNull(),
   startedAt: timestamp("startedAt").defaultNow().notNull(),
   endedAt: timestamp("endedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -350,7 +428,9 @@ export const abTestSummary = mysqlTable("ab_test_summary", {
   totalVariations: int("totalVariations").notNull(),
   testDurationDays: int("testDurationDays").default(7),
   winningMetric: varchar("winningMetric", { length: 64 }), // "engagement_rate", "clicks", "shares", etc.
-  status: mysqlEnum("status", ["running", "completed", "archived"]).default("running").notNull(),
+  status: mysqlEnum("status", ["running", "completed", "archived"])
+    .default("running")
+    .notNull(),
   insights: json("insights").$type<Record<string, unknown>>(), // JSON with detailed insights
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

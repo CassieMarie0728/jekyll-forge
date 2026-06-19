@@ -35,7 +35,9 @@ async function ghFetch(token: string, path: string, options: RequestInit = {}) {
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error(`GitHub API error ${res.status}: ${(body as { message?: string }).message || "unknown"}`);
+    throw new Error(
+      `GitHub API error ${res.status}: ${(body as { message?: string }).message || "unknown"}`
+    );
   }
   return res.json();
 }
@@ -61,7 +63,11 @@ export async function scheduledPublishHandler(req: Request, res: Response) {
 
     // 3. Skip if already processed
     if (job.status !== "pending") {
-      return res.json({ ok: true, skipped: `already-${job.status}`, id: job.id });
+      return res.json({
+        ok: true,
+        skipped: `already-${job.status}`,
+        id: job.id,
+      });
     }
 
     // 4. Mark as processing
@@ -71,7 +77,10 @@ export async function scheduledPublishHandler(req: Request, res: Response) {
     const site = await getSiteByIdAny(job.siteId);
     if (!site) {
       const msg = `Site ${job.siteId} not found`;
-      await updateScheduledPost(job.id, { status: "failed", errorMessage: msg });
+      await updateScheduledPost(job.id, {
+        status: "failed",
+        errorMessage: msg,
+      });
       await notifyOwner({
         title: "Jekyll Forge: Scheduled publish failed",
         content: `Could not find site for scheduled post.\nJob ID: ${job.id}\nDraft: ${job.draftPath}\nError: ${msg}`,
@@ -89,13 +98,20 @@ export async function scheduledPublishHandler(req: Request, res: Response) {
       const { eq } = await import("drizzle-orm");
       const db = await getDb();
       if (!db) return undefined;
-      const result = await db.select().from(users).where(eq(users.id, site.userId)).limit(1);
+      const result = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, site.userId))
+        .limit(1);
       return result[0];
     })();
 
     if (!siteOwner?.githubToken) {
       const msg = "Site owner has no GitHub token connected";
-      await updateScheduledPost(job.id, { status: "failed", errorMessage: msg });
+      await updateScheduledPost(job.id, {
+        status: "failed",
+        errorMessage: msg,
+      });
       await notifyOwner({
         title: "Jekyll Forge: Scheduled publish failed",
         content: `${msg}\nJob ID: ${job.id}\nDraft: ${job.draftPath}`,
@@ -106,8 +122,12 @@ export async function scheduledPublishHandler(req: Request, res: Response) {
     const branch = site.selectedBranch || site.defaultBranch || "main";
 
     // 7. Fetch the draft file from GitHub
-    const draftPath = job.draftPath.startsWith("/") ? job.draftPath.slice(1) : job.draftPath;
-    const targetPath = job.targetPath.startsWith("/") ? job.targetPath.slice(1) : job.targetPath;
+    const draftPath = job.draftPath.startsWith("/")
+      ? job.draftPath.slice(1)
+      : job.draftPath;
+    const targetPath = job.targetPath.startsWith("/")
+      ? job.targetPath.slice(1)
+      : job.targetPath;
 
     let draftFile: { content: string; sha: string };
     try {
@@ -117,7 +137,10 @@ export async function scheduledPublishHandler(req: Request, res: Response) {
       );
     } catch (err) {
       const msg = `Failed to fetch draft: ${err instanceof Error ? err.message : String(err)}`;
-      await updateScheduledPost(job.id, { status: "failed", errorMessage: msg });
+      await updateScheduledPost(job.id, {
+        status: "failed",
+        errorMessage: msg,
+      });
       await notifyOwner({
         title: "Jekyll Forge: Scheduled publish failed",
         content: `${msg}\nJob ID: ${job.id}\nDraft: ${job.draftPath}`,
@@ -125,10 +148,14 @@ export async function scheduledPublishHandler(req: Request, res: Response) {
       return res.json({ ok: true, failed: true, error: msg });
     }
 
-    const draftContent = Buffer.from(draftFile.content, "base64").toString("utf-8");
+    const draftContent = Buffer.from(draftFile.content, "base64").toString(
+      "utf-8"
+    );
 
     // 8. Commit to _posts (target path)
-    const commitMessage = job.commitMessage || `Publish: ${targetPath.split("/").pop() || targetPath}`;
+    const commitMessage =
+      job.commitMessage ||
+      `Publish: ${targetPath.split("/").pop() || targetPath}`;
     try {
       await ghFetch(
         siteOwner.githubToken,
@@ -144,7 +171,10 @@ export async function scheduledPublishHandler(req: Request, res: Response) {
       );
     } catch (err) {
       const msg = `Failed to commit to _posts: ${err instanceof Error ? err.message : String(err)}`;
-      await updateScheduledPost(job.id, { status: "failed", errorMessage: msg });
+      await updateScheduledPost(job.id, {
+        status: "failed",
+        errorMessage: msg,
+      });
       await notifyOwner({
         title: "Jekyll Forge: Scheduled publish failed",
         content: `${msg}\nJob ID: ${job.id}\nTarget: ${job.targetPath}`,
@@ -168,11 +198,16 @@ export async function scheduledPublishHandler(req: Request, res: Response) {
       );
     } catch {
       // Non-fatal: the post is published, draft deletion failure is logged but not a hard error
-      console.warn(`[Scheduler] Could not delete draft ${draftPath} after publish`);
+      console.warn(
+        `[Scheduler] Could not delete draft ${draftPath} after publish`
+      );
     }
 
     // 10. Mark as published
-    await updateScheduledPost(job.id, { status: "published", publishedAt: new Date() });
+    await updateScheduledPost(job.id, {
+      status: "published",
+      publishedAt: new Date(),
+    });
 
     return res.json({
       ok: true,
@@ -192,7 +227,9 @@ export async function scheduledPublishHandler(req: Request, res: Response) {
         title: "Jekyll Forge: Scheduled publish error",
         content: `Unexpected error in scheduled publish handler.\nError: ${errorMsg}\nTimestamp: ${startedAt}`,
       });
-    } catch { /* ignore notification failure */ }
+    } catch {
+      /* ignore notification failure */
+    }
 
     // Return 500 with structured error for platform Investigate flow
     return res.status(500).json({

@@ -1,4 +1,4 @@
-import { trpc } from '../utils/trpc';
+import { trpc } from "../utils/trpc";
 
 export function useSites() {
   return trpc.sites.list.useQuery();

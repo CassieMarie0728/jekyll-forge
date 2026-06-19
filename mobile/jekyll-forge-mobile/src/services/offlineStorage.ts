@@ -1,4 +1,4 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface StoredDraft {
   id: string;
@@ -7,28 +7,28 @@ interface StoredDraft {
   content: string;
   frontMatter: Record<string, any>;
   lastModified: number;
-  status: 'draft' | 'pending_sync' | 'synced';
+  status: "draft" | "pending_sync" | "synced";
 }
 
 interface SyncQueue {
   id: string;
-  action: 'create' | 'update' | 'delete' | 'publish';
+  action: "create" | "update" | "delete" | "publish";
   data: any;
   timestamp: number;
   retries: number;
 }
 
-const DRAFTS_KEY = '@jekyll_forge_drafts';
-const SYNC_QUEUE_KEY = '@jekyll_forge_sync_queue';
-const ASSETS_KEY = '@jekyll_forge_assets';
-const SETTINGS_KEY = '@jekyll_forge_settings';
+const DRAFTS_KEY = "@jekyll_forge_drafts";
+const SYNC_QUEUE_KEY = "@jekyll_forge_sync_queue";
+const ASSETS_KEY = "@jekyll_forge_assets";
+const SETTINGS_KEY = "@jekyll_forge_settings";
 
 export const offlineStorage = {
   // Draft Management
   async saveDraft(draft: StoredDraft): Promise<void> {
     try {
       const drafts = await this.getDrafts();
-      const index = drafts.findIndex((d) => d.id === draft.id);
+      const index = drafts.findIndex(d => d.id === draft.id);
 
       if (index >= 0) {
         drafts[index] = { ...draft, lastModified: Date.now() };
@@ -38,7 +38,7 @@ export const offlineStorage = {
 
       await AsyncStorage.setItem(DRAFTS_KEY, JSON.stringify(drafts));
     } catch (error) {
-      console.error('Failed to save draft:', error);
+      console.error("Failed to save draft:", error);
       throw error;
     }
   },
@@ -48,7 +48,7 @@ export const offlineStorage = {
       const data = await AsyncStorage.getItem(DRAFTS_KEY);
       return data ? JSON.parse(data) : [];
     } catch (error) {
-      console.error('Failed to get drafts:', error);
+      console.error("Failed to get drafts:", error);
       return [];
     }
   },
@@ -56,9 +56,9 @@ export const offlineStorage = {
   async getDraft(id: string): Promise<StoredDraft | null> {
     try {
       const drafts = await this.getDrafts();
-      return drafts.find((d) => d.id === id) || null;
+      return drafts.find(d => d.id === id) || null;
     } catch (error) {
-      console.error('Failed to get draft:', error);
+      console.error("Failed to get draft:", error);
       return null;
     }
   },
@@ -66,10 +66,10 @@ export const offlineStorage = {
   async deleteDraft(id: string): Promise<void> {
     try {
       const drafts = await this.getDrafts();
-      const filtered = drafts.filter((d) => d.id !== id);
+      const filtered = drafts.filter(d => d.id !== id);
       await AsyncStorage.setItem(DRAFTS_KEY, JSON.stringify(filtered));
     } catch (error) {
-      console.error('Failed to delete draft:', error);
+      console.error("Failed to delete draft:", error);
       throw error;
     }
   },
@@ -78,7 +78,7 @@ export const offlineStorage = {
     try {
       await AsyncStorage.removeItem(DRAFTS_KEY);
     } catch (error) {
-      console.error('Failed to clear drafts:', error);
+      console.error("Failed to clear drafts:", error);
       throw error;
     }
   },
@@ -90,7 +90,7 @@ export const offlineStorage = {
       queue.push(item);
       await AsyncStorage.setItem(SYNC_QUEUE_KEY, JSON.stringify(queue));
     } catch (error) {
-      console.error('Failed to add to sync queue:', error);
+      console.error("Failed to add to sync queue:", error);
       throw error;
     }
   },
@@ -100,7 +100,7 @@ export const offlineStorage = {
       const data = await AsyncStorage.getItem(SYNC_QUEUE_KEY);
       return data ? JSON.parse(data) : [];
     } catch (error) {
-      console.error('Failed to get sync queue:', error);
+      console.error("Failed to get sync queue:", error);
       return [];
     }
   },
@@ -108,25 +108,28 @@ export const offlineStorage = {
   async removeFromSyncQueue(id: string): Promise<void> {
     try {
       const queue = await this.getSyncQueue();
-      const filtered = queue.filter((item) => item.id !== id);
+      const filtered = queue.filter(item => item.id !== id);
       await AsyncStorage.setItem(SYNC_QUEUE_KEY, JSON.stringify(filtered));
     } catch (error) {
-      console.error('Failed to remove from sync queue:', error);
+      console.error("Failed to remove from sync queue:", error);
       throw error;
     }
   },
 
-  async updateSyncQueueItem(id: string, updates: Partial<SyncQueue>): Promise<void> {
+  async updateSyncQueueItem(
+    id: string,
+    updates: Partial<SyncQueue>
+  ): Promise<void> {
     try {
       const queue = await this.getSyncQueue();
-      const index = queue.findIndex((item) => item.id === id);
+      const index = queue.findIndex(item => item.id === id);
 
       if (index >= 0) {
         queue[index] = { ...queue[index], ...updates };
         await AsyncStorage.setItem(SYNC_QUEUE_KEY, JSON.stringify(queue));
       }
     } catch (error) {
-      console.error('Failed to update sync queue item:', error);
+      console.error("Failed to update sync queue item:", error);
       throw error;
     }
   },
@@ -135,7 +138,7 @@ export const offlineStorage = {
     try {
       await AsyncStorage.removeItem(SYNC_QUEUE_KEY);
     } catch (error) {
-      console.error('Failed to clear sync queue:', error);
+      console.error("Failed to clear sync queue:", error);
       throw error;
     }
   },
@@ -150,7 +153,7 @@ export const offlineStorage = {
       };
       await AsyncStorage.setItem(ASSETS_KEY, JSON.stringify(assets));
     } catch (error) {
-      console.error('Failed to save asset:', error);
+      console.error("Failed to save asset:", error);
       throw error;
     }
   },
@@ -160,7 +163,7 @@ export const offlineStorage = {
       const data = await AsyncStorage.getItem(ASSETS_KEY);
       return data ? JSON.parse(data) : {};
     } catch (error) {
-      console.error('Failed to get assets:', error);
+      console.error("Failed to get assets:", error);
       return {};
     }
   },
@@ -171,7 +174,7 @@ export const offlineStorage = {
       delete assets[assetId];
       await AsyncStorage.setItem(ASSETS_KEY, JSON.stringify(assets));
     } catch (error) {
-      console.error('Failed to delete asset:', error);
+      console.error("Failed to delete asset:", error);
       throw error;
     }
   },
@@ -180,7 +183,7 @@ export const offlineStorage = {
     try {
       await AsyncStorage.removeItem(ASSETS_KEY);
     } catch (error) {
-      console.error('Failed to clear assets:', error);
+      console.error("Failed to clear assets:", error);
       throw error;
     }
   },
@@ -192,7 +195,7 @@ export const offlineStorage = {
       settings[key] = value;
       await AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
     } catch (error) {
-      console.error('Failed to save setting:', error);
+      console.error("Failed to save setting:", error);
       throw error;
     }
   },
@@ -202,7 +205,7 @@ export const offlineStorage = {
       const settings = await this.getSettings();
       return settings[key] ?? defaultValue;
     } catch (error) {
-      console.error('Failed to get setting:', error);
+      console.error("Failed to get setting:", error);
       return defaultValue;
     }
   },
@@ -212,7 +215,7 @@ export const offlineStorage = {
       const data = await AsyncStorage.getItem(SETTINGS_KEY);
       return data ? JSON.parse(data) : {};
     } catch (error) {
-      console.error('Failed to get settings:', error);
+      console.error("Failed to get settings:", error);
       return {};
     }
   },
@@ -221,7 +224,7 @@ export const offlineStorage = {
     try {
       await AsyncStorage.removeItem(SETTINGS_KEY);
     } catch (error) {
-      console.error('Failed to clear settings:', error);
+      console.error("Failed to clear settings:", error);
       throw error;
     }
   },
@@ -236,7 +239,7 @@ export const offlineStorage = {
         this.clearSettings(),
       ]);
     } catch (error) {
-      console.error('Failed to clear all data:', error);
+      console.error("Failed to clear all data:", error);
       throw error;
     }
   },
@@ -259,7 +262,7 @@ export const offlineStorage = {
         assetsCount: Object.keys(assets).length,
       };
     } catch (error) {
-      console.error('Failed to get storage stats:', error);
+      console.error("Failed to get storage stats:", error);
       return { draftsCount: 0, syncQueueCount: 0, assetsCount: 0 };
     }
   },

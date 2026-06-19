@@ -1,16 +1,49 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
-import { Copy, RefreshCw, Check, Twitter, Linkedin, Share2, Youtube, Mail, Podcast, Presentation, MessageSquare, Zap } from "lucide-react";
+import {
+  Copy,
+  RefreshCw,
+  Check,
+  Twitter,
+  Linkedin,
+  Share2,
+  Youtube,
+  Mail,
+  Podcast,
+  Presentation,
+  MessageSquare,
+  Zap,
+} from "lucide-react";
 import { SocialMediaPanel } from "./SocialMediaPanel";
 import { BatchPublishDialog } from "./BatchPublishDialog";
 
-type RepurposingFormat = "twitter" | "linkedin" | "tiktok" | "youtube" | "newsletter" | "email" | "podcast" | "slides";
+type RepurposingFormat =
+  | "twitter"
+  | "linkedin"
+  | "tiktok"
+  | "youtube"
+  | "newsletter"
+  | "email"
+  | "podcast"
+  | "slides";
 
 interface RepurposingModalProps {
   open: boolean;
@@ -21,7 +54,10 @@ interface RepurposingModalProps {
   postTitle: string;
 }
 
-const FORMAT_CONFIG: Record<RepurposingFormat, { label: string; icon: React.ReactNode; description: string; color: string }> = {
+const FORMAT_CONFIG: Record<
+  RepurposingFormat,
+  { label: string; icon: React.ReactNode; description: string; color: string }
+> = {
   twitter: {
     label: "Twitter Thread",
     icon: <Twitter className="w-4 h-4" />,
@@ -80,14 +116,22 @@ export function RepurposingModal({
   siteId,
   postTitle,
 }: RepurposingModalProps) {
-  const [activeFormat, setActiveFormat] = useState<RepurposingFormat>("twitter");
-  const [generatedContent, setGeneratedContent] = useState<Record<RepurposingFormat, string>>({} as any);
-  const [loadingFormat, setLoadingFormat] = useState<RepurposingFormat | null>(null);
+  const [activeFormat, setActiveFormat] =
+    useState<RepurposingFormat>("twitter");
+  const [generatedContent, setGeneratedContent] = useState<
+    Record<RepurposingFormat, string>
+  >({} as any);
+  const [loadingFormat, setLoadingFormat] = useState<RepurposingFormat | null>(
+    null
+  );
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showBatchPublish, setShowBatchPublish] = useState(false);
 
   const generateMutation = trpc.repurposing.generate.useMutation();
-  const getByPostQuery = trpc.repurposing.getByPost.useQuery({ postId }, { enabled: open });
+  const getByPostQuery = trpc.repurposing.getByPost.useQuery(
+    { postId },
+    { enabled: open }
+  );
 
   const handleGenerate = async (format: RepurposingFormat) => {
     setLoadingFormat(format);
@@ -97,7 +141,7 @@ export function RepurposingModal({
         siteId,
         format,
       });
-      setGeneratedContent((prev) => ({
+      setGeneratedContent(prev => ({
         ...prev,
         [format]: result.content,
       }));
@@ -117,7 +161,16 @@ export function RepurposingModal({
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const formats: RepurposingFormat[] = ["twitter", "linkedin", "tiktok", "youtube", "newsletter", "email", "podcast", "slides"];
+  const formats: RepurposingFormat[] = [
+    "twitter",
+    "linkedin",
+    "tiktok",
+    "youtube",
+    "newsletter",
+    "email",
+    "podcast",
+    "slides",
+  ];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -128,13 +181,14 @@ export function RepurposingModal({
             Repurpose Content
           </DialogTitle>
           <DialogDescription>
-            Transform "{postTitle}" into multiple formats for different platforms
+            Transform "{postTitle}" into multiple formats for different
+            platforms
           </DialogDescription>
         </DialogHeader>
 
         <Tabs defaultValue="twitter" className="w-full">
           <TabsList className="grid w-full grid-cols-4 lg:grid-cols-9 mb-4">
-            {formats.map((format) => (
+            {formats.map(format => (
               <TabsTrigger
                 key={format}
                 value={format}
@@ -156,17 +210,22 @@ export function RepurposingModal({
           {/* Social Media Tab */}
           <TabsContent value="social" className="space-y-4">
             {repurposedContentId ? (
-              <SocialMediaPanel repurposedContentId={repurposedContentId} format={activeFormat} />
+              <SocialMediaPanel
+                repurposedContentId={repurposedContentId}
+                format={activeFormat}
+              />
             ) : (
               <Card>
                 <CardContent className="pt-6">
-                  <p className="text-sm text-muted-foreground">Generate content first to enable social media publishing</p>
+                  <p className="text-sm text-muted-foreground">
+                    Generate content first to enable social media publishing
+                  </p>
                 </CardContent>
               </Card>
             )}
           </TabsContent>
 
-          {formats.map((format) => (
+          {formats.map(format => (
             <TabsContent key={format} value={format} className="space-y-4">
               <Card className={FORMAT_CONFIG[format].color}>
                 <CardHeader>
@@ -174,7 +233,9 @@ export function RepurposingModal({
                     {FORMAT_CONFIG[format].icon}
                     {FORMAT_CONFIG[format].label}
                   </CardTitle>
-                  <CardDescription>{FORMAT_CONFIG[format].description}</CardDescription>
+                  <CardDescription>
+                    {FORMAT_CONFIG[format].description}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {generatedContent[format] ? (
@@ -184,7 +245,9 @@ export function RepurposingModal({
                       </div>
                       <div className="flex gap-2">
                         <Button
-                          onClick={() => handleCopy(generatedContent[format], format)}
+                          onClick={() =>
+                            handleCopy(generatedContent[format], format)
+                          }
                           variant="outline"
                           className="gap-2"
                         >

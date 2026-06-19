@@ -95,7 +95,8 @@ async function generateSingleVariation(
               },
               content: {
                 type: "string",
-                description: "The rewritten post content (same length as original)",
+                description:
+                  "The rewritten post content (same length as original)",
               },
             },
             required: ["headline", "content"],
@@ -105,9 +106,10 @@ async function generateSingleVariation(
       },
     });
 
-    const content = typeof response.choices[0].message.content === 'string' 
-      ? response.choices[0].message.content 
-      : JSON.stringify(response.choices[0].message.content);
+    const content =
+      typeof response.choices[0].message.content === "string"
+        ? response.choices[0].message.content
+        : JSON.stringify(response.choices[0].message.content);
     const result = JSON.parse(content || "{}");
 
     return {
@@ -218,19 +220,37 @@ export function determineWinner(
 
   // Find variation with highest engagement rate
   const winner = results.reduce((prev, current) => {
-    const currentRate = typeof current.engagementRate === 'string' ? parseFloat(current.engagementRate) : current.engagementRate;
-    const prevRate = typeof prev.engagementRate === 'string' ? parseFloat(prev.engagementRate) : prev.engagementRate;
+    const currentRate =
+      typeof current.engagementRate === "string"
+        ? parseFloat(current.engagementRate)
+        : current.engagementRate;
+    const prevRate =
+      typeof prev.engagementRate === "string"
+        ? parseFloat(prev.engagementRate)
+        : prev.engagementRate;
     return currentRate > prevRate ? current : prev;
   });
 
   const runnerUp = results.reduce((prev, current) => {
-    const currentRate = typeof current.engagementRate === 'string' ? parseFloat(current.engagementRate) : current.engagementRate;
-    const prevRate = typeof prev.engagementRate === 'string' ? parseFloat(prev.engagementRate) : prev.engagementRate;
+    const currentRate =
+      typeof current.engagementRate === "string"
+        ? parseFloat(current.engagementRate)
+        : current.engagementRate;
+    const prevRate =
+      typeof prev.engagementRate === "string"
+        ? parseFloat(prev.engagementRate)
+        : prev.engagementRate;
     return currentRate < prevRate ? current : prev;
   });
 
-  const winnerRate = typeof winner.engagementRate === 'string' ? parseFloat(winner.engagementRate) : winner.engagementRate;
-  const runnerUpRate = typeof runnerUp.engagementRate === 'string' ? parseFloat(runnerUp.engagementRate) : runnerUp.engagementRate;
+  const winnerRate =
+    typeof winner.engagementRate === "string"
+      ? parseFloat(winner.engagementRate)
+      : winner.engagementRate;
+  const runnerUpRate =
+    typeof runnerUp.engagementRate === "string"
+      ? parseFloat(runnerUp.engagementRate)
+      : runnerUp.engagementRate;
   const difference = winnerRate - runnerUpRate;
 
   return {

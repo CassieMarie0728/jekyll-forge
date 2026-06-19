@@ -1,7 +1,13 @@
 import { useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,8 +16,17 @@ import { SocialMediaConnectionFlow } from "@/components/SocialMediaConnectionFlo
 import { trpc } from "@/lib/trpc";
 import { formatDistanceToNow } from "date-fns";
 import {
-  User, Lock, Bell, Github, Twitter, Linkedin, Facebook, Instagram,
-  Plus, LogOut, AlertCircle,
+  User,
+  Lock,
+  Bell,
+  Github,
+  Twitter,
+  Linkedin,
+  Facebook,
+  Instagram,
+  Plus,
+  LogOut,
+  AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -19,10 +34,13 @@ export default function UserSettings() {
   const { user, isAuthenticated } = useAuth();
   const [showConnectionFlow, setShowConnectionFlow] = useState(false);
 
-  const { data: accounts, isLoading: accountsLoading, refetch: refetchAccounts } = trpc.socialMedia.getAccounts.useQuery(
-    undefined,
-    { enabled: isAuthenticated }
-  );
+  const {
+    data: accounts,
+    isLoading: accountsLoading,
+    refetch: refetchAccounts,
+  } = trpc.socialMedia.getAccounts.useQuery(undefined, {
+    enabled: isAuthenticated,
+  });
 
   const logoutMutation = trpc.auth.logout.useMutation({
     onSuccess: () => {
@@ -38,10 +56,18 @@ export default function UserSettings() {
     setShowConnectionFlow(true);
   };
 
-  const connectedPlatforms = new Set(accounts?.map((a) => a.platform) || []);
-  const availablePlatforms = ["twitter", "linkedin", "facebook", "instagram"].filter(
-    (p) => !connectedPlatforms.has(p as any)
-  ) as ("twitter" | "linkedin" | "facebook" | "instagram")[];
+  const connectedPlatforms = new Set(accounts?.map(a => a.platform) || []);
+  const availablePlatforms = [
+    "twitter",
+    "linkedin",
+    "facebook",
+    "instagram",
+  ].filter(p => !connectedPlatforms.has(p as any)) as (
+    | "twitter"
+    | "linkedin"
+    | "facebook"
+    | "instagram"
+  )[];
 
   const platformLabels = {
     twitter: { label: "X (Twitter)", icon: Twitter },
@@ -59,7 +85,9 @@ export default function UserSettings() {
             <User className="w-6 h-6" />
             Account Settings
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">Manage your profile and connected accounts</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Manage your profile and connected accounts
+          </p>
         </div>
       </div>
 
@@ -86,28 +114,46 @@ export default function UserSettings() {
             <Card>
               <CardHeader>
                 <CardTitle>Profile Information</CardTitle>
-                <CardDescription>Your account details and preferences</CardDescription>
+                <CardDescription>
+                  Your account details and preferences
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* User Info */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">Name</label>
-                    <p className="text-lg font-semibold mt-1">{user?.name || "Not set"}</p>
+                    <label className="text-sm font-medium text-muted-foreground">
+                      Name
+                    </label>
+                    <p className="text-lg font-semibold mt-1">
+                      {user?.name || "Not set"}
+                    </p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">Email</label>
-                    <p className="text-lg font-semibold mt-1">{user?.email || "Not set"}</p>
+                    <label className="text-sm font-medium text-muted-foreground">
+                      Email
+                    </label>
+                    <p className="text-lg font-semibold mt-1">
+                      {user?.email || "Not set"}
+                    </p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">User ID</label>
-                    <code className="text-sm bg-muted px-2 py-1 rounded mt-1 block font-mono">{user?.id}</code>
+                    <label className="text-sm font-medium text-muted-foreground">
+                      User ID
+                    </label>
+                    <code className="text-sm bg-muted px-2 py-1 rounded mt-1 block font-mono">
+                      {user?.id}
+                    </code>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">Account Created</label>
+                    <label className="text-sm font-medium text-muted-foreground">
+                      Account Created
+                    </label>
                     <p className="text-lg font-semibold mt-1">
                       {user?.createdAt
-                        ? formatDistanceToNow(new Date(user.createdAt), { addSuffix: true })
+                        ? formatDistanceToNow(new Date(user.createdAt), {
+                            addSuffix: true,
+                          })
                         : "Unknown"}
                     </p>
                   </div>
@@ -115,7 +161,9 @@ export default function UserSettings() {
 
                 {/* Role Badge */}
                 <div className="pt-4 border-t border-border">
-                  <label className="text-sm font-medium text-muted-foreground">Account Role</label>
+                  <label className="text-sm font-medium text-muted-foreground">
+                    Account Role
+                  </label>
                   <div className="mt-2">
                     <Badge variant="outline" className="capitalize">
                       {user?.role || "user"}
@@ -133,7 +181,8 @@ export default function UserSettings() {
               <CardHeader>
                 <CardTitle>Connected Social Media Accounts</CardTitle>
                 <CardDescription>
-                  Manage your connected accounts for content distribution and analytics
+                  Manage your connected accounts for content distribution and
+                  analytics
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -145,7 +194,7 @@ export default function UserSettings() {
                   </div>
                 ) : accounts && accounts.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {accounts.map((account) => (
+                    {accounts.map(account => (
                       <AccountCard
                         key={account.id}
                         account={account}
@@ -156,7 +205,9 @@ export default function UserSettings() {
                 ) : (
                   <div className="text-center py-8">
                     <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-50" />
-                    <p className="text-muted-foreground mb-4">No connected accounts yet</p>
+                    <p className="text-muted-foreground mb-4">
+                      No connected accounts yet
+                    </p>
                   </div>
                 )}
               </CardContent>
@@ -167,11 +218,13 @@ export default function UserSettings() {
               <Card>
                 <CardHeader>
                   <CardTitle>Connect New Account</CardTitle>
-                  <CardDescription>Add more social media accounts</CardDescription>
+                  <CardDescription>
+                    Add more social media accounts
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {availablePlatforms.map((platform) => {
+                    {availablePlatforms.map(platform => {
                       const config = platformLabels[platform];
                       const Icon = config.icon;
                       return (
@@ -182,7 +235,9 @@ export default function UserSettings() {
                           onClick={handleConnectPlatform}
                         >
                           <Icon className="w-6 h-6" />
-                          <span className="text-xs text-center">{config.label}</span>
+                          <span className="text-xs text-center">
+                            {config.label}
+                          </span>
                         </Button>
                       );
                     })}
@@ -206,12 +261,15 @@ export default function UserSettings() {
             <Card>
               <CardHeader>
                 <CardTitle>Session & Security</CardTitle>
-                <CardDescription>Manage your login sessions and security settings</CardDescription>
+                <CardDescription>
+                  Manage your login sessions and security settings
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="p-4 bg-muted/50 rounded-lg border border-border">
                   <p className="text-sm text-muted-foreground mb-4">
-                    You are currently logged in to Jekyll Forge. Your session is secure and encrypted.
+                    You are currently logged in to Jekyll Forge. Your session is
+                    secure and encrypted.
                   </p>
                   <Button
                     variant="destructive"
@@ -226,7 +284,9 @@ export default function UserSettings() {
 
                 <div className="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-900">
                   <p className="text-sm text-blue-900 dark:text-blue-100">
-                    <strong>Security Tip:</strong> Always disconnect accounts you no longer use. Your access tokens are encrypted and stored securely.
+                    <strong>Security Tip:</strong> Always disconnect accounts
+                    you no longer use. Your access tokens are encrypted and
+                    stored securely.
                   </p>
                 </div>
               </CardContent>

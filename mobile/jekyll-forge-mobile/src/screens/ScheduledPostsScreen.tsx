@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -9,8 +9,8 @@ import {
   FlatList,
   Alert,
   ActivityIndicator,
-} from 'react-native';
-import { trpc } from '../utils/trpc';
+} from "react-native";
+import { trpc } from "../utils/trpc";
 
 interface ScheduledPost {
   id: string;
@@ -18,7 +18,7 @@ interface ScheduledPost {
   content: string;
   scheduledDate: string;
   platforms: string[];
-  status: 'scheduled' | 'published' | 'cancelled';
+  status: "scheduled" | "published" | "cancelled";
   createdAt: string;
 }
 
@@ -26,48 +26,48 @@ export default function ScheduledPostsScreen({ route, navigation }: any) {
   const { siteId } = route.params || {};
   const [scheduledPosts, setScheduledPosts] = useState<ScheduledPost[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedFilter, setSelectedFilter] = useState<'all' | 'scheduled' | 'published' | 'cancelled'>('all');
+  const [selectedFilter, setSelectedFilter] = useState<
+    "all" | "scheduled" | "published" | "cancelled"
+  >("all");
 
-  const getScheduledPostsMutation = trpc.posts.getScheduled.useQuery({ siteId });
+  const getScheduledPostsMutation = trpc.posts.getScheduled.useQuery({
+    siteId,
+  });
   const cancelScheduleMutation = trpc.posts.cancelSchedule.useMutation();
   const reschedulePostMutation = trpc.posts.reschedule.useMutation();
 
   const handleCancelSchedule = (post: ScheduledPost) => {
-    Alert.alert(
-      'Cancel Schedule',
-      `Cancel scheduled post "${post.title}"?`,
-      [
-        { text: 'Keep Scheduled', onPress: () => {} },
-        {
-          text: 'Cancel',
-          onPress: async () => {
-            try {
-              await cancelScheduleMutation.mutateAsync({ postId: post.id });
-              setScheduledPosts((prev) =>
-                prev.map((p) =>
-                  p.id === post.id ? { ...p, status: 'cancelled' } : p
-                )
-              );
-              Alert.alert('Success', 'Schedule cancelled');
-            } catch (error: any) {
-              Alert.alert('Error', error.message || 'Failed to cancel schedule');
-            }
-          },
-          style: 'destructive',
+    Alert.alert("Cancel Schedule", `Cancel scheduled post "${post.title}"?`, [
+      { text: "Keep Scheduled", onPress: () => {} },
+      {
+        text: "Cancel",
+        onPress: async () => {
+          try {
+            await cancelScheduleMutation.mutateAsync({ postId: post.id });
+            setScheduledPosts(prev =>
+              prev.map(p =>
+                p.id === post.id ? { ...p, status: "cancelled" } : p
+              )
+            );
+            Alert.alert("Success", "Schedule cancelled");
+          } catch (error: any) {
+            Alert.alert("Error", error.message || "Failed to cancel schedule");
+          }
         },
-      ]
-    );
+        style: "destructive",
+      },
+    ]);
   };
 
   const handleReschedule = (post: ScheduledPost) => {
     Alert.prompt(
-      'Reschedule Post',
-      'Enter new date and time (YYYY-MM-DD HH:MM)',
+      "Reschedule Post",
+      "Enter new date and time (YYYY-MM-DD HH:MM)",
       [
-        { text: 'Cancel', onPress: () => {} },
+        { text: "Cancel", onPress: () => {} },
         {
-          text: 'Reschedule',
-          onPress: async (newDate) => {
+          text: "Reschedule",
+          onPress: async newDate => {
             if (!newDate) return;
 
             try {
@@ -75,59 +75,58 @@ export default function ScheduledPostsScreen({ route, navigation }: any) {
                 postId: post.id,
                 newDate,
               });
-              setScheduledPosts((prev) =>
-                prev.map((p) =>
-                  p.id === post.id
-                    ? { ...p, scheduledDate: newDate }
-                    : p
+              setScheduledPosts(prev =>
+                prev.map(p =>
+                  p.id === post.id ? { ...p, scheduledDate: newDate } : p
                 )
               );
-              Alert.alert('Success', 'Post rescheduled');
+              Alert.alert("Success", "Post rescheduled");
             } catch (error: any) {
-              Alert.alert('Error', error.message || 'Failed to reschedule');
+              Alert.alert("Error", error.message || "Failed to reschedule");
             }
           },
         },
       ],
-      'plain-text',
+      "plain-text",
       post.scheduledDate
     );
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'scheduled':
-        return '#3b82f6';
-      case 'published':
-        return '#10b981';
-      case 'cancelled':
-        return '#ef4444';
+      case "scheduled":
+        return "#3b82f6";
+      case "published":
+        return "#10b981";
+      case "cancelled":
+        return "#ef4444";
       default:
-        return '#9ca3af';
+        return "#9ca3af";
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'scheduled':
-        return '⏰';
-      case 'published':
-        return '✓';
-      case 'cancelled':
-        return '✕';
+      case "scheduled":
+        return "⏰";
+      case "published":
+        return "✓";
+      case "cancelled":
+        return "✕";
       default:
-        return '•';
+        return "•";
     }
   };
 
-  const filteredPosts = scheduledPosts.filter((post) => {
-    if (selectedFilter === 'all') return true;
+  const filteredPosts = scheduledPosts.filter(post => {
+    if (selectedFilter === "all") return true;
     return post.status === selectedFilter;
   });
 
   const renderPostCard = (post: ScheduledPost) => {
     const scheduledTime = new Date(post.scheduledDate);
-    const isUpcoming = scheduledTime > new Date() && post.status === 'scheduled';
+    const isUpcoming =
+      scheduledTime > new Date() && post.status === "scheduled";
 
     return (
       <View key={post.id} style={styles.postCard}>
@@ -156,14 +155,14 @@ export default function ScheduledPostsScreen({ route, navigation }: any) {
         </Text>
 
         <View style={styles.platformsContainer}>
-          {post.platforms.map((platform) => (
+          {post.platforms.map(platform => (
             <View key={platform} style={styles.platformTag}>
               <Text style={styles.platformTagText}>{platform}</Text>
             </View>
           ))}
         </View>
 
-        {post.status === 'scheduled' && (
+        {post.status === "scheduled" && (
           <View style={styles.actions}>
             <TouchableOpacity
               style={styles.actionButton}
@@ -197,25 +196,27 @@ export default function ScheduledPostsScreen({ route, navigation }: any) {
         showsHorizontalScrollIndicator={false}
         style={styles.filtersContainer}
       >
-        {(['all', 'scheduled', 'published', 'cancelled'] as const).map((filter) => (
-          <TouchableOpacity
-            key={filter}
-            style={[
-              styles.filterButton,
-              selectedFilter === filter && styles.filterButtonActive,
-            ]}
-            onPress={() => setSelectedFilter(filter)}
-          >
-            <Text
+        {(["all", "scheduled", "published", "cancelled"] as const).map(
+          filter => (
+            <TouchableOpacity
+              key={filter}
               style={[
-                styles.filterButtonText,
-                selectedFilter === filter && styles.filterButtonTextActive,
+                styles.filterButton,
+                selectedFilter === filter && styles.filterButtonActive,
               ]}
+              onPress={() => setSelectedFilter(filter)}
             >
-              {filter.charAt(0).toUpperCase() + filter.slice(1)}
-            </Text>
-          </TouchableOpacity>
-        ))}
+              <Text
+                style={[
+                  styles.filterButtonText,
+                  selectedFilter === filter && styles.filterButtonTextActive,
+                ]}
+              >
+                {filter.charAt(0).toUpperCase() + filter.slice(1)}
+              </Text>
+            </TouchableOpacity>
+          )
+        )}
       </ScrollView>
 
       {/* Posts List */}
@@ -229,13 +230,13 @@ export default function ScheduledPostsScreen({ route, navigation }: any) {
             <Text style={styles.emptyIcon}>📭</Text>
             <Text style={styles.emptyTitle}>No {selectedFilter} posts</Text>
             <Text style={styles.emptyText}>
-              {selectedFilter === 'all'
-                ? 'You don\'t have any scheduled posts yet'
+              {selectedFilter === "all"
+                ? "You don't have any scheduled posts yet"
                 : `You don't have any ${selectedFilter} posts`}
             </Text>
             <TouchableOpacity
               style={styles.createButton}
-              onPress={() => navigation.navigate('Editor')}
+              onPress={() => navigation.navigate("Editor")}
             >
               <Text style={styles.createButtonText}>✍️ Create Post</Text>
             </TouchableOpacity>
@@ -244,7 +245,7 @@ export default function ScheduledPostsScreen({ route, navigation }: any) {
           <FlatList
             data={filteredPosts}
             renderItem={({ item }) => renderPostCard(item)}
-            keyExtractor={(item) => item.id}
+            keyExtractor={item => item.id}
             scrollEnabled={false}
             style={styles.postsList}
           />
@@ -257,19 +258,19 @@ export default function ScheduledPostsScreen({ route, navigation }: any) {
           <View style={styles.statItem}>
             <Text style={styles.statLabel}>Scheduled</Text>
             <Text style={styles.statValue}>
-              {scheduledPosts.filter((p) => p.status === 'scheduled').length}
+              {scheduledPosts.filter(p => p.status === "scheduled").length}
             </Text>
           </View>
           <View style={styles.statItem}>
             <Text style={styles.statLabel}>Published</Text>
             <Text style={styles.statValue}>
-              {scheduledPosts.filter((p) => p.status === 'published').length}
+              {scheduledPosts.filter(p => p.status === "published").length}
             </Text>
           </View>
           <View style={styles.statItem}>
             <Text style={styles.statLabel}>Cancelled</Text>
             <Text style={styles.statValue}>
-              {scheduledPosts.filter((p) => p.status === 'cancelled').length}
+              {scheduledPosts.filter(p => p.status === "cancelled").length}
             </Text>
           </View>
         </View>
@@ -281,47 +282,47 @@ export default function ScheduledPostsScreen({ route, navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: "#0f172a",
   },
   header: {
     paddingHorizontal: 16,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#1e293b',
+    borderBottomColor: "#1e293b",
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 14,
-    color: '#9ca3af',
+    color: "#9ca3af",
   },
   filtersContainer: {
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#1e293b',
+    borderBottomColor: "#1e293b",
   },
   filterButton: {
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 6,
-    backgroundColor: '#1e293b',
+    backgroundColor: "#1e293b",
     marginRight: 8,
   },
   filterButtonActive: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: "#3b82f6",
   },
   filterButtonText: {
     fontSize: 12,
-    fontWeight: '600',
-    color: '#9ca3af',
+    fontWeight: "600",
+    color: "#9ca3af",
   },
   filterButtonTextActive: {
-    color: '#fff',
+    color: "#fff",
   },
   content: {
     flex: 1,
@@ -329,13 +330,13 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     minHeight: 200,
   },
   emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     minHeight: 300,
     paddingHorizontal: 16,
   },
@@ -345,40 +346,40 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
     marginBottom: 4,
   },
   emptyText: {
     fontSize: 13,
-    color: '#9ca3af',
-    textAlign: 'center',
+    color: "#9ca3af",
+    textAlign: "center",
     marginBottom: 16,
   },
   createButton: {
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 6,
-    backgroundColor: '#3b82f6',
+    backgroundColor: "#3b82f6",
   },
   createButtonText: {
     fontSize: 13,
-    fontWeight: '600',
-    color: '#fff',
+    fontWeight: "600",
+    color: "#fff",
   },
   postsList: {
     marginBottom: 16,
   },
   postCard: {
-    backgroundColor: '#1e293b',
+    backgroundColor: "#1e293b",
     padding: 16,
     borderRadius: 8,
     marginBottom: 12,
   },
   postHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
     marginBottom: 12,
   },
   postTitleContainer: {
@@ -387,17 +388,17 @@ const styles = StyleSheet.create({
   },
   postTitle: {
     fontSize: 14,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
     marginBottom: 4,
   },
   postDate: {
     fontSize: 12,
-    color: '#9ca3af',
+    color: "#9ca3af",
   },
   statusBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: 4,
@@ -408,35 +409,35 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 11,
-    fontWeight: '600',
-    color: '#fff',
+    fontWeight: "600",
+    color: "#fff",
   },
   postExcerpt: {
     fontSize: 12,
-    color: '#d1d5db',
+    color: "#d1d5db",
     lineHeight: 18,
     marginBottom: 12,
   },
   platformsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 6,
     marginBottom: 12,
   },
   platformTag: {
-    backgroundColor: '#0f172a',
+    backgroundColor: "#0f172a",
     paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: '#475569',
+    borderColor: "#475569",
   },
   platformTagText: {
     fontSize: 11,
-    color: '#d1d5db',
+    color: "#d1d5db",
   },
   actions: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 8,
   },
   actionButton: {
@@ -444,42 +445,42 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 6,
-    backgroundColor: '#3b82f6',
-    alignItems: 'center',
+    backgroundColor: "#3b82f6",
+    alignItems: "center",
   },
   actionButtonDanger: {
-    backgroundColor: '#ef4444',
+    backgroundColor: "#ef4444",
   },
   actionButtonText: {
     fontSize: 12,
-    fontWeight: '600',
-    color: '#fff',
+    fontWeight: "600",
+    color: "#fff",
   },
   actionButtonTextDanger: {
     fontSize: 12,
-    fontWeight: '600',
-    color: '#fff',
+    fontWeight: "600",
+    color: "#fff",
   },
   statsFooter: {
-    flexDirection: 'row',
-    backgroundColor: '#1e293b',
+    flexDirection: "row",
+    backgroundColor: "#1e293b",
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderTopWidth: 1,
-    borderTopColor: '#334155',
+    borderTopColor: "#334155",
   },
   statItem: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
   },
   statLabel: {
     fontSize: 11,
-    color: '#9ca3af',
+    color: "#9ca3af",
     marginBottom: 2,
   },
   statValue: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#3b82f6',
+    fontWeight: "bold",
+    color: "#3b82f6",
   },
 });

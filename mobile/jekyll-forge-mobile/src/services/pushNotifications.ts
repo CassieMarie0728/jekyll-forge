@@ -1,7 +1,7 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const PUSH_TOKEN_KEY = '@jekyll_forge_push_token';
-const NOTIFICATION_PREFS_KEY = '@jekyll_forge_notification_prefs';
+const PUSH_TOKEN_KEY = "@jekyll_forge_push_token";
+const NOTIFICATION_PREFS_KEY = "@jekyll_forge_notification_prefs";
 
 export interface NotificationPreferences {
   publishSuccess: boolean;
@@ -25,7 +25,7 @@ export interface LocalNotification {
   id: string;
   title: string;
   body: string;
-  type: 'success' | 'info' | 'warning' | 'error';
+  type: "success" | "info" | "warning" | "error";
   category: keyof NotificationPreferences;
   timestamp: number;
   read: boolean;
@@ -34,7 +34,8 @@ export interface LocalNotification {
 
 class PushNotificationService {
   private pushToken: string | null = null;
-  private notificationListeners: ((notification: LocalNotification) => void)[] = [];
+  private notificationListeners: ((notification: LocalNotification) => void)[] =
+    [];
   private notifications: LocalNotification[] = [];
 
   async initialize(): Promise<void> {
@@ -42,7 +43,7 @@ class PushNotificationService {
       // Request permissions
       const granted = await this.requestPermissions();
       if (!granted) {
-        console.warn('Push notification permissions not granted');
+        console.warn("Push notification permissions not granted");
         return;
       }
 
@@ -52,7 +53,7 @@ class PushNotificationService {
       // Load saved notifications
       await this.loadNotifications();
     } catch (error) {
-      console.error('Failed to initialize push notifications:', error);
+      console.error("Failed to initialize push notifications:", error);
     }
   }
 
@@ -73,14 +74,14 @@ class PushNotificationService {
       // Register token with backend
       await this.registerTokenWithBackend(token);
     } catch (error) {
-      console.error('Failed to register for push notifications:', error);
+      console.error("Failed to register for push notifications:", error);
     }
   }
 
   private async registerTokenWithBackend(token: string): Promise<void> {
     // This would call your tRPC procedure to register the device token
     // trpc.notifications.registerDevice.mutate({ token, platform: 'android' });
-    console.log('Registered push token with backend:', token);
+    console.log("Registered push token with backend:", token);
   }
 
   async getPushToken(): Promise<string | null> {
@@ -90,7 +91,7 @@ class PushNotificationService {
       this.pushToken = await AsyncStorage.getItem(PUSH_TOKEN_KEY);
       return this.pushToken;
     } catch (error) {
-      console.error('Failed to get push token:', error);
+      console.error("Failed to get push token:", error);
       return null;
     }
   }
@@ -101,24 +102,31 @@ class PushNotificationService {
       const data = await AsyncStorage.getItem(NOTIFICATION_PREFS_KEY);
       return data ? { ...DEFAULT_PREFS, ...JSON.parse(data) } : DEFAULT_PREFS;
     } catch (error) {
-      console.error('Failed to get notification preferences:', error);
+      console.error("Failed to get notification preferences:", error);
       return DEFAULT_PREFS;
     }
   }
 
-  async updatePreferences(prefs: Partial<NotificationPreferences>): Promise<void> {
+  async updatePreferences(
+    prefs: Partial<NotificationPreferences>
+  ): Promise<void> {
     try {
       const current = await this.getPreferences();
       const updated = { ...current, ...prefs };
-      await AsyncStorage.setItem(NOTIFICATION_PREFS_KEY, JSON.stringify(updated));
+      await AsyncStorage.setItem(
+        NOTIFICATION_PREFS_KEY,
+        JSON.stringify(updated)
+      );
     } catch (error) {
-      console.error('Failed to update notification preferences:', error);
+      console.error("Failed to update notification preferences:", error);
       throw error;
     }
   }
 
   // Local Notifications
-  async scheduleLocalNotification(notification: Omit<LocalNotification, 'id' | 'timestamp' | 'read'>): Promise<void> {
+  async scheduleLocalNotification(
+    notification: Omit<LocalNotification, "id" | "timestamp" | "read">
+  ): Promise<void> {
     const prefs = await this.getPreferences();
 
     // Check if this category is enabled
@@ -137,7 +145,7 @@ class PushNotificationService {
     await this.saveNotifications();
 
     // Notify listeners
-    this.notificationListeners.forEach((listener) => listener(localNotification));
+    this.notificationListeners.forEach(listener => listener(localNotification));
   }
 
   // Notification Management
@@ -146,11 +154,11 @@ class PushNotificationService {
   }
 
   async getUnreadCount(): Promise<number> {
-    return this.notifications.filter((n) => !n.read).length;
+    return this.notifications.filter(n => !n.read).length;
   }
 
   async markAsRead(notificationId: string): Promise<void> {
-    const index = this.notifications.findIndex((n) => n.id === notificationId);
+    const index = this.notifications.findIndex(n => n.id === notificationId);
     if (index >= 0) {
       this.notifications[index].read = true;
       await this.saveNotifications();
@@ -158,7 +166,7 @@ class PushNotificationService {
   }
 
   async markAllAsRead(): Promise<void> {
-    this.notifications = this.notifications.map((n) => ({ ...n, read: true }));
+    this.notifications = this.notifications.map(n => ({ ...n, read: true }));
     await this.saveNotifications();
   }
 
@@ -168,25 +176,31 @@ class PushNotificationService {
   }
 
   async deleteNotification(notificationId: string): Promise<void> {
-    this.notifications = this.notifications.filter((n) => n.id !== notificationId);
+    this.notifications = this.notifications.filter(
+      n => n.id !== notificationId
+    );
     await this.saveNotifications();
   }
 
   // Listeners
-  onNotification(listener: (notification: LocalNotification) => void): () => void {
+  onNotification(
+    listener: (notification: LocalNotification) => void
+  ): () => void {
     this.notificationListeners.push(listener);
     return () => {
-      this.notificationListeners = this.notificationListeners.filter((l) => l !== listener);
+      this.notificationListeners = this.notificationListeners.filter(
+        l => l !== listener
+      );
     };
   }
 
   // Persistence
   private async loadNotifications(): Promise<void> {
     try {
-      const data = await AsyncStorage.getItem('@jekyll_forge_notifications');
+      const data = await AsyncStorage.getItem("@jekyll_forge_notifications");
       this.notifications = data ? JSON.parse(data) : [];
     } catch (error) {
-      console.error('Failed to load notifications:', error);
+      console.error("Failed to load notifications:", error);
       this.notifications = [];
     }
   }
@@ -195,59 +209,75 @@ class PushNotificationService {
     try {
       // Keep only last 100 notifications
       const toSave = this.notifications.slice(0, 100);
-      await AsyncStorage.setItem('@jekyll_forge_notifications', JSON.stringify(toSave));
+      await AsyncStorage.setItem(
+        "@jekyll_forge_notifications",
+        JSON.stringify(toSave)
+      );
     } catch (error) {
-      console.error('Failed to save notifications:', error);
+      console.error("Failed to save notifications:", error);
     }
   }
 
   // Pre-built notification triggers
   async notifyPublishSuccess(postTitle: string): Promise<void> {
     await this.scheduleLocalNotification({
-      title: 'Post Published!',
+      title: "Post Published!",
       body: `"${postTitle}" has been published successfully.`,
-      type: 'success',
-      category: 'publishSuccess',
+      type: "success",
+      category: "publishSuccess",
       data: { postTitle },
     });
   }
 
-  async notifyScheduledReminder(postTitle: string, scheduledTime: string): Promise<void> {
+  async notifyScheduledReminder(
+    postTitle: string,
+    scheduledTime: string
+  ): Promise<void> {
     await this.scheduleLocalNotification({
-      title: 'Scheduled Post Reminder',
+      title: "Scheduled Post Reminder",
       body: `"${postTitle}" is scheduled to publish at ${scheduledTime}.`,
-      type: 'info',
-      category: 'scheduledReminders',
+      type: "info",
+      category: "scheduledReminders",
       data: { postTitle, scheduledTime },
     });
   }
 
-  async notifyAnalyticsUpdate(platform: string, metric: string, value: number): Promise<void> {
+  async notifyAnalyticsUpdate(
+    platform: string,
+    metric: string,
+    value: number
+  ): Promise<void> {
     await this.scheduleLocalNotification({
-      title: 'Analytics Update',
+      title: "Analytics Update",
       body: `Your ${platform} post reached ${value} ${metric}!`,
-      type: 'info',
-      category: 'analyticsUpdates',
+      type: "info",
+      category: "analyticsUpdates",
       data: { platform, metric, value },
     });
   }
 
-  async notifySocialMediaAlert(platform: string, message: string): Promise<void> {
+  async notifySocialMediaAlert(
+    platform: string,
+    message: string
+  ): Promise<void> {
     await this.scheduleLocalNotification({
       title: `${platform} Alert`,
       body: message,
-      type: 'warning',
-      category: 'socialMediaAlerts',
+      type: "warning",
+      category: "socialMediaAlerts",
       data: { platform },
     });
   }
 
-  async notifyABTestResult(postTitle: string, winningVariation: string): Promise<void> {
+  async notifyABTestResult(
+    postTitle: string,
+    winningVariation: string
+  ): Promise<void> {
     await this.scheduleLocalNotification({
-      title: 'A/B Test Complete!',
+      title: "A/B Test Complete!",
       body: `"${postTitle}" - Variation "${winningVariation}" won!`,
-      type: 'success',
-      category: 'abTestResults',
+      type: "success",
+      category: "abTestResults",
       data: { postTitle, winningVariation },
     });
   }

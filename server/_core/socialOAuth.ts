@@ -32,10 +32,18 @@ export function getOAuthAuthorizationUrl(
     platform === "twitter"
       ? ["tweet.read", "tweet.write", "users.read", "tweet.moderate.write"]
       : platform === "linkedin"
-      ? ["w_member_social", "r_basicprofile"]
-      : platform === "facebook"
-      ? ["pages_manage_posts", "pages_read_engagement", "pages_read_user_content"]
-      : ["instagram_business_basic", "instagram_business_content_publish", "instagram_business_manage_messages"];
+        ? ["w_member_social", "r_basicprofile"]
+        : platform === "facebook"
+          ? [
+              "pages_manage_posts",
+              "pages_read_engagement",
+              "pages_read_user_content",
+            ]
+          : [
+              "instagram_business_basic",
+              "instagram_business_content_publish",
+              "instagram_business_manage_messages",
+            ];
 
   const params = new URLSearchParams({
     client_id: clientId,
@@ -71,8 +79,8 @@ export async function exchangeOAuthCode(
       platform === "twitter"
         ? "https://api.twitter.com/2/oauth2/token"
         : platform === "linkedin"
-        ? "https://www.linkedin.com/oauth/v2/accessToken"
-        : "https://graph.facebook.com/v18.0/oauth/access_token";
+          ? "https://www.linkedin.com/oauth/v2/accessToken"
+          : "https://graph.facebook.com/v18.0/oauth/access_token";
 
     const body = new URLSearchParams({
       grant_type: "authorization_code",
@@ -95,7 +103,7 @@ export async function exchangeOAuthCode(
       throw new Error(`OAuth token exchange failed: ${JSON.stringify(error)}`);
     }
 
-    const data = await response.json() as any;
+    const data = (await response.json()) as any;
 
     const expiresIn = data.expires_in || 3600;
     const expiresAt = new Date(Date.now() + expiresIn * 1000);
@@ -129,8 +137,8 @@ export async function refreshOAuthToken(
       platform === "twitter"
         ? "https://api.twitter.com/2/oauth2/token"
         : platform === "linkedin"
-        ? "https://www.linkedin.com/oauth/v2/accessToken"
-        : "https://graph.facebook.com/v18.0/oauth/access_token";
+          ? "https://www.linkedin.com/oauth/v2/accessToken"
+          : "https://graph.facebook.com/v18.0/oauth/access_token";
 
     const body = new URLSearchParams({
       grant_type: "refresh_token",
@@ -152,7 +160,7 @@ export async function refreshOAuthToken(
       throw new Error(`Token refresh failed: ${JSON.stringify(error)}`);
     }
 
-    const data = await response.json() as any;
+    const data = (await response.json()) as any;
 
     const expiresIn = data.expires_in || 3600;
     const expiresAt = new Date(Date.now() + expiresIn * 1000);
@@ -178,18 +186,23 @@ export async function refreshOAuthToken(
 export async function getUserProfile(
   platform: "twitter" | "linkedin",
   accessToken: string
-): Promise<{ id: string; username: string; displayName?: string; profileImageUrl?: string }> {
+): Promise<{
+  id: string;
+  username: string;
+  displayName?: string;
+  profileImageUrl?: string;
+}> {
   try {
     if (platform === "twitter") {
       const response = await fetch("https://api.twitter.com/2/users/me", {
-        headers: { "Authorization": `Bearer ${accessToken}` },
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
 
       if (!response.ok) {
         throw new Error("Failed to fetch Twitter user profile");
       }
 
-      const data = await response.json() as any;
+      const data = (await response.json()) as any;
       return {
         id: data.data.id,
         username: data.data.username,
@@ -197,14 +210,14 @@ export async function getUserProfile(
       };
     } else {
       const response = await fetch("https://api.linkedin.com/v2/me", {
-        headers: { "Authorization": `Bearer ${accessToken}` },
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
 
       if (!response.ok) {
         throw new Error("Failed to fetch LinkedIn user profile");
       }
 
-      const data = await response.json() as any;
+      const data = (await response.json()) as any;
       return {
         id: data.id,
         username: data.localizedFirstName,

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -10,19 +10,19 @@ import {
   Alert,
   Switch,
   FlatList,
-} from 'react-native';
-import { trpc } from '../utils/trpc';
+} from "react-native";
+import { trpc } from "../utils/trpc";
 
 interface ConnectedAccount {
   id: string;
-  platform: 'twitter' | 'linkedin' | 'facebook' | 'instagram';
+  platform: "twitter" | "linkedin" | "facebook" | "instagram";
   username: string;
   connected: boolean;
   icon: string;
 }
 
 interface PublishTarget {
-  platform: 'twitter' | 'linkedin' | 'facebook' | 'instagram';
+  platform: "twitter" | "linkedin" | "facebook" | "instagram";
   selected: boolean;
   icon: string;
   name: string;
@@ -31,28 +31,28 @@ interface PublishTarget {
 export default function SocialPublishScreen({ route }: any) {
   const { postId, title, content } = route.params || {};
   const [selectedPlatforms, setSelectedPlatforms] = useState<PublishTarget[]>([
-    { platform: 'twitter', selected: false, icon: '𝕏', name: 'Twitter/X' },
-    { platform: 'linkedin', selected: false, icon: '💼', name: 'LinkedIn' },
-    { platform: 'facebook', selected: false, icon: '👍', name: 'Facebook' },
-    { platform: 'instagram', selected: false, icon: '📸', name: 'Instagram' },
+    { platform: "twitter", selected: false, icon: "𝕏", name: "Twitter/X" },
+    { platform: "linkedin", selected: false, icon: "💼", name: "LinkedIn" },
+    { platform: "facebook", selected: false, icon: "👍", name: "Facebook" },
+    { platform: "instagram", selected: false, icon: "📸", name: "Instagram" },
   ]);
 
   const [loading, setLoading] = useState(false);
   const publishMutation = trpc.socialMedia.publishContent.useMutation();
 
   const handlePlatformToggle = (platform: string) => {
-    setSelectedPlatforms((prev) =>
-      prev.map((p) =>
+    setSelectedPlatforms(prev =>
+      prev.map(p =>
         p.platform === platform ? { ...p, selected: !p.selected } : p
       )
     );
   };
 
   const handlePublish = async () => {
-    const selected = selectedPlatforms.filter((p) => p.selected);
+    const selected = selectedPlatforms.filter(p => p.selected);
 
     if (selected.length === 0) {
-      Alert.alert('Error', 'Please select at least one platform');
+      Alert.alert("Error", "Please select at least one platform");
       return;
     }
 
@@ -64,10 +64,10 @@ export default function SocialPublishScreen({ route }: any) {
           platform: platform.platform,
         });
       }
-      Alert.alert('Success', 'Post published to selected platforms');
+      Alert.alert("Success", "Post published to selected platforms");
     } catch (error) {
-      Alert.alert('Error', 'Failed to publish post');
-      console.error('Publish error:', error);
+      Alert.alert("Error", "Failed to publish post");
+      console.error("Publish error:", error);
     } finally {
       setLoading(false);
     }
@@ -82,7 +82,7 @@ export default function SocialPublishScreen({ route }: any) {
       <Switch
         value={item.selected}
         onValueChange={() => handlePlatformToggle(item.platform)}
-        trackColor={{ false: '#334155', true: '#3b82f6' }}
+        trackColor={{ false: "#334155", true: "#3b82f6" }}
         thumbColor="#fff"
       />
     </View>
@@ -94,7 +94,9 @@ export default function SocialPublishScreen({ route }: any) {
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>Publish to Social Media</Text>
-          <Text style={styles.subtitle}>Select platforms to share your post</Text>
+          <Text style={styles.subtitle}>
+            Select platforms to share your post
+          </Text>
         </View>
 
         {/* Post Preview */}
@@ -102,10 +104,10 @@ export default function SocialPublishScreen({ route }: any) {
           <Text style={styles.sectionTitle}>Post Preview</Text>
           <View style={styles.previewCard}>
             <Text style={styles.previewTitle} numberOfLines={2}>
-              {title || 'Untitled Post'}
+              {title || "Untitled Post"}
             </Text>
             <Text style={styles.previewContent} numberOfLines={3}>
-              {content || 'No content'}
+              {content || "No content"}
             </Text>
           </View>
         </View>
@@ -116,7 +118,7 @@ export default function SocialPublishScreen({ route }: any) {
           <FlatList
             data={selectedPlatforms}
             renderItem={({ item }) => renderPlatformCard(item)}
-            keyExtractor={(item) => item.platform}
+            keyExtractor={item => item.platform}
             scrollEnabled={false}
           />
         </View>
@@ -132,7 +134,7 @@ export default function SocialPublishScreen({ route }: any) {
             <Switch
               value={true}
               disabled
-              trackColor={{ false: '#334155', true: '#3b82f6' }}
+              trackColor={{ false: "#334155", true: "#3b82f6" }}
               thumbColor="#fff"
             />
           </View>
@@ -144,7 +146,7 @@ export default function SocialPublishScreen({ route }: any) {
             <Switch
               value={true}
               disabled
-              trackColor={{ false: '#334155', true: '#3b82f6' }}
+              trackColor={{ false: "#334155", true: "#3b82f6" }}
               thumbColor="#fff"
             />
           </View>
@@ -175,7 +177,7 @@ export default function SocialPublishScreen({ route }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: "#0f172a",
   },
   content: {
     flex: 1,
@@ -186,54 +188,54 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 14,
-    color: '#9ca3af',
+    color: "#9ca3af",
   },
   previewSection: {
     marginBottom: 24,
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
+    fontWeight: "600",
+    color: "#fff",
     marginBottom: 12,
   },
   previewCard: {
-    backgroundColor: '#1e293b',
+    backgroundColor: "#1e293b",
     padding: 12,
     borderRadius: 8,
   },
   previewTitle: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#fff',
+    fontWeight: "600",
+    color: "#fff",
     marginBottom: 8,
   },
   previewContent: {
     fontSize: 12,
-    color: '#9ca3af',
+    color: "#9ca3af",
     lineHeight: 18,
   },
   platformsSection: {
     marginBottom: 24,
   },
   platformCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#1e293b',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#1e293b",
     padding: 12,
     borderRadius: 8,
     marginBottom: 8,
   },
   platformInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   platformIcon: {
     fontSize: 24,
@@ -241,17 +243,17 @@ const styles = StyleSheet.create({
   },
   platformName: {
     fontSize: 14,
-    fontWeight: '500',
-    color: '#fff',
+    fontWeight: "500",
+    color: "#fff",
   },
   optionsSection: {
     marginBottom: 24,
   },
   optionItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#1e293b',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#1e293b",
     padding: 12,
     borderRadius: 8,
     marginBottom: 8,
@@ -261,47 +263,47 @@ const styles = StyleSheet.create({
   },
   optionTitle: {
     fontSize: 14,
-    fontWeight: '500',
-    color: '#fff',
+    fontWeight: "500",
+    color: "#fff",
     marginBottom: 2,
   },
   optionSubtitle: {
     fontSize: 12,
-    color: '#9ca3af',
+    color: "#9ca3af",
   },
   actionContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: 16,
     gap: 12,
     borderTopWidth: 1,
-    borderTopColor: '#1e293b',
+    borderTopColor: "#1e293b",
   },
   cancelButton: {
     flex: 1,
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 6,
-    backgroundColor: '#334155',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#334155",
+    alignItems: "center",
+    justifyContent: "center",
   },
   cancelButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   publishButton: {
     flex: 1,
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 6,
-    backgroundColor: '#3b82f6',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#3b82f6",
+    alignItems: "center",
+    justifyContent: "center",
   },
   publishButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

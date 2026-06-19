@@ -1,5 +1,11 @@
 import { trpc } from "@/lib/trpc";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { BarChart3, TrendingUp, Eye, MessageCircle, Link2 } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 
@@ -19,7 +25,9 @@ export function AnalyticsDashboard() {
     return (
       <Card>
         <CardContent className="pt-6">
-          <p className="text-sm text-muted-foreground">No analytics data available yet</p>
+          <p className="text-sm text-muted-foreground">
+            No analytics data available yet
+          </p>
         </CardContent>
       </Card>
     );
@@ -57,14 +65,16 @@ export function AnalyticsDashboard() {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {metrics.map((metric) => {
+        {metrics.map(metric => {
           const Icon = metric.icon;
           return (
             <Card key={metric.label}>
               <CardContent className="pt-6">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">{metric.label}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {metric.label}
+                    </p>
                     <p className="text-3xl font-bold mt-2">{metric.value}</p>
                   </div>
                   <div className={`p-3 rounded-lg ${metric.bgColor}`}>
@@ -88,9 +98,12 @@ export function AnalyticsDashboard() {
         <CardContent>
           <div className="flex items-end gap-4">
             <div>
-              <p className="text-4xl font-bold text-blue-600">{engagementRate}%</p>
+              <p className="text-4xl font-bold text-blue-600">
+                {engagementRate}%
+              </p>
               <p className="text-sm text-muted-foreground mt-1">
-                {summary.totalEngagements} engagements from {summary.totalImpressions.toLocaleString()} impressions
+                {summary.totalEngagements} engagements from{" "}
+                {summary.totalImpressions.toLocaleString()} impressions
               </p>
             </div>
           </div>
@@ -115,15 +128,21 @@ export function AnalyticsDashboard() {
                   <div className="grid grid-cols-3 gap-3 text-sm">
                     <div>
                       <p className="text-muted-foreground">Impressions</p>
-                      <p className="font-semibold text-lg">{stats.impressions.toLocaleString()}</p>
+                      <p className="font-semibold text-lg">
+                        {stats.impressions.toLocaleString()}
+                      </p>
                     </div>
                     <div>
                       <p className="text-muted-foreground">Engagements</p>
-                      <p className="font-semibold text-lg">{stats.engagements.toLocaleString()}</p>
+                      <p className="font-semibold text-lg">
+                        {stats.engagements.toLocaleString()}
+                      </p>
                     </div>
                     <div>
                       <p className="text-muted-foreground">Clicks</p>
-                      <p className="font-semibold text-lg">{stats.clicks.toLocaleString()}</p>
+                      <p className="font-semibold text-lg">
+                        {stats.clicks.toLocaleString()}
+                      </p>
                     </div>
                   </div>
                 </div>

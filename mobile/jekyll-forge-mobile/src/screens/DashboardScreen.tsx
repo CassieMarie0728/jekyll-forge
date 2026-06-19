@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,13 +8,13 @@ import {
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
-} from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface Post {
   id: string;
   title: string;
-  status: 'draft' | 'published' | 'scheduled';
+  status: "draft" | "published" | "scheduled";
   createdAt: string;
   updatedAt: string;
 }
@@ -45,26 +45,28 @@ export default function DashboardScreen() {
     try {
       setLoading(true);
       // Load sites from cache
-      const sitesData = await AsyncStorage.getItem('sites');
+      const sitesData = await AsyncStorage.getItem("sites");
       if (sitesData) {
         setSites(JSON.parse(sitesData));
       }
 
       // Load posts from cache
-      const postsData = await AsyncStorage.getItem('posts');
+      const postsData = await AsyncStorage.getItem("posts");
       if (postsData) {
         const allPosts = JSON.parse(postsData);
         setPosts(allPosts);
 
         // Calculate stats
         setStats({
-          totalPosts: allPosts.filter((p: Post) => p.status === 'published').length,
-          drafts: allPosts.filter((p: Post) => p.status === 'draft').length,
-          scheduled: allPosts.filter((p: Post) => p.status === 'scheduled').length,
+          totalPosts: allPosts.filter((p: Post) => p.status === "published")
+            .length,
+          drafts: allPosts.filter((p: Post) => p.status === "draft").length,
+          scheduled: allPosts.filter((p: Post) => p.status === "scheduled")
+            .length,
         });
       }
     } catch (error) {
-      console.error('Failed to load dashboard:', error);
+      console.error("Failed to load dashboard:", error);
     } finally {
       setLoading(false);
     }
@@ -91,12 +93,14 @@ export default function DashboardScreen() {
       <View
         style={[
           styles.statusBadge,
-          item.status === 'published' && styles.publishedBadge,
-          item.status === 'draft' && styles.draftBadge,
-          item.status === 'scheduled' && styles.scheduledBadge,
+          item.status === "published" && styles.publishedBadge,
+          item.status === "draft" && styles.draftBadge,
+          item.status === "scheduled" && styles.scheduledBadge,
         ]}
       >
-        <Text style={styles.statusText}>{item.status.charAt(0).toUpperCase()}</Text>
+        <Text style={styles.statusText}>
+          {item.status.charAt(0).toUpperCase()}
+        </Text>
       </View>
     </TouchableOpacity>
   );
@@ -122,9 +126,9 @@ export default function DashboardScreen() {
 
         {/* Stats */}
         <View style={styles.statsContainer}>
-          {renderStatCard('Published', stats.totalPosts, '📝')}
-          {renderStatCard('Drafts', stats.drafts, '✏️')}
-          {renderStatCard('Scheduled', stats.scheduled, '📅')}
+          {renderStatCard("Published", stats.totalPosts, "📝")}
+          {renderStatCard("Drafts", stats.drafts, "✏️")}
+          {renderStatCard("Scheduled", stats.scheduled, "📅")}
         </View>
 
         {/* Recent Posts */}
@@ -137,12 +141,14 @@ export default function DashboardScreen() {
           </View>
 
           {posts.length === 0 ? (
-            <Text style={styles.emptyText}>No posts yet. Create one to get started!</Text>
+            <Text style={styles.emptyText}>
+              No posts yet. Create one to get started!
+            </Text>
           ) : (
             <FlatList
               data={posts.slice(0, 5)}
               renderItem={renderPostItem}
-              keyExtractor={(item) => item.id}
+              keyExtractor={item => item.id}
               scrollEnabled={false}
             />
           )}
@@ -159,7 +165,9 @@ export default function DashboardScreen() {
             <Text style={styles.actionIcon}>📤</Text>
             <Text style={styles.actionText}>Upload Asset</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.actionButton, styles.settingsButton]}>
+          <TouchableOpacity
+            style={[styles.actionButton, styles.settingsButton]}
+          >
             <Text style={styles.actionIcon}>⚙️</Text>
             <Text style={styles.actionText}>Site Settings</Text>
           </TouchableOpacity>
@@ -172,7 +180,7 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: "#0f172a",
   },
   content: {
     flex: 1,
@@ -180,33 +188,33 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   header: {
     marginBottom: 24,
   },
   title: {
     fontSize: 28,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 14,
-    color: '#9ca3af',
+    color: "#9ca3af",
   },
   statsContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
     marginBottom: 24,
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#1e293b',
+    backgroundColor: "#1e293b",
     padding: 16,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   statIcon: {
     fontSize: 24,
@@ -214,104 +222,104 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
     marginBottom: 4,
   },
   statTitle: {
     fontSize: 12,
-    color: '#9ca3af',
+    color: "#9ca3af",
   },
   section: {
     marginBottom: 24,
   },
   sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 12,
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
+    fontWeight: "600",
+    color: "#fff",
   },
   viewAllLink: {
-    color: '#3b82f6',
+    color: "#3b82f6",
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   postCard: {
-    flexDirection: 'row',
-    backgroundColor: '#1e293b',
+    flexDirection: "row",
+    backgroundColor: "#1e293b",
     padding: 12,
     borderRadius: 8,
     marginBottom: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   postContent: {
     flex: 1,
   },
   postTitle: {
     fontSize: 14,
-    fontWeight: '500',
-    color: '#fff',
+    fontWeight: "500",
+    color: "#fff",
     marginBottom: 4,
   },
   postMeta: {
     fontSize: 12,
-    color: '#9ca3af',
+    color: "#9ca3af",
   },
   statusBadge: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   publishedBadge: {
-    backgroundColor: '#10b981',
+    backgroundColor: "#10b981",
   },
   draftBadge: {
-    backgroundColor: '#f59e0b',
+    backgroundColor: "#f59e0b",
   },
   scheduledBadge: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: "#3b82f6",
   },
   statusText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   emptyText: {
-    color: '#6b7280',
+    color: "#6b7280",
     fontSize: 14,
-    textAlign: 'center',
+    textAlign: "center",
     paddingVertical: 24,
   },
   actionButton: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: 12,
     borderRadius: 8,
     marginBottom: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   newPostButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: "#3b82f6",
   },
   uploadButton: {
-    backgroundColor: '#8b5cf6',
+    backgroundColor: "#8b5cf6",
   },
   settingsButton: {
-    backgroundColor: '#6366f1',
+    backgroundColor: "#6366f1",
   },
   actionIcon: {
     fontSize: 18,
     marginRight: 12,
   },
   actionText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
   },
 });

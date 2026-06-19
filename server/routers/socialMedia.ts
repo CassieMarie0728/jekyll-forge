@@ -26,16 +26,18 @@ export const socialMediaRouter = router({
    * Connect a social media account (OAuth callback handler)
    */
   connectAccount: protectedProcedure
-    .input(z.object({
-      platform: z.enum(["twitter", "linkedin", "facebook", "instagram"]),
-      accessToken: z.string(),
-      refreshToken: z.string().optional(),
-      expiresAt: z.date().optional(),
-      accountId: z.string(),
-      username: z.string().optional(),
-      displayName: z.string().optional(),
-      profileImageUrl: z.string().optional(),
-    }))
+    .input(
+      z.object({
+        platform: z.enum(["twitter", "linkedin", "facebook", "instagram"]),
+        accessToken: z.string(),
+        refreshToken: z.string().optional(),
+        expiresAt: z.date().optional(),
+        accountId: z.string(),
+        username: z.string().optional(),
+        displayName: z.string().optional(),
+        profileImageUrl: z.string().optional(),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       try {
         const accountId = await createSocialMediaAccount({
@@ -76,7 +78,10 @@ export const socialMediaRouter = router({
     .mutation(async ({ ctx, input }) => {
       const account = await getSocialMediaAccount(input.id, ctx.user.id);
       if (!account) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Account not found" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Account not found",
+        });
       }
 
       await deleteSocialMediaAccount(input.id, ctx.user.id);
@@ -87,26 +92,40 @@ export const socialMediaRouter = router({
    * Publish repurposed content to social media
    */
   publishContent: protectedProcedure
-    .input(z.object({
-      repurposedContentId: z.number(),
-      accountId: z.number(),
-    }))
+    .input(
+      z.object({
+        repurposedContentId: z.number(),
+        accountId: z.number(),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       // Get the repurposed content
-      const content = await getRepurposedContentById(input.repurposedContentId, ctx.user.id);
+      const content = await getRepurposedContentById(
+        input.repurposedContentId,
+        ctx.user.id
+      );
       if (!content) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Content not found" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Content not found",
+        });
       }
 
       // Get the social media account
       const account = await getSocialMediaAccount(input.accountId, ctx.user.id);
       if (!account) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Account not found" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Account not found",
+        });
       }
 
       try {
         // Get the appropriate service
-        const service = getSocialMediaService(account.platform as "twitter" | "linkedin" | "facebook" | "instagram", account.accessToken);
+        const service = getSocialMediaService(
+          account.platform as "twitter" | "linkedin" | "facebook" | "instagram",
+          account.accessToken
+        );
 
         // Publish based on format
         let result;
@@ -114,10 +133,13 @@ export const socialMediaRouter = router({
           // Parse Twitter thread
           const tweets = content.content
             .split("\n\n")
-            .filter((t) => t.trim())
-            .map((t) => t.trim());
+            .filter(t => t.trim())
+            .map(t => t.trim());
           result = await (service as any).postThread(tweets);
-        } else if (account.platform === "linkedin" && content.format === "linkedin") {
+        } else if (
+          account.platform === "linkedin" &&
+          content.format === "linkedin"
+        ) {
           // Extract title and content for LinkedIn
           const lines = content.content.split("\n");
           const title = lines[0] || "Check out this article";
@@ -159,7 +181,10 @@ export const socialMediaRouter = router({
   getContentAnalytics: protectedProcedure
     .input(z.object({ repurposedContentId: z.number() }))
     .query(async ({ ctx, input }) => {
-      return getContentAnalyticsByRepurposedId(input.repurposedContentId, ctx.user.id);
+      return getContentAnalyticsByRepurposedId(
+        input.repurposedContentId,
+        ctx.user.id
+      );
     }),
 
   /**
@@ -179,25 +204,44 @@ export const socialMediaRouter = router({
     .mutation(async ({ ctx, input }) => {
       try {
         // Get all analytics and find by ID
-        const twitterAnalytics = await getContentAnalyticsByPlatform(ctx.user.id, "twitter");
-        const linkedinAnalytics = await getContentAnalyticsByPlatform(ctx.user.id, "linkedin");
-        const analytics = [...twitterAnalytics, ...linkedinAnalytics].find((a) => a.id === input.analyticsId);
+        const twitterAnalytics = await getContentAnalyticsByPlatform(
+          ctx.user.id,
+          "twitter"
+        );
+        const linkedinAnalytics = await getContentAnalyticsByPlatform(
+          ctx.user.id,
+          "linkedin"
+        );
+        const analytics = [...twitterAnalytics, ...linkedinAnalytics].find(
+          a => a.id === input.analyticsId
+        );
 
         if (!analytics || !analytics.externalPostId) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Analytics record not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Analytics record not found",
+          });
         }
 
         // Get the account for this platform
         const accounts = await getSocialMediaAccountsByUserId(ctx.user.id);
-        const account = accounts.find((a) => a.platform === analytics.platform);
+        const account = accounts.find(a => a.platform === analytics.platform);
 
         if (!account) {
-          throw new TRPCError({ code: "NOT_FOUND", message: `No ${analytics.platform} account connected` });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: `No ${analytics.platform} account connected`,
+          });
         }
 
         // Get the service and fetch metrics
-        const service = getSocialMediaService(account.platform, account.accessToken);
-        const metrics = await (service as any).getTweetMetrics(analytics.externalPostId);
+        const service = getSocialMediaService(
+          account.platform,
+          account.accessToken
+        );
+        const metrics = await (service as any).getTweetMetrics(
+          analytics.externalPostId
+        );
 
         // Update analytics
         await updateContentAnalytics(input.analyticsId, ctx.user.id, {
@@ -238,7 +282,10 @@ export const socialMediaRouter = router({
     .query(async ({ ctx, input }) => {
       const account = await getSocialMediaAccount(input.id, ctx.user.id);
       if (!account) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Account not found" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Account not found",
+        });
       }
       return account;
     }),
@@ -247,22 +294,36 @@ export const socialMediaRouter = router({
    * Schedule social media post for later publishing
    */
   schedulePost: protectedProcedure
-    .input(z.object({
-      repurposedContentId: z.number(),
-      socialMediaAccountId: z.number(),
-      scheduledAt: z.date(),
-      timezone: z.string().optional(),
-    }))
+    .input(
+      z.object({
+        repurposedContentId: z.number(),
+        socialMediaAccountId: z.number(),
+        scheduledAt: z.date(),
+        timezone: z.string().optional(),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       try {
-        const content = await getRepurposedContentById(input.repurposedContentId, ctx.user.id);
+        const content = await getRepurposedContentById(
+          input.repurposedContentId,
+          ctx.user.id
+        );
         if (!content) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Content not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Content not found",
+          });
         }
 
-        const account = await getSocialMediaAccount(input.socialMediaAccountId, ctx.user.id);
+        const account = await getSocialMediaAccount(
+          input.socialMediaAccountId,
+          ctx.user.id
+        );
         if (!account) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Account not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Account not found",
+          });
         }
 
         const postId = await createScheduledSocialPost({
@@ -293,23 +354,34 @@ export const socialMediaRouter = router({
   getScheduledPosts: protectedProcedure
     .input(z.object({ repurposedContentId: z.number() }))
     .query(async ({ ctx, input }) => {
-      return getScheduledSocialPostsByRepurposedContent(input.repurposedContentId, ctx.user.id);
+      return getScheduledSocialPostsByRepurposedContent(
+        input.repurposedContentId,
+        ctx.user.id
+      );
     }),
 
   /**
    * Reschedule an existing post
    */
   reschedulePost: protectedProcedure
-    .input(z.object({
-      postId: z.number(),
-      scheduledAt: z.date(),
-      timezone: z.string().optional(),
-    }))
+    .input(
+      z.object({
+        postId: z.number(),
+        scheduledAt: z.date(),
+        timezone: z.string().optional(),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       try {
-        const post = await getScheduledSocialPostById(input.postId, ctx.user.id);
+        const post = await getScheduledSocialPostById(
+          input.postId,
+          ctx.user.id
+        );
         if (!post) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Scheduled post not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Scheduled post not found",
+          });
         }
 
         if (post.status !== "pending") {
@@ -342,9 +414,15 @@ export const socialMediaRouter = router({
     .input(z.object({ postId: z.number() }))
     .mutation(async ({ ctx, input }) => {
       try {
-        const post = await getScheduledSocialPostById(input.postId, ctx.user.id);
+        const post = await getScheduledSocialPostById(
+          input.postId,
+          ctx.user.id
+        );
         if (!post) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Scheduled post not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Scheduled post not found",
+          });
         }
 
         if (post.status !== "pending") {

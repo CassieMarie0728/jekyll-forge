@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -7,12 +7,15 @@ import {
   FlatList,
   Alert,
   ActivityIndicator,
-} from 'react-native';
-import { useConnectedAccounts, useDisconnectAccount } from '../hooks/useSocialMedia';
+} from "react-native";
+import {
+  useConnectedAccounts,
+  useDisconnectAccount,
+} from "../hooks/useSocialMedia";
 
 interface Account {
   id: string;
-  platform: 'twitter' | 'linkedin' | 'facebook' | 'instagram';
+  platform: "twitter" | "linkedin" | "facebook" | "instagram";
   username: string;
   profileImage?: string;
   connectedAt: string;
@@ -24,17 +27,17 @@ interface Props {
 }
 
 const platformIcons: Record<string, string> = {
-  twitter: '𝕏',
-  linkedin: '💼',
-  facebook: '👍',
-  instagram: '📸',
+  twitter: "𝕏",
+  linkedin: "💼",
+  facebook: "👍",
+  instagram: "📸",
 };
 
 const platformNames: Record<string, string> = {
-  twitter: 'Twitter/X',
-  linkedin: 'LinkedIn',
-  facebook: 'Facebook',
-  instagram: 'Instagram',
+  twitter: "Twitter/X",
+  linkedin: "LinkedIn",
+  facebook: "Facebook",
+  instagram: "Instagram",
 };
 
 export default function SocialAccountManager({
@@ -47,12 +50,12 @@ export default function SocialAccountManager({
 
   const handleDisconnect = (accountId: string, platform: string) => {
     Alert.alert(
-      'Disconnect Account',
+      "Disconnect Account",
       `Are you sure you want to disconnect your ${platformNames[platform]} account?`,
       [
-        { text: 'Cancel', onPress: () => {} },
+        { text: "Cancel", onPress: () => {} },
         {
-          text: 'Disconnect',
+          text: "Disconnect",
           onPress: async () => {
             setDisconnecting(accountId);
             try {
@@ -60,12 +63,12 @@ export default function SocialAccountManager({
               refetch();
               onAccountDisconnected?.();
             } catch (error) {
-              Alert.alert('Error', 'Failed to disconnect account');
+              Alert.alert("Error", "Failed to disconnect account");
             } finally {
               setDisconnecting(null);
             }
           },
-          style: 'destructive',
+          style: "destructive",
         },
       ]
     );
@@ -74,7 +77,9 @@ export default function SocialAccountManager({
   const renderAccountCard = (account: Account) => (
     <View key={account.id} style={styles.accountCard}>
       <View style={styles.accountInfo}>
-        <Text style={styles.accountIcon}>{platformIcons[account.platform]}</Text>
+        <Text style={styles.accountIcon}>
+          {platformIcons[account.platform]}
+        </Text>
         <View style={styles.accountDetails}>
           <Text style={styles.accountUsername}>{account.username}</Text>
           <Text style={styles.accountPlatform}>
@@ -124,7 +129,7 @@ export default function SocialAccountManager({
       <FlatList
         data={accounts}
         renderItem={({ item }) => renderAccountCard(item)}
-        keyExtractor={(item) => item.id}
+        keyExtractor={item => item.id}
         scrollEnabled={false}
       />
     </View>
@@ -137,13 +142,13 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     padding: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   emptyContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     padding: 24,
-    backgroundColor: '#1e293b',
+    backgroundColor: "#1e293b",
     borderRadius: 8,
   },
   emptyIcon: {
@@ -152,27 +157,27 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#fff',
+    fontWeight: "600",
+    color: "#fff",
     marginBottom: 4,
   },
   emptyText: {
     fontSize: 12,
-    color: '#9ca3af',
-    textAlign: 'center',
+    color: "#9ca3af",
+    textAlign: "center",
   },
   accountCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#1e293b',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#1e293b",
     padding: 12,
     borderRadius: 8,
     marginBottom: 8,
   },
   accountInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     flex: 1,
   },
   accountIcon: {
@@ -184,30 +189,30 @@ const styles = StyleSheet.create({
   },
   accountUsername: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#fff',
+    fontWeight: "600",
+    color: "#fff",
     marginBottom: 2,
   },
   accountPlatform: {
     fontSize: 12,
-    color: '#9ca3af',
+    color: "#9ca3af",
     marginBottom: 2,
   },
   accountDate: {
     fontSize: 11,
-    color: '#6b7280',
+    color: "#6b7280",
   },
   disconnectButton: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#fee2e2',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#fee2e2",
+    justifyContent: "center",
+    alignItems: "center",
   },
   disconnectIcon: {
     fontSize: 18,
-    color: '#dc2626',
-    fontWeight: 'bold',
+    color: "#dc2626",
+    fontWeight: "bold",
   },
 });

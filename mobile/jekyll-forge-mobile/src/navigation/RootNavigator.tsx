@@ -1,25 +1,25 @@
-import React, { useEffect } from 'react';
-import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { ActivityIndicator, View, Text, StyleSheet } from 'react-native';
-import { useAuthStore } from '../stores/authStore';
+import React, { useEffect } from "react";
+import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { ActivityIndicator, View, Text, StyleSheet } from "react-native";
+import { useAuthStore } from "../stores/authStore";
 
 // Screens
-import LoginScreen from '../screens/LoginScreen';
-import DashboardScreen from '../screens/DashboardScreen';
-import EditorScreen from '../screens/EditorScreen';
-import AssetManagerScreen from '../screens/AssetManagerScreen';
-import SettingsScreen from '../screens/SettingsScreen';
-import RepoPickerScreen from '../screens/RepoPickerScreen';
-import PublishScreen from '../screens/PublishScreen';
-import AIAssistantScreen from '../screens/AIAssistantScreen';
-import RepurposingScreen from '../screens/RepurposingScreen';
-import ABTestingScreen from '../screens/ABTestingScreen';
-import SocialPublishScreen from '../screens/SocialPublishScreen';
-import SocialAnalyticsScreen from '../screens/SocialAnalyticsScreen';
-import ScheduledPostsScreen from '../screens/ScheduledPostsScreen';
-import NotificationsScreen from '../screens/NotificationsScreen';
+import LoginScreen from "../screens/LoginScreen";
+import DashboardScreen from "../screens/DashboardScreen";
+import EditorScreen from "../screens/EditorScreen";
+import AssetManagerScreen from "../screens/AssetManagerScreen";
+import SettingsScreen from "../screens/SettingsScreen";
+import RepoPickerScreen from "../screens/RepoPickerScreen";
+import PublishScreen from "../screens/PublishScreen";
+import AIAssistantScreen from "../screens/AIAssistantScreen";
+import RepurposingScreen from "../screens/RepurposingScreen";
+import ABTestingScreen from "../screens/ABTestingScreen";
+import SocialPublishScreen from "../screens/SocialPublishScreen";
+import SocialAnalyticsScreen from "../screens/SocialAnalyticsScreen";
+import ScheduledPostsScreen from "../screens/ScheduledPostsScreen";
+import NotificationsScreen from "../screens/NotificationsScreen";
 
 // Dark Theme
 const JekyllForgeDarkTheme = {
@@ -27,12 +27,12 @@ const JekyllForgeDarkTheme = {
   dark: true,
   colors: {
     ...DefaultTheme.colors,
-    primary: '#3b82f6',
-    background: '#0f172a',
-    card: '#1e293b',
-    text: '#ffffff',
-    border: '#334155',
-    notification: '#ef4444',
+    primary: "#3b82f6",
+    background: "#0f172a",
+    card: "#1e293b",
+    text: "#ffffff",
+    border: "#334155",
+    notification: "#ef4444",
   },
 };
 
@@ -42,18 +42,18 @@ const Tab = createBottomTabNavigator();
 // Polished screen options with smooth transitions
 const screenOptions = {
   headerStyle: {
-    backgroundColor: '#0f172a',
+    backgroundColor: "#0f172a",
   },
-  headerTintColor: '#fff',
+  headerTintColor: "#fff",
   headerTitleStyle: {
-    fontWeight: '600' as const,
+    fontWeight: "600" as const,
     fontSize: 17,
   },
   headerShadowVisible: false,
   contentStyle: {
-    backgroundColor: '#0f172a',
+    backgroundColor: "#0f172a",
   },
-  animation: 'slide_from_right' as const,
+  animation: "slide_from_right" as const,
   animationDuration: 250,
   gestureEnabled: true,
 };
@@ -61,8 +61,15 @@ const screenOptions = {
 // Tab icon with active indicator
 function TabIcon({ icon, focused }: { icon: string; focused: boolean }) {
   return (
-    <View style={[tabStyles.iconContainer, focused && tabStyles.iconContainerActive]}>
-      <Text style={[tabStyles.icon, focused && tabStyles.iconFocused]}>{icon}</Text>
+    <View
+      style={[
+        tabStyles.iconContainer,
+        focused && tabStyles.iconContainerActive,
+      ]}
+    >
+      <Text style={[tabStyles.icon, focused && tabStyles.iconFocused]}>
+        {icon}
+      </Text>
     </View>
   );
 }
@@ -70,7 +77,7 @@ function TabIcon({ icon, focused }: { icon: string; focused: boolean }) {
 // Auth Stack
 function AuthStack() {
   return (
-    <Stack.Navigator screenOptions={{ ...screenOptions, animation: 'fade' }}>
+    <Stack.Navigator screenOptions={{ ...screenOptions, animation: "fade" }}>
       <Stack.Screen
         name="Login"
         component={LoginScreen}
@@ -87,7 +94,7 @@ function RepoPickerStack() {
       <Stack.Screen
         name="RepoPicker"
         component={RepoPickerScreen}
-        options={{ title: 'Select Repository' }}
+        options={{ title: "Select Repository" }}
       />
     </Stack.Navigator>
   );
@@ -98,23 +105,23 @@ function AppTabs() {
   return (
     <Tab.Navigator
       screenOptions={{
-        headerStyle: { backgroundColor: '#0f172a' },
-        headerTintColor: '#fff',
-        headerTitleStyle: { fontWeight: '600', fontSize: 17 },
+        headerStyle: { backgroundColor: "#0f172a" },
+        headerTintColor: "#fff",
+        headerTitleStyle: { fontWeight: "600", fontSize: 17 },
         headerShadowVisible: false,
         tabBarStyle: tabStyles.tabBar,
-        tabBarActiveTintColor: '#3b82f6',
-        tabBarInactiveTintColor: '#6b7280',
+        tabBarActiveTintColor: "#3b82f6",
+        tabBarInactiveTintColor: "#6b7280",
         tabBarLabelStyle: tabStyles.tabLabel,
-        animation: 'fade',
+        animation: "fade",
       }}
     >
       <Tab.Screen
         name="DashboardTab"
         component={DashboardScreen}
         options={{
-          title: 'Dashboard',
-          tabBarLabel: 'Dashboard',
+          title: "Dashboard",
+          tabBarLabel: "Dashboard",
           tabBarIcon: ({ focused }) => <TabIcon icon="📊" focused={focused} />,
         }}
       />
@@ -122,8 +129,8 @@ function AppTabs() {
         name="EditorTab"
         component={EditorScreen}
         options={{
-          title: 'Editor',
-          tabBarLabel: 'Editor',
+          title: "Editor",
+          tabBarLabel: "Editor",
           tabBarIcon: ({ focused }) => <TabIcon icon="✍️" focused={focused} />,
         }}
       />
@@ -131,8 +138,8 @@ function AppTabs() {
         name="AssetsTab"
         component={AssetManagerScreen}
         options={{
-          title: 'Assets',
-          tabBarLabel: 'Assets',
+          title: "Assets",
+          tabBarLabel: "Assets",
           tabBarIcon: ({ focused }) => <TabIcon icon="📁" focused={focused} />,
         }}
       />
@@ -140,8 +147,8 @@ function AppTabs() {
         name="SettingsTab"
         component={SettingsScreen}
         options={{
-          title: 'Settings',
-          tabBarLabel: 'Settings',
+          title: "Settings",
+          tabBarLabel: "Settings",
           tabBarIcon: ({ focused }) => <TabIcon icon="⚙️" focused={focused} />,
         }}
       />
@@ -164,7 +171,11 @@ export default function RootNavigator() {
           <Text style={loadingStyles.logo}>⚒️</Text>
           <Text style={loadingStyles.appName}>Jekyll Forge</Text>
         </View>
-        <ActivityIndicator size="large" color="#3b82f6" style={loadingStyles.spinner} />
+        <ActivityIndicator
+          size="large"
+          color="#3b82f6"
+          style={loadingStyles.spinner}
+        />
       </View>
     );
   }
@@ -176,19 +187,19 @@ export default function RootNavigator() {
           <Stack.Screen
             name="AuthStack"
             component={AuthStack}
-            options={{ animation: 'fade' }}
+            options={{ animation: "fade" }}
           />
         ) : (
           <>
             <Stack.Screen
               name="RepoPickerStack"
               component={RepoPickerStack}
-              options={{ animation: 'fade' }}
+              options={{ animation: "fade" }}
             />
             <Stack.Screen
               name="AppStack"
               component={AppTabs}
-              options={{ animation: 'fade' }}
+              options={{ animation: "fade" }}
             />
             {/* Modal screens - slide from bottom */}
             <Stack.Screen
@@ -196,10 +207,10 @@ export default function RootNavigator() {
               component={PublishScreen}
               options={{
                 headerShown: true,
-                headerTitle: 'Publish Post',
+                headerTitle: "Publish Post",
                 ...screenOptions,
-                animation: 'slide_from_bottom',
-                presentation: 'modal',
+                animation: "slide_from_bottom",
+                presentation: "modal",
               }}
             />
             <Stack.Screen
@@ -207,10 +218,10 @@ export default function RootNavigator() {
               component={AIAssistantScreen}
               options={{
                 headerShown: true,
-                headerTitle: 'AI Assistant',
+                headerTitle: "AI Assistant",
                 ...screenOptions,
-                animation: 'slide_from_bottom',
-                presentation: 'modal',
+                animation: "slide_from_bottom",
+                presentation: "modal",
               }}
             />
             <Stack.Screen
@@ -218,10 +229,10 @@ export default function RootNavigator() {
               component={SocialPublishScreen}
               options={{
                 headerShown: true,
-                headerTitle: 'Publish to Social',
+                headerTitle: "Publish to Social",
                 ...screenOptions,
-                animation: 'slide_from_bottom',
-                presentation: 'modal',
+                animation: "slide_from_bottom",
+                presentation: "modal",
               }}
             />
             {/* Push screens - slide from right */}
@@ -230,9 +241,9 @@ export default function RootNavigator() {
               component={RepurposingScreen}
               options={{
                 headerShown: true,
-                headerTitle: 'Repurpose Content',
+                headerTitle: "Repurpose Content",
                 ...screenOptions,
-                animation: 'slide_from_right',
+                animation: "slide_from_right",
               }}
             />
             <Stack.Screen
@@ -240,9 +251,9 @@ export default function RootNavigator() {
               component={ABTestingScreen}
               options={{
                 headerShown: true,
-                headerTitle: 'A/B Testing',
+                headerTitle: "A/B Testing",
                 ...screenOptions,
-                animation: 'slide_from_right',
+                animation: "slide_from_right",
               }}
             />
             <Stack.Screen
@@ -250,9 +261,9 @@ export default function RootNavigator() {
               component={SocialAnalyticsScreen}
               options={{
                 headerShown: true,
-                headerTitle: 'Social Analytics',
+                headerTitle: "Social Analytics",
                 ...screenOptions,
-                animation: 'slide_from_right',
+                animation: "slide_from_right",
               }}
             />
             <Stack.Screen
@@ -260,9 +271,9 @@ export default function RootNavigator() {
               component={ScheduledPostsScreen}
               options={{
                 headerShown: true,
-                headerTitle: 'Scheduled Posts',
+                headerTitle: "Scheduled Posts",
                 ...screenOptions,
-                animation: 'slide_from_right',
+                animation: "slide_from_right",
               }}
             />
             <Stack.Screen
@@ -270,9 +281,9 @@ export default function RootNavigator() {
               component={NotificationsScreen}
               options={{
                 headerShown: true,
-                headerTitle: 'Notifications',
+                headerTitle: "Notifications",
                 ...screenOptions,
-                animation: 'slide_from_right',
+                animation: "slide_from_right",
               }}
             />
           </>
@@ -284,32 +295,32 @@ export default function RootNavigator() {
 
 const tabStyles = StyleSheet.create({
   tabBar: {
-    backgroundColor: '#1e293b',
-    borderTopColor: '#334155',
+    backgroundColor: "#1e293b",
+    borderTopColor: "#334155",
     borderTopWidth: 1,
     height: 64,
     paddingBottom: 8,
     paddingTop: 6,
     elevation: 8,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
   },
   tabLabel: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: "600",
     marginTop: 2,
   },
   iconContainer: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   iconContainerActive: {
-    backgroundColor: 'rgba(59, 130, 246, 0.15)',
+    backgroundColor: "rgba(59, 130, 246, 0.15)",
   },
   icon: {
     fontSize: 18,
@@ -322,12 +333,12 @@ const tabStyles = StyleSheet.create({
 const loadingStyles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#0f172a',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#0f172a",
   },
   logoContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 32,
   },
   logo: {
@@ -336,8 +347,8 @@ const loadingStyles = StyleSheet.create({
   },
   appName: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
   },
   spinner: {
     marginTop: 16,

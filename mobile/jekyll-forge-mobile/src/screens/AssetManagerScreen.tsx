@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,14 +10,14 @@ import {
   ActivityIndicator,
   Alert,
   Image,
-} from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+} from "react-native";
+import * as ImagePicker from "expo-image-picker";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface Asset {
   id: string;
   name: string;
-  type: 'image' | 'video' | 'audio' | 'document';
+  type: "image" | "video" | "audio" | "document";
   url: string;
   size: number;
   uploadedAt: string;
@@ -35,12 +35,12 @@ export default function AssetManagerScreen() {
 
   const loadAssets = async () => {
     try {
-      const cached = await AsyncStorage.getItem('assets');
+      const cached = await AsyncStorage.getItem("assets");
       if (cached) {
         setAssets(JSON.parse(cached));
       }
     } catch (error) {
-      console.error('Failed to load assets:', error);
+      console.error("Failed to load assets:", error);
     }
   };
 
@@ -57,8 +57,8 @@ export default function AssetManagerScreen() {
         await uploadAsset(result.assets[0]);
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to pick image');
-      console.error('Image picker error:', error);
+      Alert.alert("Error", "Failed to pick image");
+      console.error("Image picker error:", error);
     }
   };
 
@@ -74,8 +74,8 @@ export default function AssetManagerScreen() {
         await uploadAsset(result.assets[0]);
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to take photo');
-      console.error('Camera error:', error);
+      Alert.alert("Error", "Failed to take photo");
+      console.error("Camera error:", error);
     }
   };
 
@@ -85,8 +85,8 @@ export default function AssetManagerScreen() {
       // TODO: Implement tRPC upload mutation
       const newAsset: Asset = {
         id: `asset-${Date.now()}`,
-        name: asset.fileName || 'Unnamed',
-        type: 'image',
+        name: asset.fileName || "Unnamed",
+        type: "image",
         url: asset.uri,
         size: asset.fileSize || 0,
         uploadedAt: new Date().toISOString(),
@@ -95,11 +95,11 @@ export default function AssetManagerScreen() {
 
       const updated = [newAsset, ...assets];
       setAssets(updated);
-      await AsyncStorage.setItem('assets', JSON.stringify(updated));
-      Alert.alert('Success', 'Asset uploaded successfully');
+      await AsyncStorage.setItem("assets", JSON.stringify(updated));
+      Alert.alert("Success", "Asset uploaded successfully");
     } catch (error) {
-      Alert.alert('Error', 'Failed to upload asset');
-      console.error('Upload error:', error);
+      Alert.alert("Error", "Failed to upload asset");
+      console.error("Upload error:", error);
     } finally {
       setUploading(false);
     }
@@ -107,12 +107,12 @@ export default function AssetManagerScreen() {
 
   const deleteAsset = async (id: string) => {
     try {
-      const updated = assets.filter((a) => a.id !== id);
+      const updated = assets.filter(a => a.id !== id);
       setAssets(updated);
-      await AsyncStorage.setItem('assets', JSON.stringify(updated));
+      await AsyncStorage.setItem("assets", JSON.stringify(updated));
     } catch (error) {
-      Alert.alert('Error', 'Failed to delete asset');
-      console.error('Delete error:', error);
+      Alert.alert("Error", "Failed to delete asset");
+      console.error("Delete error:", error);
     }
   };
 
@@ -126,18 +126,19 @@ export default function AssetManagerScreen() {
           {item.name}
         </Text>
         <Text style={styles.assetMeta}>
-          {(item.size / 1024).toFixed(2)} KB • {new Date(item.uploadedAt).toLocaleDateString()}
+          {(item.size / 1024).toFixed(2)} KB •{" "}
+          {new Date(item.uploadedAt).toLocaleDateString()}
         </Text>
       </View>
       <TouchableOpacity
         style={styles.deleteButton}
         onPress={() => {
-          Alert.alert('Delete', 'Are you sure?', [
-            { text: 'Cancel', onPress: () => {} },
+          Alert.alert("Delete", "Are you sure?", [
+            { text: "Cancel", onPress: () => {} },
             {
-              text: 'Delete',
+              text: "Delete",
               onPress: () => deleteAsset(item.id),
-              style: 'destructive',
+              style: "destructive",
             },
           ]);
         }}
@@ -188,16 +189,16 @@ export default function AssetManagerScreen() {
 
         {/* Assets List */}
         <View style={styles.assetsSection}>
-          <Text style={styles.sectionTitle}>
-            Assets ({assets.length})
-          </Text>
+          <Text style={styles.sectionTitle}>Assets ({assets.length})</Text>
           {assets.length === 0 ? (
-            <Text style={styles.emptyText}>No assets yet. Upload one to get started!</Text>
+            <Text style={styles.emptyText}>
+              No assets yet. Upload one to get started!
+            </Text>
           ) : (
             <FlatList
               data={assets}
               renderItem={renderAssetItem}
-              keyExtractor={(item) => item.id}
+              keyExtractor={item => item.id}
               scrollEnabled={false}
             />
           )}
@@ -210,7 +211,7 @@ export default function AssetManagerScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: "#0f172a",
   },
   content: {
     flex: 1,
@@ -221,12 +222,12 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#fff',
+    fontWeight: "600",
+    color: "#fff",
     marginBottom: 16,
   },
   buttonRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
   },
   uploadButton: {
@@ -234,34 +235,34 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 12,
     borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   galleryButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: "#3b82f6",
   },
   cameraButton: {
-    backgroundColor: '#8b5cf6',
+    backgroundColor: "#8b5cf6",
   },
   uploadIcon: {
     fontSize: 24,
     marginBottom: 8,
   },
   uploadButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   assetsSection: {
     marginBottom: 32,
   },
   assetCard: {
-    flexDirection: 'row',
-    backgroundColor: '#1e293b',
+    flexDirection: "row",
+    backgroundColor: "#1e293b",
     borderRadius: 8,
     padding: 12,
     marginBottom: 12,
-    alignItems: 'center',
+    alignItems: "center",
   },
   thumbnail: {
     width: 60,
@@ -273,13 +274,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   assetName: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
     marginBottom: 4,
   },
   assetMeta: {
-    color: '#9ca3af',
+    color: "#9ca3af",
     fontSize: 12,
   },
   deleteButton: {
@@ -289,9 +290,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   emptyText: {
-    color: '#6b7280',
+    color: "#6b7280",
     fontSize: 14,
-    textAlign: 'center',
+    textAlign: "center",
     paddingVertical: 32,
   },
 });

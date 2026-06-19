@@ -73,7 +73,8 @@ describe("parseMarkdownFrontMatter (inline logic)", () => {
       if (!key) continue;
       if (val === "true") frontMatter[key] = true;
       else if (val === "false") frontMatter[key] = false;
-      else if (!isNaN(Number(val)) && val !== "") frontMatter[key] = Number(val);
+      else if (!isNaN(Number(val)) && val !== "")
+        frontMatter[key] = Number(val);
       else frontMatter[key] = val.replace(/^["']|["']$/g, "");
     }
     return { frontMatter, markdown };
@@ -139,7 +140,11 @@ describe("generateSlug", () => {
 
 // ─── Jekyll Filename Generation ───────────────────────────────────────────────
 describe("generateJekyllFilename", () => {
-  function generateFilename(slug: string, date: string, folder: "_drafts" | "_posts"): string {
+  function generateFilename(
+    slug: string,
+    date: string,
+    folder: "_drafts" | "_posts"
+  ): string {
     const safeSlug = slug || "untitled";
     if (folder === "_drafts") return `_drafts/${safeSlug}.md`;
     const d = date ? new Date(date) : new Date();
@@ -202,11 +207,15 @@ describe("readingTime", () => {
 
 // ─── YAML Serialization ───────────────────────────────────────────────────────
 describe("serializeToMarkdown", () => {
-  function serializeToMarkdown(frontMatter: Record<string, unknown>, markdown: string): string {
+  function serializeToMarkdown(
+    frontMatter: Record<string, unknown>,
+    markdown: string
+  ): string {
     const lines = ["---"];
     for (const [k, v] of Object.entries(frontMatter)) {
       if (v === null || v === undefined) continue;
-      if (Array.isArray(v)) lines.push(`${k}: [${v.map(i => `"${i}"`).join(", ")}]`);
+      if (Array.isArray(v))
+        lines.push(`${k}: [${v.map(i => `"${i}"`).join(", ")}]`);
       else if (typeof v === "boolean") lines.push(`${k}: ${v}`);
       else if (typeof v === "number") lines.push(`${k}: ${v}`);
       else lines.push(`${k}: "${String(v).replace(/"/g, '\\"')}"`);
@@ -233,7 +242,10 @@ describe("serializeToMarkdown", () => {
   });
 
   it("skips null/undefined fields", () => {
-    const result = serializeToMarkdown({ title: null, body: undefined }, "Content");
+    const result = serializeToMarkdown(
+      { title: null, body: undefined },
+      "Content"
+    );
     expect(result).not.toContain("title:");
     expect(result).not.toContain("body:");
   });
@@ -248,8 +260,12 @@ describe("serializeToMarkdown", () => {
 // ─── GitHub Pages Plugin Compatibility ───────────────────────────────────────
 describe("GITHUB_PAGES_SUPPORTED_PLUGINS", () => {
   const SUPPORTED = [
-    "jekyll-feed", "jekyll-seo-tag", "jekyll-sitemap", "jekyll-paginate",
-    "jekyll-redirect-from", "jekyll-remote-theme",
+    "jekyll-feed",
+    "jekyll-seo-tag",
+    "jekyll-sitemap",
+    "jekyll-paginate",
+    "jekyll-redirect-from",
+    "jekyll-remote-theme",
   ];
 
   it("includes core supported plugins", () => {
@@ -267,11 +283,30 @@ describe("GITHUB_PAGES_SUPPORTED_PLUGINS", () => {
 // ─── AI Task Types ────────────────────────────────────────────────────────────
 describe("AI task types", () => {
   const VALID_TASKS = [
-    "title", "outline", "draft", "rewrite", "continue",
-    "shorter", "longer", "tone", "grammar", "seo",
-    "tags", "categories", "slug", "excerpt", "alt-text",
-    "markdown-cleanup", "front-matter-cleanup", "faq",
-    "social", "summary", "internal-links", "callout", "toc", "convert-html",
+    "title",
+    "outline",
+    "draft",
+    "rewrite",
+    "continue",
+    "shorter",
+    "longer",
+    "tone",
+    "grammar",
+    "seo",
+    "tags",
+    "categories",
+    "slug",
+    "excerpt",
+    "alt-text",
+    "markdown-cleanup",
+    "front-matter-cleanup",
+    "faq",
+    "social",
+    "summary",
+    "internal-links",
+    "callout",
+    "toc",
+    "convert-html",
   ];
 
   it("includes all expected AI task types", () => {
@@ -286,7 +321,14 @@ describe("AI task types", () => {
 
 // ─── Snapshot Reasons ────────────────────────────────────────────────────────
 describe("SnapshotReason types", () => {
-  const VALID_REASONS = ["manual", "autosave", "before-ai", "before-publish", "before-theme", "before-plugin"];
+  const VALID_REASONS = [
+    "manual",
+    "autosave",
+    "before-ai",
+    "before-publish",
+    "before-theme",
+    "before-plugin",
+  ];
 
   it("includes all expected snapshot reasons", () => {
     expect(VALID_REASONS).toContain("before-ai");
@@ -329,7 +371,12 @@ describe("scheduler cancel safety", () => {
     // This test documents the fixed bug: cancel must fetch by (id, userId),
     // not by (siteId=0, userId) which would always return empty.
     function mockGetById(id: number, userId: number) {
-      if (id === 42 && userId === 1) return { id: 42, scheduleCronTaskUid: "task-uid-abc", status: "pending" };
+      if (id === 42 && userId === 1)
+        return {
+          id: 42,
+          scheduleCronTaskUid: "task-uid-abc",
+          status: "pending",
+        };
       return undefined;
     }
     const row = mockGetById(42, 1);
@@ -338,7 +385,8 @@ describe("scheduler cancel safety", () => {
 
     // Simulating the old bug: siteId=0 would return nothing
     function mockGetBySite(siteId: number, userId: number) {
-      if (siteId === 5 && userId === 1) return [{ id: 42, scheduleCronTaskUid: "task-uid-abc" }];
+      if (siteId === 5 && userId === 1)
+        return [{ id: 42, scheduleCronTaskUid: "task-uid-abc" }];
       return [];
     }
     const bugResult = mockGetBySite(0, 1); // old bug: siteId=0
@@ -377,7 +425,7 @@ describe("image variant naming", () => {
     const siteId = 3;
     const userId = 1;
     const keys = ["thumb", "medium", "large"].map(
-      (suffix) => `assets/${userId}/${siteId}/${ts}-${baseName}-${suffix}${ext}`
+      suffix => `assets/${userId}/${siteId}/${ts}-${baseName}-${suffix}${ext}`
     );
     expect(keys[0]).toBe(`assets/1/3/${ts}-hero-image-thumb.webp`);
     expect(keys[1]).toBe(`assets/1/3/${ts}-hero-image-medium.webp`);

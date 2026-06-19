@@ -64,7 +64,8 @@ export function parseRateLimitHeaders(
   const key = `${platform}-ratelimit`;
 
   if (platform === "twitter") {
-    const remaining = parseInt(headers["x-rate-limit-remaining"] as string) || 0;
+    const remaining =
+      parseInt(headers["x-rate-limit-remaining"] as string) || 0;
     const limit = parseInt(headers["x-rate-limit-limit"] as string) || 300;
     const reset = parseInt(headers["x-rate-limit-reset"] as string) || 0;
 
@@ -123,7 +124,10 @@ export function storeRateLimit(userId: number, rateLimit: RateLimitInfo): void {
 /**
  * Get stored rate limit information
  */
-export function getRateLimit(userId: number, platform: string): RateLimitInfo | null {
+export function getRateLimit(
+  userId: number,
+  platform: string
+): RateLimitInfo | null {
   const key = `${userId}-${platform}`;
   return rateLimitStore.get(key) || null;
 }
@@ -187,7 +191,11 @@ export function isRateLimitError(
 ): boolean {
   if (platform === "twitter") {
     return statusCode === 429; // Too Many Requests
-  } else if (platform === "linkedin" || platform === "facebook" || platform === "instagram") {
+  } else if (
+    platform === "linkedin" ||
+    platform === "facebook" ||
+    platform === "instagram"
+  ) {
     return statusCode === 429 || statusCode === 403; // Too Many Requests or Forbidden
   }
   return false;

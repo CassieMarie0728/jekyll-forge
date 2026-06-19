@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import { offlineStorage } from '../services/offlineStorage';
+import { useEffect, useRef, useState } from "react";
+import { offlineStorage } from "../services/offlineStorage";
 
 interface DraftCacheOptions {
   autoSaveInterval?: number; // milliseconds
@@ -57,12 +57,12 @@ export function useDraftCache(
     try {
       const draft = {
         id: postId,
-        siteId: '', // Would be passed in real app
-        title: contentRef.current.title || 'Untitled',
-        content: contentRef.current.content || '',
+        siteId: "", // Would be passed in real app
+        title: contentRef.current.title || "Untitled",
+        content: contentRef.current.content || "",
         frontMatter: contentRef.current.frontMatter || {},
         lastModified: Date.now(),
-        status: 'draft' as const,
+        status: "draft" as const,
       };
 
       await offlineStorage.saveDraft(draft);
@@ -72,7 +72,7 @@ export function useDraftCache(
       onSave?.(draft);
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
-      console.error('Failed to save draft:', err);
+      console.error("Failed to save draft:", err);
       onError?.(err);
     } finally {
       setIsSaving(false);
@@ -92,7 +92,7 @@ export function useDraftCache(
       }
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
-      console.error('Failed to load draft:', err);
+      console.error("Failed to load draft:", err);
       onError?.(err);
     }
   };
@@ -104,7 +104,7 @@ export function useDraftCache(
       setHasUnsavedChanges(false);
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
-      console.error('Failed to clear draft:', err);
+      console.error("Failed to clear draft:", err);
       onError?.(err);
     }
   };

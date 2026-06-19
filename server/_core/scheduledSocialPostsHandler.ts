@@ -33,7 +33,9 @@ export async function processPendingScheduledSocialPosts() {
       return;
     }
 
-    console.log(`[ScheduledSocialPosts] Processing ${pendingPosts.length} pending posts`);
+    console.log(
+      `[ScheduledSocialPosts] Processing ${pendingPosts.length} pending posts`
+    );
 
     for (const post of pendingPosts) {
       try {
@@ -53,7 +55,10 @@ export async function processPendingScheduledSocialPosts() {
 
         await publishScheduledPost(post);
       } catch (error) {
-        console.error(`[ScheduledSocialPosts] Error publishing post ${post.id}:`, error);
+        console.error(
+          `[ScheduledSocialPosts] Error publishing post ${post.id}:`,
+          error
+        );
         await handlePostError(post, error);
       }
     }
@@ -73,12 +78,18 @@ async function publishScheduledPost(post: any) {
   });
 
   // Get account and content
-  const account = await getSocialMediaAccount(post.socialMediaAccountId, post.userId);
+  const account = await getSocialMediaAccount(
+    post.socialMediaAccountId,
+    post.userId
+  );
   if (!account) {
     throw new Error("Social media account not found");
   }
 
-  const content = await getRepurposedContentById(post.repurposedContentId, post.userId);
+  const content = await getRepurposedContentById(
+    post.repurposedContentId,
+    post.userId
+  );
   if (!content) {
     throw new Error("Repurposed content not found");
   }
@@ -86,7 +97,7 @@ async function publishScheduledPost(post: any) {
   // Get social media service and publish
   const service = getSocialMediaService(account.platform, account.accessToken);
   let result: any;
-  
+
   if (account.platform === "twitter") {
     result = await (service as any).postTweet(post.content);
   } else if (account.platform === "linkedin") {
@@ -107,7 +118,9 @@ async function publishScheduledPost(post: any) {
     publishedAt: new Date(),
   });
 
-  console.log(`[ScheduledSocialPosts] Successfully published post ${post.id} to ${account.platform}`);
+  console.log(
+    `[ScheduledSocialPosts] Successfully published post ${post.id} to ${account.platform}`
+  );
 
   // Notify owner of successful publish
   await notifyOwner({
@@ -126,11 +139,13 @@ async function handlePostError(post: any, error: unknown) {
   if (retryCount < maxRetries) {
     // Calculate retry delay
     let delayMs = RETRY_DELAY_MS * (retryCount + 1);
-    
+
     // If rate limited, use the server's suggested retry-after or calculate backoff
     if (isRateLimitError) {
       delayMs = (retryAfter || 900) * 1000; // Convert seconds to ms
-      console.log(`[ScheduledSocialPosts] Rate limit detected, retrying after ${retryAfter}s`);
+      console.log(
+        `[ScheduledSocialPosts] Rate limit detected, retrying after ${retryAfter}s`
+      );
     } else {
       delayMs = calculateBackoffDelay(post.platform, retryCount + 1);
     }
@@ -154,7 +169,9 @@ async function handlePostError(post: any, error: unknown) {
       errorMessage: `Failed after ${maxRetries} retries: ${errorMessage}`,
     });
 
-    console.error(`[ScheduledSocialPosts] Post ${post.id} failed after ${maxRetries} retries`);
+    console.error(
+      `[ScheduledSocialPosts] Post ${post.id} failed after ${maxRetries} retries`
+    );
 
     // Notify owner of failure
     await notifyOwner({

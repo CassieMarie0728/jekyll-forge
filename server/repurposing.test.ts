@@ -83,7 +83,8 @@ describe("Repurposing Prompts", () => {
 
 describe("Format Metadata", () => {
   it("should generate Twitter metadata", () => {
-    const content = "This is a test blog post about web development. It has multiple sentences.";
+    const content =
+      "This is a test blog post about web development. It has multiple sentences.";
     const metadata = getFormatMetadata("twitter", content);
     expect(metadata.characterCount).toBe(content.length);
     expect(metadata.wordCount).toBeGreaterThan(0);
@@ -92,7 +93,8 @@ describe("Format Metadata", () => {
   });
 
   it("should generate LinkedIn metadata", () => {
-    const content = "This is a test blog post about web development. It has multiple sentences.";
+    const content =
+      "This is a test blog post about web development. It has multiple sentences.";
     const metadata = getFormatMetadata("linkedin", content);
     expect(metadata.characterCount).toBe(content.length);
     expect(metadata.readingTimeMinutes).toBeGreaterThan(0);
@@ -100,35 +102,40 @@ describe("Format Metadata", () => {
   });
 
   it("should generate TikTok metadata", () => {
-    const content = "This is a test blog post about web development. It has multiple sentences.";
+    const content =
+      "This is a test blog post about web development. It has multiple sentences.";
     const metadata = getFormatMetadata("tiktok", content);
     expect(metadata.estimatedDurationSeconds).toBeGreaterThan(0);
     expect(metadata.format).toBe("short-form-video");
   });
 
   it("should generate YouTube metadata", () => {
-    const content = "This is a test blog post about web development. It has multiple sentences.";
+    const content =
+      "This is a test blog post about web development. It has multiple sentences.";
     const metadata = getFormatMetadata("youtube", content);
     expect(metadata.estimatedDurationMinutes).toBeGreaterThan(0);
     expect(metadata.format).toBe("long-form-video");
   });
 
   it("should generate email metadata with 3 emails", () => {
-    const content = "This is a test blog post about web development. It has multiple sentences.";
+    const content =
+      "This is a test blog post about web development. It has multiple sentences.";
     const metadata = getFormatMetadata("email", content);
     expect(metadata.emailCount).toBe(3);
     expect(metadata.format).toBe("email-sequence");
   });
 
   it("should generate podcast metadata", () => {
-    const content = "This is a test blog post about web development. It has multiple sentences.";
+    const content =
+      "This is a test blog post about web development. It has multiple sentences.";
     const metadata = getFormatMetadata("podcast", content);
     expect(metadata.estimatedDurationMinutes).toBeGreaterThan(0);
     expect(metadata.format).toBe("podcast-outline");
   });
 
   it("should generate slides metadata", () => {
-    const content = "This is a test blog post about web development. It has multiple sentences.";
+    const content =
+      "This is a test blog post about web development. It has multiple sentences.";
     const metadata = getFormatMetadata("slides", content);
     expect(metadata.estimatedSlideCount).toBeGreaterThan(0);
     expect(metadata.format).toBe("presentation-deck");
@@ -169,9 +176,12 @@ describe.skip("Database Operations", () => {
 
   it("should retrieve repurposed content by post ID", async () => {
     const id = await createRepurposedContent(testData);
-    const results = await getRepurposedContentByPostId(testData.postId, testData.userId);
+    const results = await getRepurposedContentByPostId(
+      testData.postId,
+      testData.userId
+    );
     expect(results.length).toBeGreaterThan(0);
-    expect(results.some((r) => r.id === id)).toBe(true);
+    expect(results.some(r => r.id === id)).toBe(true);
   });
 
   it("should retrieve repurposed content by ID", async () => {
@@ -212,14 +222,25 @@ describe.skip("Database Operations", () => {
 
   it("should handle multiple formats for same post", async () => {
     const twitterData = { ...testData, format: "twitter" as const };
-    const linkedinData = { ...testData, format: "linkedin" as const, content: "LinkedIn article" };
+    const linkedinData = {
+      ...testData,
+      format: "linkedin" as const,
+      content: "LinkedIn article",
+    };
 
     const twitterId = await createRepurposedContent(twitterData);
     const linkedinId = await createRepurposedContent(linkedinData);
 
-    const results = await getRepurposedContentByPostId(testData.postId, testData.userId);
+    const results = await getRepurposedContentByPostId(
+      testData.postId,
+      testData.userId
+    );
     expect(results.length).toBeGreaterThanOrEqual(2);
-    expect(results.some((r) => r.id === twitterId && r.format === "twitter")).toBe(true);
-    expect(results.some((r) => r.id === linkedinId && r.format === "linkedin")).toBe(true);
+    expect(
+      results.some(r => r.id === twitterId && r.format === "twitter")
+    ).toBe(true);
+    expect(
+      results.some(r => r.id === linkedinId && r.format === "linkedin")
+    ).toBe(true);
   });
 });

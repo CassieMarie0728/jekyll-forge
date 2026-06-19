@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -10,8 +10,8 @@ import {
   ActivityIndicator,
   FlatList,
   Alert,
-} from 'react-native';
-import { trpc } from '../utils/trpc';
+} from "react-native";
+import { trpc } from "../utils/trpc";
 
 interface AITask {
   id: string;
@@ -22,62 +22,62 @@ interface AITask {
 
 const AI_TASKS: AITask[] = [
   {
-    id: 'generate-title',
-    name: 'Generate Title',
-    description: 'Create compelling post titles',
-    icon: '✨',
+    id: "generate-title",
+    name: "Generate Title",
+    description: "Create compelling post titles",
+    icon: "✨",
   },
   {
-    id: 'generate-outline',
-    name: 'Generate Outline',
-    description: 'Create post structure and outline',
-    icon: '📋',
+    id: "generate-outline",
+    name: "Generate Outline",
+    description: "Create post structure and outline",
+    icon: "📋",
   },
   {
-    id: 'generate-draft',
-    name: 'Generate Draft',
-    description: 'Write a complete post draft',
-    icon: '📝',
+    id: "generate-draft",
+    name: "Generate Draft",
+    description: "Write a complete post draft",
+    icon: "📝",
   },
   {
-    id: 'rewrite',
-    name: 'Rewrite',
-    description: 'Improve existing content',
-    icon: '✏️',
+    id: "rewrite",
+    name: "Rewrite",
+    description: "Improve existing content",
+    icon: "✏️",
   },
   {
-    id: 'generate-meta',
-    name: 'Generate Meta',
-    description: 'Create SEO meta descriptions',
-    icon: '🔍',
+    id: "generate-meta",
+    name: "Generate Meta",
+    description: "Create SEO meta descriptions",
+    icon: "🔍",
   },
   {
-    id: 'generate-tags',
-    name: 'Generate Tags',
-    description: 'Suggest relevant tags',
-    icon: '🏷️',
+    id: "generate-tags",
+    name: "Generate Tags",
+    description: "Suggest relevant tags",
+    icon: "🏷️",
   },
 ];
 
 export default function AIAssistantScreen({ route, navigation }: any) {
   const { siteId, postId, currentContent } = route.params || {};
   const [selectedTask, setSelectedTask] = useState<string | null>(null);
-  const [prompt, setPrompt] = useState('');
+  const [prompt, setPrompt] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState<string>('');
-  const [tone, setTone] = useState('professional');
+  const [result, setResult] = useState<string>("");
+  const [tone, setTone] = useState("professional");
 
   const aiMutation = trpc.ai.generateContent.useMutation();
 
   const handleTaskSelect = (taskId: string) => {
     setSelectedTask(taskId);
-    setResult('');
-    setPrompt('');
+    setResult("");
+    setPrompt("");
   };
 
   const handleGenerate = async () => {
     if (!selectedTask) {
-      Alert.alert('Error', 'Please select a task');
+      Alert.alert("Error", "Please select a task");
       return;
     }
 
@@ -85,15 +85,15 @@ export default function AIAssistantScreen({ route, navigation }: any) {
     try {
       const response = await aiMutation.mutateAsync({
         task: selectedTask,
-        content: currentContent || '',
-        prompt: prompt || 'Generate content for this post',
+        content: currentContent || "",
+        prompt: prompt || "Generate content for this post",
         tone,
         siteId,
       });
 
       setResult(response.result);
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to generate content');
+      Alert.alert("Error", error.message || "Failed to generate content");
     } finally {
       setIsLoading(false);
     }
@@ -101,11 +101,11 @@ export default function AIAssistantScreen({ route, navigation }: any) {
 
   const handleApply = () => {
     if (!result) {
-      Alert.alert('Error', 'No content to apply');
+      Alert.alert("Error", "No content to apply");
       return;
     }
 
-    navigation.navigate('Editor', {
+    navigation.navigate("Editor", {
       aiResult: result,
       task: selectedTask,
     });
@@ -144,7 +144,7 @@ export default function AIAssistantScreen({ route, navigation }: any) {
             <FlatList
               data={AI_TASKS}
               renderItem={({ item }) => renderTaskCard(item)}
-              keyExtractor={(item) => item.id}
+              keyExtractor={item => item.id}
               scrollEnabled={false}
               style={styles.tasksList}
             />
@@ -156,7 +156,7 @@ export default function AIAssistantScreen({ route, navigation }: any) {
               style={styles.backButton}
               onPress={() => {
                 setSelectedTask(null);
-                setResult('');
+                setResult("");
               }}
             >
               <Text style={styles.backButtonText}>← Back to Tasks</Text>
@@ -165,14 +165,14 @@ export default function AIAssistantScreen({ route, navigation }: any) {
             {/* Task Details */}
             <View style={styles.taskDetails}>
               <Text style={styles.taskDetailsTitle}>
-                {AI_TASKS.find((t) => t.id === selectedTask)?.name}
+                {AI_TASKS.find(t => t.id === selectedTask)?.name}
               </Text>
 
               {/* Tone Selection */}
               <View style={styles.optionSection}>
                 <Text style={styles.optionLabel}>Tone</Text>
                 <View style={styles.toneButtons}>
-                  {['professional', 'casual', 'humorous'].map((t) => (
+                  {["professional", "casual", "humorous"].map(t => (
                     <TouchableOpacity
                       key={t}
                       style={[
@@ -210,14 +210,19 @@ export default function AIAssistantScreen({ route, navigation }: any) {
 
               {/* Generate Button */}
               <TouchableOpacity
-                style={[styles.generateButton, isLoading && styles.generateButtonDisabled]}
+                style={[
+                  styles.generateButton,
+                  isLoading && styles.generateButtonDisabled,
+                ]}
                 onPress={handleGenerate}
                 disabled={isLoading}
               >
                 {isLoading ? (
                   <ActivityIndicator size="small" color="#fff" />
                 ) : (
-                  <Text style={styles.generateButtonText}>Generate Content</Text>
+                  <Text style={styles.generateButtonText}>
+                    Generate Content
+                  </Text>
                 )}
               </TouchableOpacity>
 
@@ -235,7 +240,7 @@ export default function AIAssistantScreen({ route, navigation }: any) {
                       style={styles.copyButton}
                       onPress={() => {
                         // Copy to clipboard
-                        Alert.alert('Copied', 'Content copied to clipboard');
+                        Alert.alert("Copied", "Content copied to clipboard");
                       }}
                     >
                       <Text style={styles.copyButtonText}>📋 Copy</Text>
@@ -260,7 +265,7 @@ export default function AIAssistantScreen({ route, navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: "#0f172a",
   },
   content: {
     flex: 1,
@@ -271,36 +276,36 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 14,
-    color: '#9ca3af',
+    color: "#9ca3af",
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
+    fontWeight: "600",
+    color: "#fff",
     marginBottom: 12,
   },
   tasksList: {
     marginBottom: 24,
   },
   taskCard: {
-    flexDirection: 'row',
-    backgroundColor: '#1e293b',
+    flexDirection: "row",
+    backgroundColor: "#1e293b",
     padding: 16,
     borderRadius: 8,
     marginBottom: 8,
-    alignItems: 'center',
+    alignItems: "center",
     borderWidth: 2,
-    borderColor: 'transparent',
+    borderColor: "transparent",
   },
   taskCardActive: {
-    borderColor: '#3b82f6',
-    backgroundColor: '#1e3a5f',
+    borderColor: "#3b82f6",
+    backgroundColor: "#1e3a5f",
   },
   taskIcon: {
     fontSize: 28,
@@ -311,13 +316,13 @@ const styles = StyleSheet.create({
   },
   taskName: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#fff',
+    fontWeight: "600",
+    color: "#fff",
     marginBottom: 2,
   },
   taskDescription: {
     fontSize: 12,
-    color: '#9ca3af',
+    color: "#9ca3af",
   },
   backButton: {
     paddingVertical: 8,
@@ -325,16 +330,16 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     fontSize: 14,
-    color: '#3b82f6',
-    fontWeight: '600',
+    color: "#3b82f6",
+    fontWeight: "600",
   },
   taskDetails: {
     marginBottom: 24,
   },
   taskDetailsTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
     marginBottom: 16,
   },
   optionSection: {
@@ -342,12 +347,12 @@ const styles = StyleSheet.create({
   },
   optionLabel: {
     fontSize: 13,
-    fontWeight: '600',
-    color: '#fff',
+    fontWeight: "600",
+    color: "#fff",
     marginBottom: 8,
   },
   toneButtons: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 8,
   },
   toneButton: {
@@ -355,40 +360,40 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 6,
-    backgroundColor: '#1e293b',
+    backgroundColor: "#1e293b",
     borderWidth: 1,
-    borderColor: '#475569',
-    alignItems: 'center',
+    borderColor: "#475569",
+    alignItems: "center",
   },
   toneButtonActive: {
-    backgroundColor: '#3b82f6',
-    borderColor: '#3b82f6',
+    backgroundColor: "#3b82f6",
+    borderColor: "#3b82f6",
   },
   toneButtonText: {
     fontSize: 12,
-    fontWeight: '600',
-    color: '#9ca3af',
+    fontWeight: "600",
+    color: "#9ca3af",
   },
   toneButtonTextActive: {
-    color: '#fff',
+    color: "#fff",
   },
   promptInput: {
-    backgroundColor: '#1e293b',
+    backgroundColor: "#1e293b",
     borderWidth: 1,
-    borderColor: '#475569',
+    borderColor: "#475569",
     borderRadius: 6,
     padding: 12,
-    color: '#fff',
+    color: "#fff",
     fontSize: 13,
     minHeight: 80,
-    textAlignVertical: 'top',
+    textAlignVertical: "top",
   },
   generateButton: {
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
-    backgroundColor: '#3b82f6',
-    alignItems: 'center',
+    backgroundColor: "#3b82f6",
+    alignItems: "center",
     marginBottom: 16,
   },
   generateButtonDisabled: {
@@ -396,33 +401,33 @@ const styles = StyleSheet.create({
   },
   generateButtonText: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#fff',
+    fontWeight: "600",
+    color: "#fff",
   },
   resultSection: {
     marginTop: 16,
   },
   resultTitle: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#fff',
+    fontWeight: "600",
+    color: "#fff",
     marginBottom: 8,
   },
   resultCard: {
-    backgroundColor: '#1e293b',
+    backgroundColor: "#1e293b",
     padding: 16,
     borderRadius: 8,
     borderLeftWidth: 4,
-    borderLeftColor: '#10b981',
+    borderLeftColor: "#10b981",
     marginBottom: 12,
   },
   resultText: {
     fontSize: 13,
-    color: '#d1d5db',
+    color: "#d1d5db",
     lineHeight: 20,
   },
   resultActions: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 8,
   },
   copyButton: {
@@ -431,25 +436,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: '#475569',
-    alignItems: 'center',
+    borderColor: "#475569",
+    alignItems: "center",
   },
   copyButtonText: {
     fontSize: 13,
-    fontWeight: '600',
-    color: '#d1d5db',
+    fontWeight: "600",
+    color: "#d1d5db",
   },
   applyButton: {
     flex: 1,
     paddingVertical: 10,
     paddingHorizontal: 12,
     borderRadius: 6,
-    backgroundColor: '#10b981',
-    alignItems: 'center',
+    backgroundColor: "#10b981",
+    alignItems: "center",
   },
   applyButtonText: {
     fontSize: 13,
-    fontWeight: '600',
-    color: '#fff',
+    fontWeight: "600",
+    color: "#fff",
   },
 });

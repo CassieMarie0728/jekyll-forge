@@ -1,12 +1,32 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
-import { Twitter, Linkedin, Trash2, Share2, BarChart3, Loader, Plus } from "lucide-react";
+import {
+  Twitter,
+  Linkedin,
+  Trash2,
+  Share2,
+  BarChart3,
+  Loader,
+  Plus,
+} from "lucide-react";
 import { SocialMediaConnectionFlow } from "./SocialMediaConnectionFlow";
 
 interface SocialMediaPanelProps {
@@ -14,14 +34,21 @@ interface SocialMediaPanelProps {
   format: string;
 }
 
-export function SocialMediaPanel({ repurposedContentId, format }: SocialMediaPanelProps) {
+export function SocialMediaPanel({
+  repurposedContentId,
+  format,
+}: SocialMediaPanelProps) {
   const [showPublishDialog, setShowPublishDialog] = useState(false);
   const [showConnectionFlow, setShowConnectionFlow] = useState(false);
-  const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null);
+  const [selectedAccountId, setSelectedAccountId] = useState<number | null>(
+    null
+  );
   const [publishingTo, setPublishingTo] = useState<number | null>(null);
 
   const accountsQuery = trpc.socialMedia.getAccounts.useQuery();
-  const analyticsQuery = trpc.socialMedia.getContentAnalytics.useQuery({ repurposedContentId });
+  const analyticsQuery = trpc.socialMedia.getContentAnalytics.useQuery({
+    repurposedContentId,
+  });
   const publishMutation = trpc.socialMedia.publishContent.useMutation();
   const syncMutation = trpc.socialMedia.syncAnalytics.useMutation();
   const disconnectMutation = trpc.socialMedia.disconnectAccount.useMutation();
@@ -30,7 +57,7 @@ export function SocialMediaPanel({ repurposedContentId, format }: SocialMediaPan
   const analytics = analyticsQuery.data || [];
 
   // Filter accounts by format compatibility
-  const compatibleAccounts = accounts.filter((account) => {
+  const compatibleAccounts = accounts.filter(account => {
     if (format === "twitter") return account.platform === "twitter";
     if (format === "linkedin") return account.platform === "linkedin";
     return false;
@@ -100,12 +127,16 @@ export function SocialMediaPanel({ repurposedContentId, format }: SocialMediaPan
             <Share2 className="w-5 h-5" />
             Connected Accounts
           </CardTitle>
-          <CardDescription>Manage your social media integrations</CardDescription>
+          <CardDescription>
+            Manage your social media integrations
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {accounts.length === 0 ? (
             <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">No accounts connected yet</p>
+              <p className="text-sm text-muted-foreground">
+                No accounts connected yet
+              </p>
               <Button
                 onClick={() => setShowConnectionFlow(true)}
                 className="w-full gap-2"
@@ -116,7 +147,7 @@ export function SocialMediaPanel({ repurposedContentId, format }: SocialMediaPan
               </Button>
             </div>
           ) : (
-            accounts.map((account) => (
+            accounts.map(account => (
               <div
                 key={account.id}
                 className={`flex items-center justify-between p-3 rounded-lg border ${getPlatformColor(account.platform)}`}
@@ -124,10 +155,18 @@ export function SocialMediaPanel({ repurposedContentId, format }: SocialMediaPan
                 <div className="flex items-center gap-3">
                   {getPlatformIcon(account.platform)}
                   <div>
-                    <p className="font-medium text-sm">{account.displayName || account.username}</p>
-                    <p className="text-xs text-muted-foreground">@{account.username}</p>
+                    <p className="font-medium text-sm">
+                      {account.displayName || account.username}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      @{account.username}
+                    </p>
                   </div>
-                  {account.isConnected && <Badge variant="outline" className="text-xs">Connected</Badge>}
+                  {account.isConnected && (
+                    <Badge variant="outline" className="text-xs">
+                      Connected
+                    </Badge>
+                  )}
                 </div>
                 <Button
                   variant="ghost"
@@ -165,8 +204,11 @@ export function SocialMediaPanel({ repurposedContentId, format }: SocialMediaPan
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {analytics.map((metric) => (
-              <div key={metric.id} className="space-y-2 p-3 rounded-lg border bg-card">
+            {analytics.map(metric => (
+              <div
+                key={metric.id}
+                className="space-y-2 p-3 rounded-lg border bg-card"
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     {getPlatformIcon(metric.platform)}
@@ -198,25 +240,34 @@ export function SocialMediaPanel({ repurposedContentId, format }: SocialMediaPan
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div className="p-2 rounded bg-muted">
                     <p className="text-muted-foreground">Impressions</p>
-                    <p className="font-semibold text-lg">{(metric.impressions || 0).toLocaleString()}</p>
+                    <p className="font-semibold text-lg">
+                      {(metric.impressions || 0).toLocaleString()}
+                    </p>
                   </div>
                   <div className="p-2 rounded bg-muted">
                     <p className="text-muted-foreground">Engagements</p>
-                    <p className="font-semibold text-lg">{(metric.engagements || 0).toLocaleString()}</p>
+                    <p className="font-semibold text-lg">
+                      {(metric.engagements || 0).toLocaleString()}
+                    </p>
                   </div>
                   <div className="p-2 rounded bg-muted">
                     <p className="text-muted-foreground">Clicks</p>
-                    <p className="font-semibold text-lg">{(metric.clicks || 0).toLocaleString()}</p>
+                    <p className="font-semibold text-lg">
+                      {(metric.clicks || 0).toLocaleString()}
+                    </p>
                   </div>
                   <div className="p-2 rounded bg-muted">
                     <p className="text-muted-foreground">Shares</p>
-                    <p className="font-semibold text-lg">{(metric.shares || 0).toLocaleString()}</p>
+                    <p className="font-semibold text-lg">
+                      {(metric.shares || 0).toLocaleString()}
+                    </p>
                   </div>
                 </div>
 
                 {metric.lastSyncedAt && (
                   <p className="text-xs text-muted-foreground">
-                    Last synced: {new Date(metric.lastSyncedAt).toLocaleString()}
+                    Last synced:{" "}
+                    {new Date(metric.lastSyncedAt).toLocaleString()}
                   </p>
                 )}
               </div>
@@ -239,14 +290,16 @@ export function SocialMediaPanel({ repurposedContentId, format }: SocialMediaPan
       <Dialog open={showPublishDialog} onOpenChange={setShowPublishDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Publish to {format === "twitter" ? "Twitter" : "LinkedIn"}</DialogTitle>
+            <DialogTitle>
+              Publish to {format === "twitter" ? "Twitter" : "LinkedIn"}
+            </DialogTitle>
             <DialogDescription>
               Select which account to publish this content to
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-3">
-            {compatibleAccounts.map((account) => (
+            {compatibleAccounts.map(account => (
               <button
                 key={account.id}
                 onClick={() => setSelectedAccountId(account.id)}
@@ -259,8 +312,12 @@ export function SocialMediaPanel({ repurposedContentId, format }: SocialMediaPan
                 <div className="flex items-center gap-3">
                   {getPlatformIcon(account.platform)}
                   <div>
-                    <p className="font-medium">{account.displayName || account.username}</p>
-                    <p className="text-sm text-muted-foreground">@{account.username}</p>
+                    <p className="font-medium">
+                      {account.displayName || account.username}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      @{account.username}
+                    </p>
                   </div>
                 </div>
               </button>
@@ -268,7 +325,10 @@ export function SocialMediaPanel({ repurposedContentId, format }: SocialMediaPan
           </div>
 
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setShowPublishDialog(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setShowPublishDialog(false)}
+            >
               Cancel
             </Button>
             <Button

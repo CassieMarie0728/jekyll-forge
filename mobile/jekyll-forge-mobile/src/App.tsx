@@ -1,14 +1,14 @@
-import { useEffect } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { httpBatchLink } from '@trpc/client';
-import superjson from 'superjson';
-import { View, ActivityIndicator } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useAuthStore } from './stores/authStore';
-import { trpc } from './utils/trpc';
-import RootNavigator from './navigation/RootNavigator';
-import { ToastProvider } from './components/Toast';
-import { haptics } from './utils/haptics';
+import { useEffect } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { httpBatchLink } from "@trpc/client";
+import superjson from "superjson";
+import { View, ActivityIndicator } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useAuthStore } from "./stores/authStore";
+import { trpc } from "./utils/trpc";
+import RootNavigator from "./navigation/RootNavigator";
+import { ToastProvider } from "./components/Toast";
+import { haptics } from "./utils/haptics";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -23,11 +23,12 @@ const getTrpcClient = () => {
   return trpc.createClient({
     links: [
       httpBatchLink({
-        url: process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000/api/trpc',
+        url:
+          process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000/api/trpc",
         async headers() {
-          const token = await AsyncStorage.getItem('authToken');
+          const token = await AsyncStorage.getItem("authToken");
           return {
-            authorization: token ? `Bearer ${token}` : '',
+            authorization: token ? `Bearer ${token}` : "",
           };
         },
       }),
@@ -51,7 +52,14 @@ function AppContent({ isAuthenticated }: AppContentProps) {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0f172a' }}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#0f172a",
+        }}
+      >
         <ActivityIndicator size="large" color="#3b82f6" />
       </View>
     );

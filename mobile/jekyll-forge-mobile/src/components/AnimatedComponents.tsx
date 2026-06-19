@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from "react";
 import {
   Animated,
   TouchableWithoutFeedback,
@@ -6,7 +6,7 @@ import {
   View,
   ViewStyle,
   StyleProp,
-} from 'react-native';
+} from "react-native";
 import {
   fadeIn,
   scaleIn,
@@ -16,7 +16,7 @@ import {
   entranceAnimation,
   shimmer,
   DURATIONS,
-} from '../utils/animations';
+} from "../utils/animations";
 
 // Animated Pressable Button with scale feedback
 interface AnimatedButtonProps {
@@ -26,7 +26,12 @@ interface AnimatedButtonProps {
   disabled?: boolean;
 }
 
-export function AnimatedButton({ onPress, children, style, disabled }: AnimatedButtonProps) {
+export function AnimatedButton({
+  onPress,
+  children,
+  style,
+  disabled,
+}: AnimatedButtonProps) {
   const scaleValue = useRef(new Animated.Value(1)).current;
 
   const handlePressIn = () => {
@@ -65,7 +70,12 @@ interface FadeInViewProps {
   style?: StyleProp<ViewStyle>;
 }
 
-export function FadeInView({ children, delay = 0, duration = DURATIONS.normal, style }: FadeInViewProps) {
+export function FadeInView({
+  children,
+  delay = 0,
+  duration = DURATIONS.normal,
+  style,
+}: FadeInViewProps) {
   const opacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -83,7 +93,12 @@ interface ScaleInViewProps {
   style?: StyleProp<ViewStyle>;
 }
 
-export function ScaleInView({ children, delay = 0, duration = DURATIONS.normal, style }: ScaleInViewProps) {
+export function ScaleInView({
+  children,
+  delay = 0,
+  duration = DURATIONS.normal,
+  style,
+}: ScaleInViewProps) {
   const scale = useRef(new Animated.Value(0.95)).current;
   const opacity = useRef(new Animated.Value(0)).current;
 
@@ -109,7 +124,12 @@ interface SlideInViewProps {
   style?: StyleProp<ViewStyle>;
 }
 
-export function SlideInView({ children, delay = 0, distance = 30, style }: SlideInViewProps) {
+export function SlideInView({
+  children,
+  delay = 0,
+  distance = 30,
+  style,
+}: SlideInViewProps) {
   const translateY = useRef(new Animated.Value(distance)).current;
   const opacity = useRef(new Animated.Value(0)).current;
 
@@ -135,7 +155,12 @@ interface StaggerItemProps {
   style?: StyleProp<ViewStyle>;
 }
 
-export function StaggerItem({ children, index, staggerDelay = 50, style }: StaggerItemProps) {
+export function StaggerItem({
+  children,
+  index,
+  staggerDelay = 50,
+  style,
+}: StaggerItemProps) {
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(20)).current;
   const scale = useRef(new Animated.Value(0.95)).current;
@@ -162,7 +187,12 @@ interface SkeletonProps {
   style?: StyleProp<ViewStyle>;
 }
 
-export function Skeleton({ width, height, borderRadius = 8, style }: SkeletonProps) {
+export function Skeleton({
+  width,
+  height,
+  borderRadius = 8,
+  style,
+}: SkeletonProps) {
   const shimmerValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -181,8 +211,8 @@ export function Skeleton({ width, height, borderRadius = 8, style }: SkeletonPro
           width: width as any,
           height,
           borderRadius,
-          backgroundColor: '#1e293b',
-          overflow: 'hidden',
+          backgroundColor: "#1e293b",
+          overflow: "hidden",
         },
         style,
       ]}
@@ -191,7 +221,7 @@ export function Skeleton({ width, height, borderRadius = 8, style }: SkeletonPro
         style={{
           ...StyleSheet.absoluteFillObject,
           transform: [{ translateX }],
-          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+          backgroundColor: "rgba(255, 255, 255, 0.05)",
           width: 100,
         }}
       />
@@ -239,7 +269,13 @@ interface EmptyStateProps {
   onAction?: () => void;
 }
 
-export function EmptyState({ icon, title, description, actionLabel, onAction }: EmptyStateProps) {
+export function EmptyState({
+  icon,
+  title,
+  description,
+  actionLabel,
+  onAction,
+}: EmptyStateProps) {
   return (
     <FadeInView style={emptyStyles.container}>
       <ScaleInView delay={100}>
@@ -250,14 +286,18 @@ export function EmptyState({ icon, title, description, actionLabel, onAction }: 
       <SlideInView delay={200}>
         <View style={emptyStyles.textContainer}>
           <Animated.Text style={emptyStyles.title}>{title}</Animated.Text>
-          <Animated.Text style={emptyStyles.description}>{description}</Animated.Text>
+          <Animated.Text style={emptyStyles.description}>
+            {description}
+          </Animated.Text>
         </View>
       </SlideInView>
       {actionLabel && onAction && (
         <SlideInView delay={300}>
           <AnimatedButton onPress={onAction} style={emptyStyles.actionButton}>
             <View style={emptyStyles.actionButtonInner}>
-              <Animated.Text style={emptyStyles.actionButtonText}>{actionLabel}</Animated.Text>
+              <Animated.Text style={emptyStyles.actionButtonText}>
+                {actionLabel}
+              </Animated.Text>
             </View>
           </AnimatedButton>
         </SlideInView>
@@ -290,14 +330,16 @@ export function PullToRefreshIndicator({ refreshing }: PullToRefreshProps) {
 
   const spin = spinValue.interpolate({
     inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
+    outputRange: ["0deg", "360deg"],
   });
 
   if (!refreshing) return null;
 
   return (
     <View style={refreshStyles.container}>
-      <Animated.Text style={[refreshStyles.spinner, { transform: [{ rotate: spin }] }]}>
+      <Animated.Text
+        style={[refreshStyles.spinner, { transform: [{ rotate: spin }] }]}
+      >
         ⟳
       </Animated.Text>
     </View>
@@ -306,22 +348,22 @@ export function PullToRefreshIndicator({ refreshing }: PullToRefreshProps) {
 
 const skeletonStyles = StyleSheet.create({
   card: {
-    backgroundColor: '#1e293b',
+    backgroundColor: "#1e293b",
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
   },
   cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   cardHeaderText: {
     marginLeft: 12,
     flex: 1,
   },
   listItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 12,
     paddingHorizontal: 16,
   },
@@ -334,61 +376,61 @@ const skeletonStyles = StyleSheet.create({
 const emptyStyles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     padding: 32,
   },
   iconContainer: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#1e293b',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#1e293b",
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 16,
   },
   icon: {
     fontSize: 36,
   },
   textContainer: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   title: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
     marginBottom: 8,
-    textAlign: 'center',
+    textAlign: "center",
   },
   description: {
     fontSize: 14,
-    color: '#9ca3af',
-    textAlign: 'center',
+    color: "#9ca3af",
+    textAlign: "center",
     lineHeight: 20,
   },
   actionButton: {
     marginTop: 20,
   },
   actionButtonInner: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: "#3b82f6",
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
   },
   actionButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
 
 const refreshStyles = StyleSheet.create({
   container: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: 12,
   },
   spinner: {
     fontSize: 24,
-    color: '#3b82f6',
+    color: "#3b82f6",
   },
 });

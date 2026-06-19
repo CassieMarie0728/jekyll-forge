@@ -42,7 +42,7 @@ describe("A/B Testing - Variation Generator", () => {
       });
 
       expect(variations.length).toBeGreaterThan(0);
-      variations.forEach((variation) => {
+      variations.forEach(variation => {
         expect(variation.tone).toBeDefined();
         expect(variation.angle).toBeDefined();
         expect(variation.headline).toBeDefined();
@@ -229,7 +229,7 @@ describe("A/B Testing - Variation Generator", () => {
         tones,
       });
 
-      variations.forEach((v) => {
+      variations.forEach(v => {
         expect(tones).toContain(v.tone);
       });
     });
@@ -246,7 +246,7 @@ describe("A/B Testing - Variation Generator", () => {
         angles,
       });
 
-      variations.forEach((v) => {
+      variations.forEach(v => {
         expect(angles).toContain(v.angle);
       });
     });
@@ -266,7 +266,7 @@ describe("A/B Testing - Variation Generator", () => {
         angles: customAngles,
       });
 
-      variations.forEach((v) => {
+      variations.forEach(v => {
         expect(customTones).toContain(v.tone);
         expect(customAngles).toContain(v.angle);
       });

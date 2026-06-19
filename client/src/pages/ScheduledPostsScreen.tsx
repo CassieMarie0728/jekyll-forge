@@ -1,15 +1,34 @@
 import React, { useState } from "react";
 import { trpc } from "@/lib/trpc";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
 import { ContentCalendar } from "@/components/ContentCalendar";
 import { toast } from "sonner";
 import {
-  Calendar, Clock, AlertCircle, CheckCircle, XCircle, Edit2, Trash2, Eye,
+  Calendar,
+  Clock,
+  AlertCircle,
+  CheckCircle,
+  XCircle,
+  Edit2,
+  Trash2,
+  Eye,
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -34,33 +53,53 @@ export const ScheduledPostsScreen: React.FC = () => {
   const [isCancelling, setIsCancelling] = useState(false);
 
   // Fetch all scheduled posts from tRPC - using a generic query since getAllScheduledPosts may not exist
-  const { data: allScheduledPosts = [], isLoading, refetch } = trpc.socialMedia.getScheduledPosts.useQuery(
+  const {
+    data: allScheduledPosts = [],
+    isLoading,
+    refetch,
+  } = trpc.socialMedia.getScheduledPosts.useQuery(
     { repurposedContentId: 0 } // Fetch all by using 0 as filter
   );
-  
+
   const reschedulePostMutation = trpc.socialMedia.reschedulePost.useMutation();
   const cancelPostMutation = trpc.socialMedia.cancelScheduledPost.useMutation();
 
-
-
   // Transform data to match ScheduledPost interface
-  const scheduledPosts: ScheduledPost[] = (allScheduledPosts || []).map((post: any) => ({
-    id: post.id,
-    platform: post.platform,
-    content: post.content,
-    scheduledAt: new Date(post.scheduledAt),
-    status: post.status,
-    externalUrl: post.externalUrl,
-    repurposedContentId: post.repurposedContentId,
-    errorMessage: post.errorMessage,
-    retryCount: post.retryCount,
-  }));
+  const scheduledPosts: ScheduledPost[] = (allScheduledPosts || []).map(
+    (post: any) => ({
+      id: post.id,
+      platform: post.platform,
+      content: post.content,
+      scheduledAt: new Date(post.scheduledAt),
+      status: post.status,
+      externalUrl: post.externalUrl,
+      repurposedContentId: post.repurposedContentId,
+      errorMessage: post.errorMessage,
+      retryCount: post.retryCount,
+    })
+  );
 
   const statusConfig = {
-    pending: { icon: Clock, color: "bg-yellow-100 dark:bg-yellow-900", textColor: "text-yellow-800 dark:text-yellow-200" },
-    published: { icon: CheckCircle, color: "bg-green-100 dark:bg-green-900", textColor: "text-green-800 dark:text-green-200" },
-    failed: { icon: XCircle, color: "bg-red-100 dark:bg-red-900", textColor: "text-red-800 dark:text-red-200" },
-    cancelled: { icon: AlertCircle, color: "bg-gray-100 dark:bg-gray-900", textColor: "text-gray-800 dark:text-gray-200" },
+    pending: {
+      icon: Clock,
+      color: "bg-yellow-100 dark:bg-yellow-900",
+      textColor: "text-yellow-800 dark:text-yellow-200",
+    },
+    published: {
+      icon: CheckCircle,
+      color: "bg-green-100 dark:bg-green-900",
+      textColor: "text-green-800 dark:text-green-200",
+    },
+    failed: {
+      icon: XCircle,
+      color: "bg-red-100 dark:bg-red-900",
+      textColor: "text-red-800 dark:text-red-200",
+    },
+    cancelled: {
+      icon: AlertCircle,
+      color: "bg-gray-100 dark:bg-gray-900",
+      textColor: "text-gray-800 dark:text-gray-200",
+    },
   };
 
   const handleReschedule = async () => {
@@ -75,12 +114,16 @@ export const ScheduledPostsScreen: React.FC = () => {
         postId: selectedPost.id,
         scheduledAt: new Date(newScheduleDate),
       });
-      toast.success(`Post rescheduled for ${format(new Date(newScheduleDate), "MMM d, yyyy HH:mm")}`);
+      toast.success(
+        `Post rescheduled for ${format(new Date(newScheduleDate), "MMM d, yyyy HH:mm")}`
+      );
       setShowReschedule(false);
       setNewScheduleDate("");
       await refetch();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to reschedule post");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to reschedule post"
+      );
     } finally {
       setIsRescheduling(false);
     }
@@ -96,15 +139,17 @@ export const ScheduledPostsScreen: React.FC = () => {
       setShowDetails(false);
       await refetch();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to cancel post");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to cancel post"
+      );
     } finally {
       setIsCancelling(false);
     }
   };
 
-  const pendingPosts = scheduledPosts.filter((p) => p.status === "pending");
-  const publishedPosts = scheduledPosts.filter((p) => p.status === "published");
-  const failedPosts = scheduledPosts.filter((p) => p.status === "failed");
+  const pendingPosts = scheduledPosts.filter(p => p.status === "pending");
+  const publishedPosts = scheduledPosts.filter(p => p.status === "published");
+  const failedPosts = scheduledPosts.filter(p => p.status === "failed");
 
   return (
     <div className="space-y-6">
@@ -127,7 +172,9 @@ export const ScheduledPostsScreen: React.FC = () => {
         <Card>
           <CardContent className="pt-6 text-center">
             <Calendar className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-2" />
-            <p className="text-slate-600 dark:text-slate-400">No scheduled posts yet</p>
+            <p className="text-slate-600 dark:text-slate-400">
+              No scheduled posts yet
+            </p>
           </CardContent>
         </Card>
       )}
@@ -139,13 +186,17 @@ export const ScheduledPostsScreen: React.FC = () => {
             <TabsTrigger value="pending">
               Pending
               {pendingPosts.length > 0 && (
-                <Badge className="ml-2 bg-yellow-600">{pendingPosts.length}</Badge>
+                <Badge className="ml-2 bg-yellow-600">
+                  {pendingPosts.length}
+                </Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="published">
               Published
               {publishedPosts.length > 0 && (
-                <Badge className="ml-2 bg-green-600">{publishedPosts.length}</Badge>
+                <Badge className="ml-2 bg-green-600">
+                  {publishedPosts.length}
+                </Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="failed">
@@ -168,7 +219,7 @@ export const ScheduledPostsScreen: React.FC = () => {
               <CardContent>
                 <ContentCalendar
                   posts={scheduledPosts}
-                  onPostClick={(post) => {
+                  onPostClick={post => {
                     setSelectedPost(post as any);
                     setShowDetails(true);
                   }}
@@ -183,18 +234,26 @@ export const ScheduledPostsScreen: React.FC = () => {
               <Card>
                 <CardContent className="pt-6 text-center">
                   <Clock className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-2" />
-                  <p className="text-slate-600 dark:text-slate-400">No pending posts</p>
+                  <p className="text-slate-600 dark:text-slate-400">
+                    No pending posts
+                  </p>
                 </CardContent>
               </Card>
             ) : (
-              pendingPosts.map((post) => (
-                <Card key={post.id} className="hover:shadow-md transition-shadow">
+              pendingPosts.map(post => (
+                <Card
+                  key={post.id}
+                  className="hover:shadow-md transition-shadow"
+                >
                   <CardContent className="pt-6">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
                           <Badge className="capitalize">{post.platform}</Badge>
-                          <Badge variant="outline" className="bg-yellow-50 text-yellow-800">
+                          <Badge
+                            variant="outline"
+                            className="bg-yellow-50 text-yellow-800"
+                          >
                             Pending
                           </Badge>
                         </div>
@@ -204,7 +263,10 @@ export const ScheduledPostsScreen: React.FC = () => {
                         <div className="flex items-center gap-4 text-xs text-slate-500">
                           <span className="flex items-center gap-1">
                             <Clock className="w-3 h-3" />
-                            {format(new Date(post.scheduledAt), "MMM d, yyyy HH:mm")}
+                            {format(
+                              new Date(post.scheduledAt),
+                              "MMM d, yyyy HH:mm"
+                            )}
                           </span>
                         </div>
                       </div>
@@ -243,18 +305,26 @@ export const ScheduledPostsScreen: React.FC = () => {
               <Card>
                 <CardContent className="pt-6 text-center">
                   <CheckCircle className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-2" />
-                  <p className="text-slate-600 dark:text-slate-400">No published posts</p>
+                  <p className="text-slate-600 dark:text-slate-400">
+                    No published posts
+                  </p>
                 </CardContent>
               </Card>
             ) : (
-              publishedPosts.map((post) => (
-                <Card key={post.id} className="hover:shadow-md transition-shadow">
+              publishedPosts.map(post => (
+                <Card
+                  key={post.id}
+                  className="hover:shadow-md transition-shadow"
+                >
                   <CardContent className="pt-6">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
                           <Badge className="capitalize">{post.platform}</Badge>
-                          <Badge variant="outline" className="bg-green-50 text-green-800">
+                          <Badge
+                            variant="outline"
+                            className="bg-green-50 text-green-800"
+                          >
                             Published
                           </Badge>
                         </div>
@@ -264,7 +334,10 @@ export const ScheduledPostsScreen: React.FC = () => {
                         <div className="flex items-center gap-4 text-xs text-slate-500">
                           <span className="flex items-center gap-1">
                             <CheckCircle className="w-3 h-3" />
-                            {format(new Date(post.scheduledAt), "MMM d, yyyy HH:mm")}
+                            {format(
+                              new Date(post.scheduledAt),
+                              "MMM d, yyyy HH:mm"
+                            )}
                           </span>
                         </div>
                       </div>
@@ -293,18 +366,26 @@ export const ScheduledPostsScreen: React.FC = () => {
               <Card>
                 <CardContent className="pt-6 text-center">
                   <XCircle className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-2" />
-                  <p className="text-slate-600 dark:text-slate-400">No failed posts</p>
+                  <p className="text-slate-600 dark:text-slate-400">
+                    No failed posts
+                  </p>
                 </CardContent>
               </Card>
             ) : (
-              failedPosts.map((post) => (
-                <Card key={post.id} className="hover:shadow-md transition-shadow border-red-200 dark:border-red-800">
+              failedPosts.map(post => (
+                <Card
+                  key={post.id}
+                  className="hover:shadow-md transition-shadow border-red-200 dark:border-red-800"
+                >
                   <CardContent className="pt-6">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
                           <Badge className="capitalize">{post.platform}</Badge>
-                          <Badge variant="outline" className="bg-red-50 text-red-800">
+                          <Badge
+                            variant="outline"
+                            className="bg-red-50 text-red-800"
+                          >
                             Failed
                           </Badge>
                         </div>
@@ -319,7 +400,10 @@ export const ScheduledPostsScreen: React.FC = () => {
                         <div className="flex items-center gap-4 text-xs text-slate-500">
                           <span className="flex items-center gap-1">
                             <Clock className="w-3 h-3" />
-                            {format(new Date(post.scheduledAt), "MMM d, yyyy HH:mm")}
+                            {format(
+                              new Date(post.scheduledAt),
+                              "MMM d, yyyy HH:mm"
+                            )}
                           </span>
                         </div>
                       </div>
@@ -381,7 +465,10 @@ export const ScheduledPostsScreen: React.FC = () => {
                   Scheduled For
                 </label>
                 <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                  {format(new Date(selectedPost.scheduledAt), "MMM d, yyyy HH:mm")}
+                  {format(
+                    new Date(selectedPost.scheduledAt),
+                    "MMM d, yyyy HH:mm"
+                  )}
                 </p>
               </div>
 
@@ -403,9 +490,12 @@ export const ScheduledPostsScreen: React.FC = () => {
 
               {selectedPost.status === "failed" && (
                 <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-3">
-                  <p className="text-xs font-semibold text-red-800 dark:text-red-200 mb-2">Failed Post</p>
+                  <p className="text-xs font-semibold text-red-800 dark:text-red-200 mb-2">
+                    Failed Post
+                  </p>
                   <p className="text-xs text-red-700 dark:text-red-300">
-                    {selectedPost.errorMessage || "An error occurred while publishing this post"}
+                    {selectedPost.errorMessage ||
+                      "An error occurred while publishing this post"}
                   </p>
                   <Button
                     size="sm"
@@ -456,7 +546,7 @@ export const ScheduledPostsScreen: React.FC = () => {
               <input
                 type="datetime-local"
                 value={newScheduleDate}
-                onChange={(e) => setNewScheduleDate(e.target.value)}
+                onChange={e => setNewScheduleDate(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md text-sm"
               />
             </div>
@@ -472,10 +562,7 @@ export const ScheduledPostsScreen: React.FC = () => {
             >
               Cancel
             </Button>
-            <Button
-              onClick={handleReschedule}
-              disabled={isRescheduling}
-            >
+            <Button onClick={handleReschedule} disabled={isRescheduling}>
               {isRescheduling ? <Spinner className="w-4 h-4 mr-2" /> : null}
               Reschedule
             </Button>
