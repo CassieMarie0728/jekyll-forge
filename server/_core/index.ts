@@ -10,6 +10,7 @@ import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { scheduledPublishHandler } from "../scheduledPublishHandler";
 import { registerHeartbeatJobs } from "./heartbeatJobs";
+import logger from "./logger";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -59,14 +60,14 @@ async function startServer() {
   const port = await findAvailablePort(preferredPort);
 
   if (port !== preferredPort) {
-    console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
+    logger.warn(`Port ${preferredPort} is busy, using port ${port} instead`);
   }
 
   server.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}/`);
+    logger.info(`Server running on http://localhost:${port}/`);
     // Register periodic heartbeat jobs
     registerHeartbeatJobs();
   });
 }
 
-startServer().catch(console.error);
+startServer().catch((error) => logger.error('Server startup failed:', error));
