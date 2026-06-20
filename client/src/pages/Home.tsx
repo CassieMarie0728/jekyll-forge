@@ -318,6 +318,132 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Integrations Showcase */}
+      <section className="px-6 py-16 bg-card/30 border-y border-border">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-display font-bold mb-3">
+              Seamless integrations with your favorite tools
+            </h2>
+            <p className="text-muted-foreground">
+              Connect Jekyll Forge to your existing workflow and watch your content flow across all platforms.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* GitHub Integration */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              viewport={{ once: true }}
+              className="bg-background border border-border rounded-xl p-6 hover:border-primary/50 transition-colors"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-lg bg-slate-900 dark:bg-slate-100 flex items-center justify-center">
+                  <Github className="w-5 h-5 text-white dark:text-black" />
+                </div>
+                <h3 className="font-semibold">GitHub</h3>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Direct repository access with commit, branch, and PR creation. Real-time sync with your GitHub repos.
+              </p>
+              <div className="text-xs font-mono bg-muted p-3 rounded text-muted-foreground">
+                <div>Your Jekyll repo</div>
+                <div className="text-primary">↓ Read/Write via API ↓</div>
+                <div>Jekyll Forge</div>
+              </div>
+            </motion.div>
+
+            {/* Social Platforms Integration */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+              viewport={{ once: true }}
+              className="bg-background border border-border rounded-xl p-6 hover:border-primary/50 transition-colors"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
+                  <Share2 className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="font-semibold">Social Media</h3>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Publish to Twitter, LinkedIn, Facebook, Instagram. Auto-adapt content per platform with scheduling.
+              </p>
+              <div className="text-xs font-mono bg-muted p-3 rounded text-muted-foreground">
+                <div>Your content</div>
+                <div className="text-primary">↓ Repurpose & Schedule ↓</div>
+                <div>All social platforms</div>
+              </div>
+            </motion.div>
+
+            {/* Analytics Integration */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.2 }}
+              viewport={{ once: true }}
+              className="bg-background border border-border rounded-xl p-6 hover:border-primary/50 transition-colors"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center">
+                  <BarChart3 className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="font-semibold">Analytics</h3>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Real-time engagement metrics from all platforms. Track impressions, clicks, and audience growth.
+              </p>
+              <div className="text-xs font-mono bg-muted p-3 rounded text-muted-foreground">
+                <div>Social platforms</div>
+                <div className="text-primary">↓ Aggregate metrics ↓</div>
+                <div>Jekyll Forge dashboard</div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Data Flow Diagram */}
+          <div className="mt-12 p-8 bg-background border border-border rounded-xl">
+            <h3 className="font-semibold text-center mb-8">Complete Data Flow</h3>
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm">
+              <div className="text-center">
+                <div className="w-12 h-12 rounded-lg bg-slate-900 dark:bg-slate-100 flex items-center justify-center mx-auto mb-2">
+                  <Github className="w-6 h-6 text-white dark:text-black" />
+                </div>
+                <div className="font-semibold">GitHub</div>
+                <div className="text-xs text-muted-foreground">Source of truth</div>
+              </div>
+              <div className="hidden md:block text-muted-foreground">→</div>
+              <div className="text-center">
+                <div className="w-12 h-12 rounded-lg bg-primary flex items-center justify-center mx-auto mb-2">
+                  <Zap className="w-6 h-6 text-primary-foreground" />
+                </div>
+                <div className="font-semibold">Jekyll Forge</div>
+                <div className="text-xs text-muted-foreground">Content hub</div>
+              </div>
+              <div className="hidden md:block text-muted-foreground">→</div>
+              <div className="text-center">
+                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center mx-auto mb-2">
+                  <Share2 className="w-6 h-6 text-white" />
+                </div>
+                <div className="font-semibold">Social Media</div>
+                <div className="text-xs text-muted-foreground">Audience reach</div>
+              </div>
+              <div className="hidden md:block text-muted-foreground">→</div>
+              <div className="text-center">
+                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center mx-auto mb-2">
+                  <BarChart3 className="w-6 h-6 text-white" />
+                </div>
+                <div className="font-semibold">Analytics</div>
+                <div className="text-xs text-muted-foreground">Performance</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Mobile App Highlight */}
       <section className="px-6 py-16">
         <div className="max-w-4xl mx-auto">
