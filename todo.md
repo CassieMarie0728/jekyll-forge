@@ -359,6 +359,6 @@
 - [x] Add ESLint + Prettier configuration - High priority (eslint.config.js, .prettierrc.json, npm scripts added)
 - [ ] Implement frontend code splitting for performance - Medium priority
 - [ ] Add frontend component tests with React Testing Library - Medium priority
-- [ ] Add rate limiting middleware - Medium priority
+- [x] Add rate limiting middleware - Medium priority (rateLimiter.ts with Redis store, integrated into server)
 - [ ] Implement error tracking (Sentry/DataDog) - Low priority
 - [ ] Add API documentation (OpenAPI/Swagger) - Low priority

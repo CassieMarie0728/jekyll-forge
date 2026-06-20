@@ -11,6 +11,12 @@ import { serveStatic, setupVite } from "./vite";
 import { scheduledPublishHandler } from "../scheduledPublishHandler";
 import { registerHeartbeatJobs } from "./heartbeatJobs";
 import logger from "./logger";
+import {
+  createApiRateLimiter,
+  createAuthRateLimiter,
+  createPublicRateLimiter,
+  closeRedisClient,
+} from "./rateLimiter";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -37,6 +43,17 @@ async function startServer() {
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+
+  // Initialize rate limiters
+  const apiLimiter = await createApiRateLimiter();
+  const authLimiter = await createAuthRateLimiter();
+  const publicLimiter = await createPublicRateLimiter();
+
+  // Apply rate limiters
+  app.use("/api/trpc", apiLimiter);
+  app.use("/api/oauth", authLimiter);
+  app.use("/", publicLimiter);
+
   registerStorageProxy(app);
   registerOAuthRoutes(app);
   // Heartbeat cron handler — must be before tRPC and Vite fallthrough
@@ -70,4 +87,20 @@ async function startServer() {
   });
 }
 
-startServer().catch((error) => logger.error('Server startup failed:', error));
+startServer().catch((error) => {
+  logger.error('Server startup failed:', error);
+  process.exit(1);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+  logger.info('SIGTERM received, shutting down gracefully');
+  await closeRedisClient();
+  process.exit(0);
+});
+
+process.on('SIGINT', async () => {
+  logger.info('SIGINT received, shutting down gracefully');
+  await closeRedisClient();
+  process.exit(0);
+});
