@@ -19,6 +19,10 @@ import {
   Globe,
   BookOpen,
   Puzzle,
+  Smartphone,
+  Share2,
+  BarChart3,
+  Clock,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -62,6 +66,26 @@ const FEATURES = [
     icon: Puzzle,
     title: "Plugin Manager",
     desc: "Add plugins with GitHub Pages compatibility warnings and automatic GitHub Actions generation.",
+  },
+  {
+    icon: Smartphone,
+    title: "Native Android App",
+    desc: "Manage your content on-the-go with a full-featured React Native mobile app. Edit, preview, and publish from anywhere.",
+  },
+  {
+    icon: Share2,
+    title: "Social Media Repurposing",
+    desc: "Automatically adapt content for Twitter, LinkedIn, Facebook, Instagram. Schedule posts and track engagement across platforms.",
+  },
+  {
+    icon: BarChart3,
+    title: "Analytics Dashboard",
+    desc: "Track post performance, engagement metrics, and audience insights. Real-time analytics from all social platforms.",
+  },
+  {
+    icon: Clock,
+    title: "Scheduled Publishing",
+    desc: "Schedule posts for optimal times with automatic retry logic, rate limit handling, and comprehensive error recovery.",
   },
 ];
 
@@ -141,7 +165,7 @@ export default function Home() {
               variant="outline"
               className="mb-6 border-primary/30 text-primary bg-primary/10 px-3 py-1 text-xs"
             >
-              Production-Ready Jekyll CMS
+              Production-Ready CMS + Mobile App + Social Media
             </Badge>
           </motion.div>
 
@@ -152,7 +176,7 @@ export default function Home() {
             className="text-5xl md:text-7xl font-display font-bold tracking-tight mb-6"
           >
             Your Jekyll site,{" "}
-            <span className="forge-text-gradient">forged</span> in the browser.
+            <span className="forge-text-gradient">forged</span> everywhere.
           </motion.h1>
 
           <motion.p
@@ -161,9 +185,10 @@ export default function Home() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="text-lg text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed"
           >
-            A full-stack visual CMS for GitHub-hosted Jekyll blogs. Write posts
-            visually, manage assets, publish with confidence, and use AI
-            assistance — all from your browser, no local setup required.
+            A full-stack visual CMS for GitHub-hosted Jekyll blogs with native
+            mobile app. Write posts visually, repurpose for social media, publish
+            with confidence, and use AI assistance — all from your browser or
+            phone, no local setup required.
           </motion.p>
 
           <motion.div
@@ -208,10 +233,10 @@ export default function Home() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-display font-bold mb-3">
-              Everything you need to run a Jekyll blog
+              Everything you need to run a Jekyll blog + social media
             </h2>
             <p className="text-muted-foreground">
-              Visual enough for writers. Powerful enough for developers.
+              Visual enough for writers. Powerful enough for developers. Mobile-first for creators.
             </p>
           </div>
 
@@ -259,17 +284,22 @@ export default function Home() {
               {
                 n: "03",
                 title: "Write visually or in Markdown",
-                desc: "Three editor modes with full front matter management and autosave.",
+                desc: "Three editor modes with full front matter management and autosave. Works on desktop and mobile.",
               },
               {
                 n: "04",
-                title: "Preview & audit",
-                desc: "Multi-viewport preview, SEO audit, accessibility check, and content health report.",
+                title: "Repurpose for social media",
+                desc: "Automatically adapt content for Twitter, LinkedIn, Facebook, Instagram with platform-specific optimization.",
               },
               {
                 n: "05",
-                title: "Publish safely",
-                desc: "Visual diff, validation checklist, commit to branch or create a PR.",
+                title: "Schedule & publish",
+                desc: "Schedule posts for optimal times with automatic retry logic, rate limit handling, and comprehensive error recovery.",
+              },
+              {
+                n: "06",
+                title: "Track analytics",
+                desc: "Monitor post performance and engagement metrics across all platforms in real-time.",
               },
             ].map(({ n, title, desc }) => (
               <div key={n} className="flex gap-4 items-start">
@@ -288,6 +318,49 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Mobile App Highlight */}
+      <section className="px-6 py-16">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-2xl p-8 md:p-12">
+            <div className="flex items-start gap-4 mb-6">
+              <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
+                <Smartphone className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-display font-bold mb-2">
+                  Manage your content on-the-go
+                </h3>
+                <p className="text-muted-foreground">
+                  Native Android app with full editing capabilities, real-time sync, and offline support.
+                </p>
+              </div>
+            </div>
+            <ul className="space-y-2 text-sm">
+              <li className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-primary flex-shrink-0" />
+                <span>Edit posts with visual and Markdown editors</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-primary flex-shrink-0" />
+                <span>Preview content on multiple platforms</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-primary flex-shrink-0" />
+                <span>Schedule and publish to social media</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-primary flex-shrink-0" />
+                <span>Track analytics and engagement metrics</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-primary flex-shrink-0" />
+                <span>Offline mode with automatic sync</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="px-6 py-20 text-center">
         <div className="max-w-2xl mx-auto">
@@ -296,7 +369,7 @@ export default function Home() {
           </h2>
           <p className="text-muted-foreground mb-8">
             Connect your GitHub account and start managing your Jekyll blog from
-            the browser.
+            the browser or mobile app.
           </p>
           <Button
             size="lg"
@@ -314,7 +387,7 @@ export default function Home() {
         <div className="flex items-center justify-center gap-1.5">
           <Zap className="w-3 h-3 text-primary" />
           <span>
-            Jekyll Forge — A visual CMS for GitHub-hosted Jekyll blogs
+            Jekyll Forge — Visual CMS + Mobile App + Social Media Management
           </span>
         </div>
       </footer>
