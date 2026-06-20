@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getLoginUrl, getSignUpUrl } from "@/const";
 import { useLocation } from "wouter";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Zap,
   Github,
@@ -23,8 +23,16 @@ import {
   Share2,
   BarChart3,
   Clock,
+  ChevronDown,
+  Play,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const FEATURES = [
   {
@@ -92,9 +100,43 @@ const FEATURES = [
 const PLUGIN_WARNING =
   "⚠️ Plugin Warning: GitHub Pages does not support every Jekyll plugin when using the default build process. Jekyll Forge always warns you before adding unsupported plugins and offers to generate a GitHub Actions workflow.";
 
+const FAQ_ITEMS = [
+  {
+    question: "How do I connect my GitHub repository?",
+    answer:
+      "Simply generate a Personal Access Token from your GitHub settings, paste it into Jekyll Forge, and we'll auto-detect all your Jekyll repositories. No local setup required.",
+  },
+  {
+    question: "What are the social media posting limits?",
+    answer:
+      "Jekyll Forge respects each platform's rate limits. We automatically handle rate limiting with exponential backoff and retry logic. You can schedule unlimited posts; we'll publish them at optimal times.",
+  },
+  {
+    question: "When will the Android app be available?",
+    answer:
+      "The Android app is production-ready and available now! Download it from the Google Play Store to manage your content on-the-go with full editing, preview, and publishing capabilities.",
+  },
+  {
+    question: "Is there a free plan?",
+    answer:
+      "Yes! Our free plan includes GitHub integration, visual editor, and basic social media posting. Pro and Enterprise plans unlock advanced features like scheduled publishing, analytics, and priority support.",
+  },
+  {
+    question: "Can I use Jekyll Forge with custom Jekyll themes?",
+    answer:
+      "Absolutely! Jekyll Forge auto-detects your theme and plugins. You can customize CSS and manage theme settings directly from the editor without breaking your site.",
+  },
+  {
+    question: "How is my content secured?",
+    answer:
+      "Your content lives in your GitHub repository. Jekyll Forge uses OAuth for secure authentication, never stores your credentials, and all data is encrypted in transit. You maintain full control.",
+  },
+];
+
 export default function Home() {
   const { isAuthenticated, loading } = useAuth();
   const [, navigate] = useLocation();
+  const [videoPlaying, setVideoPlaying] = useState(false);
 
   useEffect(() => {
     if (!loading && isAuthenticated) {
@@ -225,6 +267,81 @@ export default function Home() {
           <div className="plugin-warning text-sm leading-relaxed">
             {PLUGIN_WARNING}
           </div>
+        </div>
+      </section>
+
+      {/* Video Demo Section */}
+      <section className="px-6 py-16">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-display font-bold mb-3">
+              See Jekyll Forge in action
+            </h2>
+            <p className="text-muted-foreground">
+              Watch how to go from GitHub connection to published social media posts in under 2 minutes.
+            </p>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4 }}
+            viewport={{ once: true }}
+            className="relative bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-2xl overflow-hidden aspect-video flex items-center justify-center cursor-pointer group"
+            onClick={() => setVideoPlaying(true)}
+          >
+            {/* Video Placeholder */}
+            <div className="absolute inset-0 bg-gradient-to-br from-slate-900 to-slate-800 opacity-20" />
+
+            {/* Play Button */}
+            <motion.div
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              className="relative z-10 w-16 h-16 rounded-full bg-primary flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow"
+            >
+              <Play className="w-7 h-7 text-primary-foreground fill-primary-foreground ml-1" />
+            </motion.div>
+
+            {/* Video Title Overlay */}
+            <div className="absolute inset-0 flex items-end p-6 bg-gradient-to-t from-black/50 to-transparent z-5">
+              <div className="text-white">
+                <h3 className="font-semibold mb-1">Complete Workflow Demo</h3>
+                <p className="text-sm text-gray-300">
+                  GitHub → Edit → Social Media → Publish
+                </p>
+              </div>
+            </div>
+          </motion.div>
+
+          {videoPlaying && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+              onClick={() => setVideoPlaying(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.9 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0.9 }}
+                className="w-full max-w-4xl aspect-video bg-black rounded-lg overflow-hidden"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
+                  <div className="text-center">
+                    <Play className="w-16 h-16 text-primary mx-auto mb-4" />
+                    <p className="text-muted-foreground">
+                      Demo video would play here
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      (Replace with your actual demo video URL)
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
         </div>
       </section>
 
@@ -484,6 +601,44 @@ export default function Home() {
               </li>
             </ul>
           </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="px-6 py-16 bg-card/30 border-y border-border">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-display font-bold mb-3">
+              Frequently asked questions
+            </h2>
+            <p className="text-muted-foreground">
+              Have questions? We've got answers. Can't find what you're looking for? Reach out to our support team.
+            </p>
+          </div>
+
+          <Accordion type="single" collapsible className="w-full space-y-3">
+            {FAQ_ITEMS.map((item, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+                viewport={{ once: true }}
+              >
+                <AccordionItem
+                  value={`item-${index}`}
+                  className="bg-background border border-border rounded-lg px-6 data-[state=open]:border-primary/30"
+                >
+                  <AccordionTrigger className="hover:no-underline py-4">
+                    <span className="text-left font-semibold">{item.question}</span>
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground pb-4">
+                    {item.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              </motion.div>
+            ))}
+          </Accordion>
         </div>
       </section>
 
