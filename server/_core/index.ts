@@ -17,6 +17,7 @@ import {
   createPublicRateLimiter,
   closeRedisClient,
 } from "./rateLimiter";
+import { registerSwaggerUI } from "./swagger";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -56,6 +57,7 @@ async function startServer() {
 
   registerStorageProxy(app);
   registerOAuthRoutes(app);
+  registerSwaggerUI(app);
   // Heartbeat cron handler — must be before tRPC and Vite fallthrough
   app.post("/api/scheduled/publish-post", scheduledPublishHandler);
   // tRPC API
@@ -82,6 +84,7 @@ async function startServer() {
 
   server.listen(port, () => {
     logger.info(`Server running on http://localhost:${port}/`);
+    logger.info(`API documentation available at http://localhost:${port}/api/docs`);
     // Register periodic heartbeat jobs
     registerHeartbeatJobs();
   });
