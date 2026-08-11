@@ -1,28 +1,40 @@
+import React from 'react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import UserSettings from './UserSettings';
 
+// Mock useAuth
+vi.mock('@/_core/hooks/useAuth', () => ({
+  useAuth: () => ({
+    user: {
+      id: 'user1',
+      name: 'Test User',
+      email: 'test@example.com',
+      role: 'user',
+      createdAt: new Date().toISOString(),
+    },
+    isAuthenticated: true,
+  }),
+}));
+
+// Mock tRPC
 vi.mock('../lib/trpc', () => ({
   trpc: {
-    user: {
-      getSettings: {
+    socialMedia: {
+      getAccounts: {
         useQuery: vi.fn(() => ({
-          data: {
-            theme: 'dark',
-            notifications: true,
-            emailDigest: 'weekly',
-          },
+          data: [],
           isLoading: false,
-          error: null,
+          refetch: vi.fn(),
         })),
       },
-      updateSettings: {
+    },
+    auth: {
+      logout: {
         useMutation: vi.fn(() => ({
           mutate: vi.fn(),
           isPending: false,
-          error: null,
         })),
       },
     },
@@ -40,65 +52,15 @@ describe('UserSettings Component', () => {
     });
   });
 
-  it('renders settings form', () => {
+  it('renders account settings header and profile info', () => {
     render(
       <QueryClientProvider client={queryClient}>
         <UserSettings />
       </QueryClientProvider>
     );
 
-    expect(screen.getByText(/theme/i)).toBeInTheDocument();
-    expect(screen.getByText(/notifications/i)).toBeInTheDocument();
-  });
-
-  it('loads user settings on mount', async () => {
-    render(
-      <QueryClientProvider client={queryClient}>
-        <UserSettings />
-      </QueryClientProvider>
-    );
-
-    await waitFor(() => {
-      expect(screen.getByDisplayValue(/dark/i)).toBeInTheDocument();
-    });
-  });
-
-  it('allows user to toggle notifications', async () => {
-    const user = userEvent.setup();
-
-    render(
-      <QueryClientProvider client={queryClient}>
-        <UserSettings />
-      </QueryClientProvider>
-    );
-
-    const notificationToggle = screen.getByRole('checkbox', { name: /notifications/i });
-    await user.click(notificationToggle);
-
-    expect(notificationToggle).toBeChecked();
-  });
-
-  it('saves settings on form submission', async () => {
-    const user = userEvent.setup();
-    const mockMutate = vi.fn();
-
-    vi.mocked(require('../lib/trpc').trpc.user.updateSettings.useMutation).mockReturnValueOnce({
-      mutate: mockMutate,
-      isPending: false,
-      error: null,
-    });
-
-    render(
-      <QueryClientProvider client={queryClient}>
-        <UserSettings />
-      </QueryClientProvider>
-    );
-
-    const saveButton = screen.getByRole('button', { name: /save/i });
-    await user.click(saveButton);
-
-    await waitFor(() => {
-      expect(mockMutate).toHaveBeenCalled();
-    });
+    expect(screen.getByText('Account Settings')).toBeInTheDocument();
+    expect(screen.getByText('Profile Information')).toBeInTheDocument();
+    expect(screen.getByText('Test User')).toBeInTheDocument();
   });
 });

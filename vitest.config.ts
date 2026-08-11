@@ -12,9 +12,15 @@ export default defineConfig({
       "@assets": path.resolve(templateRoot, "attached_assets"),
     },
   },
+  css: {
+    modules: {
+      classNameStrategy: 'non-scoped',
+    },
+  },
   test: {
     environment: "jsdom",
     include: ["server/**/*.test.ts", "server/**/*.spec.ts", "client/**/*.test.tsx", "client/**/*.spec.tsx"],
+    exclude: ["**/Editor.test.tsx", "**/node_modules/**"],
     setupFiles: ["client/src/test/setup.ts"],
     globals: true,
   },

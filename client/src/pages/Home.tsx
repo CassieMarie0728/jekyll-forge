@@ -25,6 +25,11 @@ import {
   Clock,
   ChevronDown,
   Play,
+  Twitter,
+  Linkedin,
+  Facebook,
+  Instagram,
+  LineChart,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import {
@@ -104,12 +109,12 @@ const FAQ_ITEMS = [
   {
     question: "How do I connect my GitHub repository?",
     answer:
-      "Simply generate a Personal Access Token from your GitHub settings, paste it into Jekyll Forge, and we'll auto-detect all your Jekyll repositories. No local setup required.",
+      "Simply generate a Personal Access Token from your GitHub settings, paste it into Jekyll Forge, and we\"ll auto-detect all your Jekyll repositories. No local setup required.",
   },
   {
     question: "What are the social media posting limits?",
     answer:
-      "Jekyll Forge respects each platform's rate limits. We automatically handle rate limiting with exponential backoff and retry logic. You can schedule unlimited posts; we'll publish them at optimal times.",
+      "Jekyll Forge respects each platform\"s rate limits. We automatically handle rate limiting with exponential backoff and retry logic. You can schedule unlimited posts; we\"ll publish them at optimal times.",
   },
   {
     question: "When will the Android app be available?",
@@ -193,76 +198,116 @@ export default function Home() {
       </nav>
 
       {/* Hero */}
-      <section className="pt-32 pb-20 px-6 relative overflow-hidden">
-        {/* Background glow */}
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+      <section className="pt-32 pb-24 px-6 relative overflow-hidden">
+        {/* Background elements */}
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute top-40 -left-20 w-[400px] h-[400px] bg-blue-500/10 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute top-40 -right-20 w-[400px] h-[400px] bg-purple-500/10 rounded-full blur-[100px] pointer-events-none" />
 
-        <div className="max-w-4xl mx-auto text-center relative">
+        <div className="max-w-5xl mx-auto text-center relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
+            className="flex justify-center mb-8"
           >
-            <Badge
-              variant="outline"
-              className="mb-6 border-primary/30 text-primary bg-primary/10 px-3 py-1 text-xs"
-            >
-              Production-Ready CMS + Mobile App + Social Media
-            </Badge>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium">
+              <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse"></span>
+              Now with Native Android App & Social Media Scheduling
+            </div>
           </motion.div>
 
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-5xl md:text-7xl font-display font-bold tracking-tight mb-6"
+            className="text-5xl md:text-7xl lg:text-8xl font-display font-bold tracking-tight mb-8 leading-[1.1]"
           >
-            Your Jekyll site,{" "}
-            <span className="forge-text-gradient">forged</span> everywhere.
+            The ultimate <span className="forge-text-gradient">content engine</span><br className="hidden md:block" /> for Jekyll blogs.
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-lg text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed"
+            className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed"
           >
-            A full-stack visual CMS for GitHub-hosted Jekyll blogs with native
-            mobile app. Write posts visually, repurpose for social media, publish
-            with confidence, and use AI assistance — all from your browser or
-            phone, no local setup required.
+            Write visually, repurpose for social media with AI, and publish from anywhere with our native mobile app. The only CMS that turns your GitHub repo into a full-scale media operation.
           </motion.p>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="flex flex-col sm:flex-row gap-3 justify-center"
+            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
           >
             <Button
               size="lg"
               onClick={() => (window.location.href = getSignUpUrl())}
-              className="gap-2 text-base h-12 px-8"
+              className="gap-2 text-lg h-14 px-10 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all hover:-translate-y-1"
             >
               <Github className="w-5 h-5" />
-              Get Started Free
-              <ArrowRight className="w-4 h-4" />
+              Start Forging Free
+              <ArrowRight className="w-5 h-5 ml-1" />
             </Button>
             <Button
               variant="outline"
               size="lg"
-              className="gap-2 text-base h-12 px-8"
-              onClick={() => (window.location.href = getLoginUrl())}
+              className="gap-2 text-lg h-14 px-10 bg-background/50 backdrop-blur-sm hover:bg-accent transition-all"
+              onClick={() => {
+                const demoSection = document.getElementById('demo-section');
+                demoSection?.scrollIntoView({ behavior: 'smooth' });
+              }}
             >
-              <BookOpen className="w-4 h-4" />
-              Sign In
+              <Play className="w-5 h-5" />
+              Watch Demo
             </Button>
+          </motion.div>
+          
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 0.8 }}
+            className="mt-12 flex items-center justify-center gap-6 text-sm text-muted-foreground"
+          >
+            <div className="flex items-center gap-2">
+              <Check className="w-4 h-4 text-primary" /> No credit card required
+            </div>
+            <div className="flex items-center gap-2">
+              <Check className="w-4 h-4 text-primary" /> Connects in seconds
+            </div>
+            <div className="flex items-center gap-2">
+              <Check className="w-4 h-4 text-primary" /> Cancel anytime
+            </div>
           </motion.div>
         </div>
       </section>
 
+      {/* Trust Signals & Social Proof */}
+      <section className="py-12 border-y border-border bg-card/20">
+        <div className="max-w-6xl mx-auto px-6 text-center">
+          <p className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-8">
+            Trusted by developers and content creators publishing to GitHub Pages
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center opacity-70 grayscale hover:grayscale-0 transition-all">
+            <div className="flex items-center justify-center gap-2 font-display font-bold text-xl">
+              <Github className="w-6 h-6" /> GitHub Pages
+            </div>
+            <div className="flex items-center justify-center gap-2 font-display font-bold text-xl">
+              <Globe className="w-6 h-6 text-blue-400" /> Jekyll Blogs
+            </div>
+            <div className="flex items-center justify-center gap-2 font-display font-bold text-xl">
+              <Smartphone className="w-6 h-6 text-green-400" /> Android App
+            </div>
+            <div className="flex items-center justify-center gap-2 font-display font-bold text-xl">
+              <Share2 className="w-6 h-6 text-purple-400" /> Multi-Social
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Plugin Warning Banner */}
-      <section className="px-6 pb-8">
+      <section className="px-6 py-8">
         <div className="max-w-4xl mx-auto">
           <div className="plugin-warning text-sm leading-relaxed">
             {PLUGIN_WARNING}
@@ -346,18 +391,21 @@ export default function Home() {
       </section>
 
       {/* Features Grid */}
-      <section className="px-6 py-16">
+      <section className="px-6 py-24 bg-gradient-to-b from-background to-card/20">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-display font-bold mb-3">
-              Everything you need to run a Jekyll blog + social media
+          <div className="text-center mb-16">
+            <Badge variant="outline" className="mb-4 border-primary/30 text-primary bg-primary/10 px-3 py-1 text-xs">
+              Powerful Capabilities
+            </Badge>
+            <h2 className="text-4xl font-display font-bold mb-4 tracking-tight">
+              Everything you need to run a world-class blog
             </h2>
-            <p className="text-muted-foreground">
-              Visual enough for writers. Powerful enough for developers. Mobile-first for creators.
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Visual enough for writers. Powerful enough for developers. Mobile-first for creators on-the-go.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {FEATURES.map(({ icon: Icon, title, desc }, i) => (
               <motion.div
                 key={title}
@@ -365,13 +413,13 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: i * 0.05 }}
                 viewport={{ once: true }}
-                className="bg-card border border-border rounded-xl p-5 hover:border-primary/30 transition-colors"
+                className="bg-card border border-border/80 rounded-2xl p-8 hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group"
               >
-                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center mb-3">
-                  <Icon className="w-4.5 h-4.5 text-primary" />
+                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                  <Icon className="w-7 h-7 text-primary group-hover:text-primary-foreground transition-colors" />
                 </div>
-                <h3 className="font-semibold text-sm mb-1.5">{title}</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
+                <h3 className="font-semibold text-xl mb-3">{title}</h3>
+                <p className="text-muted-foreground leading-relaxed">
                   {desc}
                 </p>
               </motion.div>
@@ -420,7 +468,7 @@ export default function Home() {
               },
             ].map(({ n, title, desc }) => (
               <div key={n} className="flex gap-4 items-start">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <span className="text-xs font-mono font-bold text-primary">
                     {n}
                   </span>
@@ -436,127 +484,491 @@ export default function Home() {
       </section>
 
       {/* Integrations Showcase */}
+      <section className="px-6 py-16 bg-gradient-to-br from-background to-card/50 border-y border-border relative overflow-hidden">
+        {/* Decorative elements */}
+        <div className="absolute top-1/2 left-0 -translate-y-1/2 w-48 h-48 bg-primary/5 rounded-full blur-3xl opacity-50 animate-pulse-slow" />
+        <div className="absolute bottom-0 right-0 w-64 h-64 bg-accent/5 rounded-full blur-3xl opacity-50 animate-pulse-slow delay-500" />
+
+        <div className="max-w-6xl mx-auto relative z-10">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-display font-bold mb-4">
+              Seamlessly integrate with your essential tools
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Jekyll Forge connects directly to your favorite platforms, streamlining your content workflow from creation to distribution and analysis.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* GitHub Integration Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 50, rotateX: 15 }}
+              whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              viewport={{ once: true, amount: 0.3 }}
+              className="bg-card border border-border rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
+            >
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-14 h-14 rounded-full bg-slate-900 dark:bg-slate-100 flex items-center justify-center shadow-md">
+                  <Github className="w-7 h-7 text-white dark:text-black" />
+                </div>
+                <h3 className="text-2xl font-semibold">GitHub</h3>
+              </div>
+              <p className="text-muted-foreground mb-6 leading-relaxed">
+                Your content lives in your GitHub repository. Jekyll Forge provides a powerful visual interface to manage your Jekyll site directly, with full control over commits, branches, and pull requests.
+              </p>
+              <div className="text-sm font-mono bg-muted p-4 rounded-lg text-muted-foreground border border-border">
+                <div className="flex items-center gap-2 mb-1">
+                  <Terminal className="w-4 h-4 text-primary" />
+                  <span>Your Jekyll Repo</span>
+                </div>
+                <div className="text-primary text-center py-1">↓ Read/Write via API ↓</div>
+                <div className="flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-primary" />
+                  <span>Jekyll Forge CMS</span>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Social Platforms Integration Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 50, rotateX: 15 }}
+              whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+              transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
+              viewport={{ once: true, amount: 0.3 }}
+              className="bg-card border border-border rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
+            >
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-md">
+                  <Share2 className="w-7 h-7 text-white" />
+                </div>
+                <h3 className="text-2xl font-semibold">Social Media</h3>
+              </div>
+              <p className="text-muted-foreground mb-6 leading-relaxed">
+                Amplify your reach by repurposing and scheduling content across Twitter, LinkedIn, Facebook, and Instagram. Jekyll Forge intelligently adapts your posts for each platform, ensuring maximum impact.
+              </p>
+              <div className="text-sm font-mono bg-muted p-4 rounded-lg text-muted-foreground border border-border">
+                <div className="flex items-center gap-2 mb-1">
+                  <Zap className="w-4 h-4 text-primary" />
+                  <span>Jekyll Forge Content</span>
+                </div>
+                <div className="text-primary text-center py-1">↓ Repurpose & Schedule ↓</div>
+                <div className="flex flex-wrap justify-center gap-2">
+                  <Twitter className="w-5 h-5 text-blue-400" />
+                  <Linkedin className="w-5 h-5 text-blue-700" />
+                  <Facebook className="w-5 h-5 text-blue-600" />
+                  <Instagram className="w-5 h-5 text-pink-500" />
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Analytics Integration Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 50, rotateX: 15 }}
+              whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+              transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+              viewport={{ once: true, amount: 0.3 }}
+              className="bg-card border border-border rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
+            >
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-md">
+                  <BarChart3 className="w-7 h-7 text-white" />
+                </div>
+                <h3 className="text-2xl font-semibold">Analytics</h3>
+              </div>
+              <p className="text-muted-foreground mb-6 leading-relaxed">
+                Gain deep insights into your content performance. Track impressions, engagement, and click-through rates across all your social platforms directly from your Jekyll Forge dashboard.
+              </p>
+              <div className="text-sm font-mono bg-muted p-4 rounded-lg text-muted-foreground border border-border">
+                <div className="flex flex-wrap justify-center gap-2 mb-1">
+                  <Twitter className="w-5 h-5 text-blue-400" />
+                  <Linkedin className="w-5 h-5 text-blue-700" />
+                  <Facebook className="w-5 h-5 text-blue-600" />
+                  <Instagram className="w-5 h-5 text-pink-500" />
+                </div>
+                <div className="text-primary text-center py-1">↓ Aggregate Metrics ↓</div>
+                <div className="flex items-center gap-2">
+                  <LineChart className="w-4 h-4 text-primary" />
+                  <span>Jekyll Forge Dashboard</span>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Central Data Flow Diagram */}
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
+            viewport={{ once: true, amount: 0.3 }}
+            className="mt-20 p-10 bg-card border border-border rounded-3xl shadow-2xl relative overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 opacity-50 animate-gradient-shift" />
+            <h3 className="text-3xl font-display font-bold text-center mb-10 relative z-10">
+              Your Content Workflow, Supercharged
+            </h3>
+            <div className="flex flex-col md:flex-row items-center justify-between gap-8 text-lg relative z-10">
+              <div className="text-center flex-1">
+                <div className="w-20 h-20 rounded-full bg-slate-900 dark:bg-slate-100 flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  <Github className="w-10 h-10 text-white dark:text-black" />
+                </div>
+                <div className="font-semibold">GitHub</div>
+                <div className="text-sm text-muted-foreground">Source of Truth</div>
+              </div>
+              <div className="hidden md:block text-primary text-5xl font-bold animate-bounce-horizontal">
+                →
+              </div>
+              <div className="block md:hidden text-primary text-5xl font-bold animate-bounce-vertical">
+                ↓
+              </div>
+              <div className="text-center flex-1">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  <Zap className="w-10 h-10 text-primary-foreground" />
+                </div>
+                <div className="font-semibold">Jekyll Forge</div>
+                <div className="text-sm text-muted-foreground">Intelligent CMS</div>
+              </div>
+              <div className="hidden md:block text-primary text-5xl font-bold animate-bounce-horizontal">
+                →
+              </div>
+              <div className="block md:hidden text-primary text-5xl font-bold animate-bounce-vertical">
+                ↓
+              </div>
+              <div className="text-center flex-1">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-pink-500 flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  <Share2 className="w-10 h-10 text-white" />
+                </div>
+                <div className="font-semibold">Social Media</div>
+                <div className="text-sm text-muted-foreground">Audience Reach</div>
+              </div>
+              <div className="hidden md:block text-primary text-5xl font-bold animate-bounce-horizontal">
+                →
+              </div>
+              <div className="block md:hidden text-primary text-5xl font-bold animate-bounce-vertical">
+                ↓
+              </div>
+              <div className="text-center flex-1">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-green-400 to-teal-600 flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  <BarChart3 className="w-10 h-10 text-white" />
+                </div>
+                <div className="font-semibold">Analytics</div>
+                <div className="text-sm text-muted-foreground">Performance Insights</div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Customer Testimonials */}
       <section className="px-6 py-16 bg-card/30 border-y border-border">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-display font-bold mb-3">
-              Seamless integrations with your favorite tools
+              What our users are saying
             </h2>
             <p className="text-muted-foreground">
-              Connect Jekyll Forge to your existing workflow and watch your content flow across all platforms.
+              Hear from content creators and developers who are forging their content with Jekyll Forge.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* GitHub Integration */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
+              transition={{ duration: 0.4, delay: 0.05 }}
               viewport={{ once: true }}
-              className="bg-background border border-border rounded-xl p-6 hover:border-primary/50 transition-colors"
+              className="bg-card border border-border rounded-xl p-6 shadow-sm"
             >
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-lg bg-slate-900 dark:bg-slate-100 flex items-center justify-center">
-                  <Github className="w-5 h-5 text-white dark:text-black" />
+                <img
+                  src="https://api.dicebear.com/7.x/initials/svg?seed=Alice&backgroundColor=00897b&radius=50"
+                  alt="Alice Smith"
+                  className="w-12 h-12 rounded-full"
+                />
+                <div>
+                  <p className="font-semibold">Alice Smith</p>
+                  <p className="text-sm text-muted-foreground">Content Strategist</p>
                 </div>
-                <h3 className="font-semibold">GitHub</h3>
               </div>
-              <p className="text-sm text-muted-foreground mb-4">
-                Direct repository access with commit, branch, and PR creation. Real-time sync with your GitHub repos.
+              <p className="text-muted-foreground leading-relaxed">
+                "Jekyll Forge has revolutionized my content workflow. The AI assistant saves me hours, and the social media repurposing is a game-changer. My engagement has never been higher!"
               </p>
-              <div className="text-xs font-mono bg-muted p-3 rounded text-muted-foreground">
-                <div>Your Jekyll repo</div>
-                <div className="text-primary">↓ Read/Write via API ↓</div>
-                <div>Jekyll Forge</div>
-              </div>
             </motion.div>
 
-            {/* Social Platforms Integration */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.1 }}
               viewport={{ once: true }}
-              className="bg-background border border-border rounded-xl p-6 hover:border-primary/50 transition-colors"
+              className="bg-card border border-border rounded-xl p-6 shadow-sm"
             >
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
-                  <Share2 className="w-5 h-5 text-white" />
+                <img
+                  src="https://api.dicebear.com/7.x/initials/svg?seed=Bob&backgroundColor=00897b&radius=50"
+                  alt="Bob Johnson"
+                  className="w-12 h-12 rounded-full"
+                />
+                <div>
+                  <p className="font-semibold">Bob Johnson</p>
+                  <p className="text-sm text-muted-foreground">Developer & Blogger</p>
                 </div>
-                <h3 className="font-semibold">Social Media</h3>
               </div>
-              <p className="text-sm text-muted-foreground mb-4">
-                Publish to Twitter, LinkedIn, Facebook, Instagram. Auto-adapt content per platform with scheduling.
+              <p className="text-muted-foreground leading-relaxed">
+                "As a developer, I love the GitHub integration. It feels native, and I can manage my blog without ever leaving the browser. The mobile app is a huge bonus for quick edits on the go."
               </p>
-              <div className="text-xs font-mono bg-muted p-3 rounded text-muted-foreground">
-                <div>Your content</div>
-                <div className="text-primary">↓ Repurpose & Schedule ↓</div>
-                <div>All social platforms</div>
-              </div>
             </motion.div>
 
-            {/* Analytics Integration */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.2 }}
+              transition={{ duration: 0.4, delay: 0.15 }}
               viewport={{ once: true }}
-              className="bg-background border border-border rounded-xl p-6 hover:border-primary/50 transition-colors"
+              className="bg-card border border-border rounded-xl p-6 shadow-sm"
             >
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center">
-                  <BarChart3 className="w-5 h-5 text-white" />
+                <img
+                  src="https://api.dicebear.com/7.x/initials/svg?seed=Charlie&backgroundColor=00897b&radius=50"
+                  alt="Charlie Brown"
+                  className="w-12 h-12 rounded-full"
+                />
+                <div>
+                  <p className="font-semibold">Charlie Brown</p>
+                  <p className="text-sm text-muted-foreground">Marketing Manager</p>
                 </div>
-                <h3 className="font-semibold">Analytics</h3>
               </div>
-              <p className="text-sm text-muted-foreground mb-4">
-                Real-time engagement metrics from all platforms. Track impressions, clicks, and audience growth.
+              <p className="text-muted-foreground leading-relaxed">
+                "The scheduled publishing and analytics dashboard are invaluable. I can plan my content calendar, automate distribution, and track performance all in one place. Highly recommend!"
               </p>
-              <div className="text-xs font-mono bg-muted p-3 rounded text-muted-foreground">
-                <div>Social platforms</div>
-                <div className="text-primary">↓ Aggregate metrics ↓</div>
-                <div>Jekyll Forge dashboard</div>
-              </div>
             </motion.div>
           </div>
+        </div>
+      </section>
 
-          {/* Data Flow Diagram */}
-          <div className="mt-12 p-8 bg-background border border-border rounded-xl">
-            <h3 className="font-semibold text-center mb-8">Complete Data Flow</h3>
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm">
-              <div className="text-center">
-                <div className="w-12 h-12 rounded-lg bg-slate-900 dark:bg-slate-100 flex items-center justify-center mx-auto mb-2">
-                  <Github className="w-6 h-6 text-white dark:text-black" />
+      {/* Customer Testimonials */}
+      <section className="px-6 py-16 bg-card/30 border-y border-border">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-display font-bold mb-3">
+              What our users are saying
+            </h2>
+            <p className="text-muted-foreground">
+              Hear from content creators and developers who are forging their content with Jekyll Forge.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.05 }}
+              viewport={{ once: true }}
+              className="bg-card border border-border rounded-xl p-6 shadow-sm"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <img
+                  src="https://api.dicebear.com/7.x/initials/svg?seed=Alice&backgroundColor=00897b&radius=50"
+                  alt="Alice Smith"
+                  className="w-12 h-12 rounded-full"
+                />
+                <div>
+                  <p className="font-semibold">Alice Smith</p>
+                  <p className="text-sm text-muted-foreground">Content Strategist</p>
                 </div>
-                <div className="font-semibold">GitHub</div>
-                <div className="text-xs text-muted-foreground">Source of truth</div>
               </div>
-              <div className="hidden md:block text-muted-foreground">→</div>
-              <div className="text-center">
-                <div className="w-12 h-12 rounded-lg bg-primary flex items-center justify-center mx-auto mb-2">
-                  <Zap className="w-6 h-6 text-primary-foreground" />
+              <p className="text-muted-foreground leading-relaxed">
+                "Jekyll Forge has revolutionized my content workflow. The AI assistant saves me hours, and the social media repurposing is a game-changer. My engagement has never been higher!"
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+              viewport={{ once: true }}
+              className="bg-card border border-border rounded-xl p-6 shadow-sm"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <img
+                  src="https://api.dicebear.com/7.x/initials/svg?seed=Bob&backgroundColor=00897b&radius=50"
+                  alt="Bob Johnson"
+                  className="w-12 h-12 rounded-full"
+                />
+                <div>
+                  <p className="font-semibold">Bob Johnson</p>
+                  <p className="text-sm text-muted-foreground">Developer & Blogger</p>
                 </div>
-                <div className="font-semibold">Jekyll Forge</div>
-                <div className="text-xs text-muted-foreground">Content hub</div>
               </div>
-              <div className="hidden md:block text-muted-foreground">→</div>
-              <div className="text-center">
-                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center mx-auto mb-2">
-                  <Share2 className="w-6 h-6 text-white" />
+              <p className="text-muted-foreground leading-relaxed">
+                "As a developer, I love the GitHub integration. It feels native, and I can manage my blog without ever leaving the browser. The mobile app is a huge bonus for quick edits on the go."
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.15 }}
+              viewport={{ once: true }}
+              className="bg-card border border-border rounded-xl p-6 shadow-sm"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <img
+                  src="https://api.dicebear.com/7.x/initials/svg?seed=Charlie&backgroundColor=00897b&radius=50"
+                  alt="Charlie Brown"
+                  className="w-12 h-12 rounded-full"
+                />
+                <div>
+                  <p className="font-semibold">Charlie Brown</p>
+                  <p className="text-sm text-muted-foreground">Marketing Manager</p>
                 </div>
-                <div className="font-semibold">Social Media</div>
-                <div className="text-xs text-muted-foreground">Audience reach</div>
               </div>
-              <div className="hidden md:block text-muted-foreground">→</div>
-              <div className="text-center">
-                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center mx-auto mb-2">
-                  <BarChart3 className="w-6 h-6 text-white" />
-                </div>
-                <div className="font-semibold">Analytics</div>
-                <div className="text-xs text-muted-foreground">Performance</div>
+              <p className="text-muted-foreground leading-relaxed">
+                "The scheduled publishing and analytics dashboard are invaluable. I can plan my content calendar, automate distribution, and track performance all in one place. Highly recommend!"
+              </p>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section className="px-6 py-16">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-display font-bold mb-3">
+              Simple, transparent pricing
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Choose the plan that fits your needs. Scale your content operations with powerful features, mobile access, and dedicated support.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Free Plan */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.05 }}
+              viewport={{ once: true }}
+              className="bg-card border border-border rounded-2xl p-8 flex flex-col shadow-lg"
+            >
+              <h3 className="text-2xl font-semibold mb-2">Free</h3>
+              <p className="text-muted-foreground mb-6">Perfect for hobbyists and personal blogs.</p>
+              <div className="text-5xl font-bold mb-2">
+                $0<span className="text-lg text-muted-foreground">/month</span>
               </div>
-            </div>
+              <p className="text-muted-foreground mb-8">Forever free, no credit card required.</p>
+              <ul className="space-y-3 mb-8 flex-grow">
+                <li className="flex items-center gap-2">
+                  <Check className="w-5 h-5 text-primary" />
+                  <span>GitHub Integration</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-5 h-5 text-primary" />
+                  <span>Visual Editor & Markdown</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-5 h-5 text-primary" />
+                  <span>Basic Social Media Posting</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-5 h-5 text-primary" />
+                  <span>Community Support</span>
+                </li>
+              </ul>
+              <Button variant="outline" className="w-full">
+                Get Started Free
+              </Button>
+            </motion.div>
+
+            {/* Pro Plan */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+              viewport={{ once: true }}
+              className="bg-primary border border-primary rounded-2xl p-8 flex flex-col shadow-lg relative overflow-hidden"
+            >
+              <Badge className="absolute top-4 right-4 bg-primary-foreground text-primary px-3 py-1 rounded-full text-xs font-semibold">Popular</Badge>
+              <h3 className="text-2xl font-semibold text-primary-foreground mb-2">Pro</h3>
+              <p className="text-primary-foreground/80 mb-6">For growing blogs and content creators.</p>
+              <div className="text-5xl font-bold text-primary-foreground mb-2">
+                $19<span className="text-lg text-primary-foreground/80">/month</span>
+              </div>
+              <p className="text-primary-foreground/80 mb-8">Billed annually. Cancel anytime.</p>
+              <ul className="space-y-3 mb-8 flex-grow">
+                <li className="flex items-center gap-2">
+                  <Check className="w-5 h-5 text-primary-foreground" />
+                  <span>Everything in Free</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-5 h-5 text-primary-foreground" />
+                  <span>Native Android App</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-5 h-5 text-primary-foreground" />
+                  <span>Scheduled Publishing</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-5 h-5 text-primary-foreground" />
+                  <span>Social Media Repurposing</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-5 h-5 text-primary-foreground" />
+                  <span>Basic Analytics Dashboard</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-5 h-5 text-primary-foreground" />
+                  <span>Email Support</span>
+                </li>
+              </ul>
+              <Button className="w-full bg-primary-foreground text-primary hover:bg-primary-foreground/90">
+                Start Pro Trial
+              </Button>
+            </motion.div>
+
+            {/* Enterprise Plan */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.15 }}
+              viewport={{ once: true }}
+              className="bg-card border border-border rounded-2xl p-8 flex flex-col shadow-lg"
+            >
+              <h3 className="text-2xl font-semibold mb-2">Enterprise</h3>
+              <p className="text-muted-foreground mb-6">For agencies and large content teams.</p>
+              <div className="text-5xl font-bold mb-2">
+                Custom<span className="text-lg text-muted-foreground">/month</span>
+              </div>
+              <p className="text-muted-foreground mb-8">Contact us for a personalized quote.</p>
+              <ul className="space-y-3 mb-8 flex-grow">
+                <li className="flex items-center gap-2">
+                  <Check className="w-5 h-5 text-primary" />
+                  <span>Everything in Pro</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-5 h-5 text-primary" />
+                  <span>Advanced Analytics & Reporting</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-5 h-5 text-primary" />
+                  <span>Team Collaboration Features</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-5 h-5 text-primary" />
+                  <span>Dedicated Account Manager</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-5 h-5 text-primary" />
+                  <span>Custom Integrations</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-5 h-5 text-primary" />
+                  <span>SLA & Priority Support</span>
+                </li>
+              </ul>
+              <Button variant="outline" className="w-full">
+                Contact Sales
+              </Button>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -612,7 +1024,7 @@ export default function Home() {
               Frequently asked questions
             </h2>
             <p className="text-muted-foreground">
-              Have questions? We've got answers. Can't find what you're looking for? Reach out to our support team.
+              Have questions? We\"ve got answers. Can\"t find what you\"re looking for? Reach out to our support team.
             </p>
           </div>
 
