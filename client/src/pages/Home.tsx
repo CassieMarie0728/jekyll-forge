@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getLoginUrl, getSignUpUrl } from "@/const";
 import { useLocation } from "wouter";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import {
   Zap,
   Github,
@@ -141,7 +141,6 @@ const FAQ_ITEMS = [
 export default function Home() {
   const { isAuthenticated, loading } = useAuth();
   const [, navigate] = useLocation();
-  const [videoPlaying, setVideoPlaying] = useState(false);
 
   useEffect(() => {
     if (!loading && isAuthenticated) {
@@ -315,15 +314,15 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Video Demo Section */}
+      {/* Workflow overview */}
       <section className="px-6 py-16">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-display font-bold mb-3">
-              See Jekyll Forge in action
+              Explore the Jekyll Forge workflow
             </h2>
             <p className="text-muted-foreground">
-              Watch how to go from GitHub connection to published social media posts in under 2 minutes.
+              Connect a repository, shape a draft, review the change, and publish through the tools available to your workspace.
             </p>
           </div>
 
@@ -332,61 +331,25 @@ export default function Home() {
             whileInView={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4 }}
             viewport={{ once: true }}
-            className="relative bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-2xl overflow-hidden aspect-video flex items-center justify-center cursor-pointer group"
-            onClick={() => setVideoPlaying(true)}
+            className="relative bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-2xl overflow-hidden aspect-video flex items-center justify-center group"
           >
-            {/* Video Placeholder */}
             <div className="absolute inset-0 bg-gradient-to-br from-slate-900 to-slate-800 opacity-20" />
 
-            {/* Play Button */}
             <motion.div
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
               className="relative z-10 w-16 h-16 rounded-full bg-primary flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow"
             >
               <Play className="w-7 h-7 text-primary-foreground fill-primary-foreground ml-1" />
             </motion.div>
 
-            {/* Video Title Overlay */}
             <div className="absolute inset-0 flex items-end p-6 bg-gradient-to-t from-black/50 to-transparent z-5">
               <div className="text-white">
-                <h3 className="font-semibold mb-1">Complete Workflow Demo</h3>
+                <h3 className="font-semibold mb-1">Workflow overview</h3>
                 <p className="text-sm text-gray-300">
-                  GitHub → Edit → Social Media → Publish
+                  Connect → Draft → Review → Publish
                 </p>
               </div>
             </div>
           </motion.div>
-
-          {videoPlaying && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
-              onClick={() => setVideoPlaying(false)}
-            >
-              <motion.div
-                initial={{ scale: 0.9 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0.9 }}
-                className="w-full max-w-4xl aspect-video bg-black rounded-lg overflow-hidden"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
-                  <div className="text-center">
-                    <Play className="w-16 h-16 text-primary mx-auto mb-4" />
-                    <p className="text-muted-foreground">
-                      Demo video would play here
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      (Replace with your actual demo video URL)
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
         </div>
       </section>
 
@@ -449,7 +412,7 @@ export default function Home() {
               {
                 n: "03",
                 title: "Write visually or in Markdown",
-                desc: "Three editor modes with full front matter management and autosave. Works on desktop and mobile.",
+                desc: "Three editor modes with front matter management and autosave in the web workspace.",
               },
               {
                 n: "04",
@@ -464,7 +427,7 @@ export default function Home() {
               {
                 n: "06",
                 title: "Track analytics",
-                desc: "Monitor post performance and engagement metrics across all platforms in real-time.",
+                desc: "Review available performance and engagement data for connected accounts.",
               },
             ].map(({ n, title, desc }) => (
               <div key={n} className="flex gap-4 items-start">
@@ -735,30 +698,30 @@ export default function Home() {
                   Manage your content on-the-go
                 </h3>
                 <p className="text-muted-foreground">
-                  Native Android app with full editing capabilities, real-time sync, and offline support.
+                  The Android companion is undergoing release validation. Its current screens support an evolving subset of the web workflow.
                 </p>
               </div>
             </div>
             <ul className="space-y-2 text-sm">
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-primary flex-shrink-0" />
-                <span>Edit posts with visual and Markdown editors</span>
+                <span>Android editor and Markdown workflows under validation</span>
               </li>
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-primary flex-shrink-0" />
-                <span>Preview content on multiple platforms</span>
+                <span>Content-repurposing screens under validation</span>
               </li>
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-primary flex-shrink-0" />
-                <span>Schedule and publish to social media</span>
+                <span>Scheduling and publishing flows under validation</span>
               </li>
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-primary flex-shrink-0" />
-                <span>Track analytics and engagement metrics</span>
+                <span>Analytics screens under validation</span>
               </li>
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-primary flex-shrink-0" />
-                <span>Offline mode with automatic sync</span>
+                <span>Offline queue and sync integration in progress</span>
               </li>
             </ul>
           </div>
@@ -773,7 +736,7 @@ export default function Home() {
               Frequently asked questions
             </h2>
             <p className="text-muted-foreground">
-              Have questions? We\"ve got answers. Can\"t find what you\"re looking for? Reach out to our support team.
+              Review the current product scope and connection requirements before starting.
             </p>
           </div>
 

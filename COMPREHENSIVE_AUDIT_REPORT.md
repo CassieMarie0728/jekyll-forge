@@ -32,6 +32,7 @@ This is an evidence-led engineering audit, not a product claim sheet. A finding 
 | AUD-005 | **P1** | Android authentication | The mobile login flow and stored-token model require validation against the web OAuth/session contract before a production claim can be made. | Open; needs contract review and end-to-end verification. |
 | AUD-006 | **P1** | Offline and notifications | Offline sync and push notification services include simulated or local-only behavior that must not be marketed as production synchronization or remote push delivery until wired to real services. | Open; implementation and device validation required. |
 | AUD-007 | **P1** | Web regression coverage | The editor test remains excluded because its CSS import chain is not configured for the test environment. | Open; replace the exclusion with a reliable test setup or test seam. |
+| AUD-008 | **P1** | Deployed landing-page consistency | Production verification at `https://jekyllforge.manus.space/` confirmed that the revised page is live, but several remaining statements still overstate Android availability, live synchronization, offline support, analytics freshness, and the demo video. | Open; align the remaining copy and replace or remove the demo placeholder. |
 
 ## Remediation Sequence
 
@@ -43,3 +44,4 @@ The active sequence is deliberately narrow: resolve release-blocking correctness
 2. `client/src/pages/Home.tsx` and `client/src/pages/Home.test.tsx`.
 3. `mobile/jekyll-forge-mobile/app.json`, `eas.json`, `src/screens/LoginScreen.tsx`, `src/services/syncService.ts`, and `src/services/pushNotifications.ts`.
 4. `todo.md` under **Active Audit Remediation — Priority Order**.
+5. Deployed landing-page verification at `https://jekyllforge.manus.space/`, reviewed 2026-08-11.
