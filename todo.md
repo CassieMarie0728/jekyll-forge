@@ -203,6 +203,7 @@
 - [x] Remove fictional testimonials and unsupported “trusted by,” pricing, Play Store, and security claims from the landing page
 - [ ] Audit frontend bundle boundaries, dead routes, unimplemented CTAs, and error/loading/empty states across all web screens
 - [ ] Audit protected API procedures for ownership enforcement, input validation, sensitive token exposure, and social-platform error handling
+- [x] Prevent OAuth access and refresh tokens from being returned by connected-account API queries
 - [ ] Verify database migrations match the Drizzle schema and identify non-destructive migration gaps
 - [ ] Verify Android offline queues, synchronization conflict behavior, notification configuration, and release packaging prerequisites
 - [ ] Replace placeholder Expo/EAS identifiers and correct Android build, Play submission, and environment-variable documentation

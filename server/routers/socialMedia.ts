@@ -19,6 +19,7 @@ import {
   cancelScheduledSocialPost,
 } from "../db";
 import { getSocialMediaService } from "../_core/socialMediaService";
+import { toPublicSocialMediaAccount } from "../socialMediaAccountView";
 import { TRPCError } from "@trpc/server";
 
 export const socialMediaRouter = router({
@@ -67,7 +68,8 @@ export const socialMediaRouter = router({
    * Get all connected social media accounts
    */
   getAccounts: protectedProcedure.query(async ({ ctx }) => {
-    return getSocialMediaAccountsByUserId(ctx.user.id);
+    const accounts = await getSocialMediaAccountsByUserId(ctx.user.id);
+    return accounts.map(toPublicSocialMediaAccount);
   }),
 
   /**
@@ -287,7 +289,7 @@ export const socialMediaRouter = router({
           message: "Account not found",
         });
       }
-      return account;
+      return toPublicSocialMediaAccount(account);
     }),
 
   /**
