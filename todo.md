@@ -191,6 +191,23 @@
 - [x] Heartbeat cron jobs require site to be deployed (published) before they activate (platform constraint)
 - [x] Real-time WebSocket updates — polling-based conflict detection implemented; WebSocket upgrade is a future enhancement
 
+## Active Audit Remediation — Priority Order
+
+- [x] Restore the full audit report and an evidence-backed remediation tracker in an easily discoverable project location
+- [x] Stop Redis connection-refusal retry noise and verify the API rate-limiter degrades cleanly when Redis is unavailable
+- [ ] Reconcile the Android app source tree, declared dependencies, Expo SDK compatibility, and build documentation
+- [x] Re-enable the editor component regression test with CSS-heavy child modules mocked as needed in the normal Vitest suite
+- [x] Extract editor markdown parsing and serialization into a CSS-free module with regression coverage
+- [ ] Conduct route-by-route automated checks for landing-to-auth-to-repository-picker and authenticated dashboard flows
+- [ ] Audit and harden landing-page metadata, semantic hierarchy, keyboard behavior, accessible labels, and reduced-motion behavior
+- [x] Remove fictional testimonials and unsupported “trusted by,” pricing, Play Store, and security claims from the landing page
+- [ ] Audit frontend bundle boundaries, dead routes, unimplemented CTAs, and error/loading/empty states across all web screens
+- [ ] Audit protected API procedures for ownership enforcement, input validation, sensitive token exposure, and social-platform error handling
+- [ ] Verify database migrations match the Drizzle schema and identify non-destructive migration gaps
+- [ ] Verify Android offline queues, synchronization conflict behavior, notification configuration, and release packaging prerequisites
+- [ ] Replace placeholder Expo/EAS identifiers and correct Android build, Play submission, and environment-variable documentation
+- [ ] Reconcile the Android authentication flow with the web OAuth contract and secure token-storage model
+
 ## Deployment Notes
 - **Cron jobs activate after deployment**: The scheduler infrastructure is fully implemented, but heartbeat cron jobs only activate once the site is published to production (Manus platform requirement)
 - **S3 storage**: All assets use S3-backed storage with served URLs; no local file storage

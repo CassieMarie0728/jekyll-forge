@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getLoginUrl, getSignUpUrl } from "@/const";
 import { useLocation } from "wouter";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Zap,
   Github,
@@ -83,7 +83,7 @@ const FEATURES = [
   {
     icon: Smartphone,
     title: "Native Android App",
-    desc: "Manage your content on-the-go with a full-featured React Native mobile app. Edit, preview, and publish from anywhere.",
+    desc: "An Android companion app is in active release validation, with editor, repurposing, scheduling, and analytics screens under test.",
   },
   {
     icon: Share2,
@@ -93,7 +93,7 @@ const FEATURES = [
   {
     icon: BarChart3,
     title: "Analytics Dashboard",
-    desc: "Track post performance, engagement metrics, and audience insights. Real-time analytics from all social platforms.",
+    desc: "Review available post-performance and engagement data for connected social accounts from one workspace.",
   },
   {
     icon: Clock,
@@ -109,22 +109,22 @@ const FAQ_ITEMS = [
   {
     question: "How do I connect my GitHub repository?",
     answer:
-      "Simply generate a Personal Access Token from your GitHub settings, paste it into Jekyll Forge, and we\"ll auto-detect all your Jekyll repositories. No local setup required.",
+      "Use Jekyll Forge’s supported GitHub connection flow, then choose a repository for the workspace. The app detects common Jekyll structure after it can read the repository.",
   },
   {
     question: "What are the social media posting limits?",
     answer:
-      "Jekyll Forge respects each platform\"s rate limits. We automatically handle rate limiting with exponential backoff and retry logic. You can schedule unlimited posts; we\"ll publish them at optimal times.",
+      "Posting remains subject to each platform’s account permissions and API limits. Jekyll Forge records failures and applies retry or backoff behavior where the connected platform supports it.",
   },
   {
     question: "When will the Android app be available?",
     answer:
-      "The Android app is production-ready and available now! Download it from the Google Play Store to manage your content on-the-go with full editing, preview, and publishing capabilities.",
+      "The Android companion app is in active production validation. It is not currently presented as a public Google Play release while authentication, synchronization, and release configuration are being finalized.",
   },
   {
-    question: "Is there a free plan?",
+    question: "Is pricing available?",
     answer:
-      "Yes! Our free plan includes GitHub integration, visual editor, and basic social media posting. Pro and Enterprise plans unlock advanced features like scheduled publishing, analytics, and priority support.",
+      "The product does not currently expose a paid-plan checkout or subscription management flow. Pricing and packaging will be published only when those capabilities are configured.",
   },
   {
     question: "Can I use Jekyll Forge with custom Jekyll themes?",
@@ -134,7 +134,7 @@ const FAQ_ITEMS = [
   {
     question: "How is my content secured?",
     answer:
-      "Your content lives in your GitHub repository. Jekyll Forge uses OAuth for secure authentication, never stores your credentials, and all data is encrypted in transit. You maintain full control.",
+      "Your source content remains in the connected GitHub repository. Jekyll Forge uses authenticated sessions for access; connected social accounts require server-side credentials, so review account connections and permissions before enabling publishing.",
   },
 ];
 
@@ -213,7 +213,7 @@ export default function Home() {
           >
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium">
               <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse"></span>
-              Now with Native Android App & Social Media Scheduling
+              Jekyll CMS, GitHub workflow, and social publishing tools
             </div>
           </motion.div>
 
@@ -271,23 +271,23 @@ export default function Home() {
             className="mt-12 flex items-center justify-center gap-6 text-sm text-muted-foreground"
           >
             <div className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-primary" /> No credit card required
+              <Check className="w-4 h-4 text-primary" /> No payment setup required to explore
             </div>
             <div className="flex items-center gap-2">
               <Check className="w-4 h-4 text-primary" /> Connects in seconds
             </div>
             <div className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-primary" /> Cancel anytime
+              <Check className="w-4 h-4 text-primary" /> Keep your source content in GitHub
             </div>
           </motion.div>
         </div>
       </section>
 
-      {/* Trust Signals & Social Proof */}
+      {/* Product focus */}
       <section className="py-12 border-y border-border bg-card/20">
         <div className="max-w-6xl mx-auto px-6 text-center">
           <p className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-8">
-            Trusted by developers and content creators publishing to GitHub Pages
+            Built around GitHub-backed Jekyll workflows
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center opacity-70 grayscale hover:grayscale-0 transition-all">
             <div className="flex items-center justify-center gap-2 font-display font-bold text-xl">
@@ -659,317 +659,66 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Customer Testimonials */}
+      {/* Product principles and availability */}
       <section className="px-6 py-16 bg-card/30 border-y border-border">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-display font-bold mb-3">
-              What our users are saying
-            </h2>
-            <p className="text-muted-foreground">
-              Hear from content creators and developers who are forging their content with Jekyll Forge.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.05 }}
-              viewport={{ once: true }}
-              className="bg-card border border-border rounded-xl p-6 shadow-sm"
-            >
-              <div className="flex items-center gap-3 mb-4">
-                <img
-                  src="https://api.dicebear.com/7.x/initials/svg?seed=Alice&backgroundColor=00897b&radius=50"
-                  alt="Alice Smith"
-                  className="w-12 h-12 rounded-full"
-                />
-                <div>
-                  <p className="font-semibold">Alice Smith</p>
-                  <p className="text-sm text-muted-foreground">Content Strategist</p>
-                </div>
-              </div>
-              <p className="text-muted-foreground leading-relaxed">
-                "Jekyll Forge has revolutionized my content workflow. The AI assistant saves me hours, and the social media repurposing is a game-changer. My engagement has never been higher!"
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-              viewport={{ once: true }}
-              className="bg-card border border-border rounded-xl p-6 shadow-sm"
-            >
-              <div className="flex items-center gap-3 mb-4">
-                <img
-                  src="https://api.dicebear.com/7.x/initials/svg?seed=Bob&backgroundColor=00897b&radius=50"
-                  alt="Bob Johnson"
-                  className="w-12 h-12 rounded-full"
-                />
-                <div>
-                  <p className="font-semibold">Bob Johnson</p>
-                  <p className="text-sm text-muted-foreground">Developer & Blogger</p>
-                </div>
-              </div>
-              <p className="text-muted-foreground leading-relaxed">
-                "As a developer, I love the GitHub integration. It feels native, and I can manage my blog without ever leaving the browser. The mobile app is a huge bonus for quick edits on the go."
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.15 }}
-              viewport={{ once: true }}
-              className="bg-card border border-border rounded-xl p-6 shadow-sm"
-            >
-              <div className="flex items-center gap-3 mb-4">
-                <img
-                  src="https://api.dicebear.com/7.x/initials/svg?seed=Charlie&backgroundColor=00897b&radius=50"
-                  alt="Charlie Brown"
-                  className="w-12 h-12 rounded-full"
-                />
-                <div>
-                  <p className="font-semibold">Charlie Brown</p>
-                  <p className="text-sm text-muted-foreground">Marketing Manager</p>
-                </div>
-              </div>
-              <p className="text-muted-foreground leading-relaxed">
-                "The scheduled publishing and analytics dashboard are invaluable. I can plan my content calendar, automate distribution, and track performance all in one place. Highly recommend!"
-              </p>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* Customer Testimonials */}
-      <section className="px-6 py-16 bg-card/30 border-y border-border">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-display font-bold mb-3">
-              What our users are saying
-            </h2>
-            <p className="text-muted-foreground">
-              Hear from content creators and developers who are forging their content with Jekyll Forge.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.05 }}
-              viewport={{ once: true }}
-              className="bg-card border border-border rounded-xl p-6 shadow-sm"
-            >
-              <div className="flex items-center gap-3 mb-4">
-                <img
-                  src="https://api.dicebear.com/7.x/initials/svg?seed=Alice&backgroundColor=00897b&radius=50"
-                  alt="Alice Smith"
-                  className="w-12 h-12 rounded-full"
-                />
-                <div>
-                  <p className="font-semibold">Alice Smith</p>
-                  <p className="text-sm text-muted-foreground">Content Strategist</p>
-                </div>
-              </div>
-              <p className="text-muted-foreground leading-relaxed">
-                "Jekyll Forge has revolutionized my content workflow. The AI assistant saves me hours, and the social media repurposing is a game-changer. My engagement has never been higher!"
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-              viewport={{ once: true }}
-              className="bg-card border border-border rounded-xl p-6 shadow-sm"
-            >
-              <div className="flex items-center gap-3 mb-4">
-                <img
-                  src="https://api.dicebear.com/7.x/initials/svg?seed=Bob&backgroundColor=00897b&radius=50"
-                  alt="Bob Johnson"
-                  className="w-12 h-12 rounded-full"
-                />
-                <div>
-                  <p className="font-semibold">Bob Johnson</p>
-                  <p className="text-sm text-muted-foreground">Developer & Blogger</p>
-                </div>
-              </div>
-              <p className="text-muted-foreground leading-relaxed">
-                "As a developer, I love the GitHub integration. It feels native, and I can manage my blog without ever leaving the browser. The mobile app is a huge bonus for quick edits on the go."
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.15 }}
-              viewport={{ once: true }}
-              className="bg-card border border-border rounded-xl p-6 shadow-sm"
-            >
-              <div className="flex items-center gap-3 mb-4">
-                <img
-                  src="https://api.dicebear.com/7.x/initials/svg?seed=Charlie&backgroundColor=00897b&radius=50"
-                  alt="Charlie Brown"
-                  className="w-12 h-12 rounded-full"
-                />
-                <div>
-                  <p className="font-semibold">Charlie Brown</p>
-                  <p className="text-sm text-muted-foreground">Marketing Manager</p>
-                </div>
-              </div>
-              <p className="text-muted-foreground leading-relaxed">
-                "The scheduled publishing and analytics dashboard are invaluable. I can plan my content calendar, automate distribution, and track performance all in one place. Highly recommend!"
-              </p>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Section */}
-      <section className="px-6 py-16">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-display font-bold mb-3">
-              Simple, transparent pricing
+              Built for an accountable publishing workflow
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Choose the plan that fits your needs. Scale your content operations with powerful features, mobile access, and dedicated support.
+              Jekyll Forge keeps the repository, publishing decisions, and connected-account permissions visible instead of obscuring them behind a proprietary content store.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Free Plan */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.05 }}
-              viewport={{ once: true }}
-              className="bg-card border border-border rounded-2xl p-8 flex flex-col shadow-lg"
-            >
-              <h3 className="text-2xl font-semibold mb-2">Free</h3>
-              <p className="text-muted-foreground mb-6">Perfect for hobbyists and personal blogs.</p>
-              <div className="text-5xl font-bold mb-2">
-                $0<span className="text-lg text-muted-foreground">/month</span>
-              </div>
-              <p className="text-muted-foreground mb-8">Forever free, no credit card required.</p>
-              <ul className="space-y-3 mb-8 flex-grow">
-                <li className="flex items-center gap-2">
-                  <Check className="w-5 h-5 text-primary" />
-                  <span>GitHub Integration</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-5 h-5 text-primary" />
-                  <span>Visual Editor & Markdown</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-5 h-5 text-primary" />
-                  <span>Basic Social Media Posting</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-5 h-5 text-primary" />
-                  <span>Community Support</span>
-                </li>
-              </ul>
-              <Button variant="outline" className="w-full">
-                Get Started Free
-              </Button>
-            </motion.div>
-
-            {/* Pro Plan */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-              viewport={{ once: true }}
-              className="bg-primary border border-primary rounded-2xl p-8 flex flex-col shadow-lg relative overflow-hidden"
-            >
-              <Badge className="absolute top-4 right-4 bg-primary-foreground text-primary px-3 py-1 rounded-full text-xs font-semibold">Popular</Badge>
-              <h3 className="text-2xl font-semibold text-primary-foreground mb-2">Pro</h3>
-              <p className="text-primary-foreground/80 mb-6">For growing blogs and content creators.</p>
-              <div className="text-5xl font-bold text-primary-foreground mb-2">
-                $19<span className="text-lg text-primary-foreground/80">/month</span>
-              </div>
-              <p className="text-primary-foreground/80 mb-8">Billed annually. Cancel anytime.</p>
-              <ul className="space-y-3 mb-8 flex-grow">
-                <li className="flex items-center gap-2">
-                  <Check className="w-5 h-5 text-primary-foreground" />
-                  <span>Everything in Free</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-5 h-5 text-primary-foreground" />
-                  <span>Native Android App</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-5 h-5 text-primary-foreground" />
-                  <span>Scheduled Publishing</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-5 h-5 text-primary-foreground" />
-                  <span>Social Media Repurposing</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-5 h-5 text-primary-foreground" />
-                  <span>Basic Analytics Dashboard</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-5 h-5 text-primary-foreground" />
-                  <span>Email Support</span>
-                </li>
-              </ul>
-              <Button className="w-full bg-primary-foreground text-primary hover:bg-primary-foreground/90">
-                Start Pro Trial
-              </Button>
-            </motion.div>
-
-            {/* Enterprise Plan */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.15 }}
-              viewport={{ once: true }}
-              className="bg-card border border-border rounded-2xl p-8 flex flex-col shadow-lg"
-            >
-              <h3 className="text-2xl font-semibold mb-2">Enterprise</h3>
-              <p className="text-muted-foreground mb-6">For agencies and large content teams.</p>
-              <div className="text-5xl font-bold mb-2">
-                Custom<span className="text-lg text-muted-foreground">/month</span>
-              </div>
-              <p className="text-muted-foreground mb-8">Contact us for a personalized quote.</p>
-              <ul className="space-y-3 mb-8 flex-grow">
-                <li className="flex items-center gap-2">
-                  <Check className="w-5 h-5 text-primary" />
-                  <span>Everything in Pro</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-5 h-5 text-primary" />
-                  <span>Advanced Analytics & Reporting</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-5 h-5 text-primary" />
-                  <span>Team Collaboration Features</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-5 h-5 text-primary" />
-                  <span>Dedicated Account Manager</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-5 h-5 text-primary" />
-                  <span>Custom Integrations</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-5 h-5 text-primary" />
-                  <span>SLA & Priority Support</span>
-                </li>
-              </ul>
-              <Button variant="outline" className="w-full">
-                Contact Sales
-              </Button>
-            </motion.div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                icon: Github,
+                title: "Your repository stays central",
+                description: "Jekyll source files, history, and deployment configuration remain in the GitHub repository you connect.",
+              },
+              {
+                icon: Shield,
+                title: "Connected accounts stay reviewable",
+                description: "Social publishing is tied to explicit connected accounts so permissions can be inspected or removed from the workspace.",
+              },
+              {
+                icon: GitBranch,
+                title: "Changes are meant to be inspectable",
+                description: "Drafts, front matter, publishing decisions, and repository commits are surfaced as part of the authoring workflow.",
+              },
+            ].map(({ icon: Icon, title, description }, index) => (
+              <motion.div
+                key={title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.05 }}
+                viewport={{ once: true }}
+                className="bg-card border border-border rounded-xl p-6 shadow-sm"
+              >
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-5">
+                  <Icon className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="font-semibold text-lg mb-2">{title}</h3>
+                <p className="text-muted-foreground leading-relaxed">{description}</p>
+              </motion.div>
+            ))}
           </div>
+        </div>
+      </section>
+
+      <section className="px-6 py-16">
+        <div className="max-w-4xl mx-auto text-center">
+          <Badge variant="outline" className="mb-4 border-primary/30 text-primary bg-primary/10">
+            Current availability
+          </Badge>
+          <h2 className="text-3xl font-display font-bold mb-3">
+            Start with the web workspace
+          </h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            The web workspace is available for connected GitHub repositories. Android distribution and paid packaging are not advertised until their release, billing, and support workflows are fully configured.
+          </p>
         </div>
       </section>
 

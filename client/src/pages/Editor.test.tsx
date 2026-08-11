@@ -1,108 +1,76 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import React from 'react';
+import { describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import {
+  parseMarkdownFrontMatter,
+  readingTime,
+  serializeToMarkdown,
+  wordCount,
+} from '@/lib/editorMarkdown';
 import Editor from './Editor';
 
-vi.mock('../lib/trpc', () => ({
+vi.mock('wouter', () => ({
+  Link: ({ children }: { children: React.ReactNode }) => <a>{children}</a>,
+  useLocation: () => ['/', vi.fn()],
+  useParams: () => ({ siteId: '1' }),
+}));
+
+vi.mock('@/contexts/WorkspaceContext', () => ({
+  useWorkspace: () => ({ activeSite: null, setActiveSite: vi.fn() }),
+}));
+
+vi.mock('@/lib/trpc', () => ({
   trpc: {
+    sites: { get: { useQuery: vi.fn(() => ({ data: { id: 1, owner: 'owner', repo: 'repo', selectedBranch: 'main' } })) } },
     posts: {
-      create: {
-        useMutation: vi.fn(() => ({
-          mutate: vi.fn(),
-          isPending: false,
-          error: null,
-        })),
-      },
-      getById: {
-        useQuery: vi.fn(() => ({
-          data: { id: '1', title: 'Test Post', content: 'Test content' },
-          isLoading: false,
-          error: null,
-        })),
-      },
+      list: { useQuery: vi.fn(() => ({ data: [], refetch: vi.fn() })) },
+      upsert: { useMutation: vi.fn(() => ({ mutateAsync: vi.fn(), isPending: false })) },
+      autosave: { useMutation: vi.fn(() => ({ mutateAsync: vi.fn(), isPending: false })) },
     },
+    snapshots: { create: { useMutation: vi.fn(() => ({ mutateAsync: vi.fn(), isPending: false })) } },
+    github: { getFile: { useQuery: vi.fn(() => ({ data: undefined, refetch: vi.fn() })) } },
   },
 }));
 
-describe('Editor Component', () => {
-  let queryClient: QueryClient;
+vi.mock('@/components/FrontMatterEditor', () => ({ default: () => <div>Front matter</div> }));
+vi.mock('@/components/MarkdownPreview', () => ({ default: () => <div>Preview</div> }));
+vi.mock('@/components/AIAssistant', () => ({ default: () => null }));
+vi.mock('@/components/PublishDialog', () => ({ default: () => null }));
+vi.mock('@/components/SnapshotManager', () => ({ default: () => null }));
+vi.mock('@/components/FileBrowser', () => ({ default: () => <div>Files</div> }));
+vi.mock('@/components/RepurposingModal', () => ({ RepurposingModal: () => null }));
 
-  beforeEach(() => {
-    queryClient = new QueryClient({
-      defaultOptions: {
-        queries: { retry: false },
-      },
+describe('editor markdown utilities', () => {
+  it('parses supported front matter values without changing the post body', () => {
+    const result = parseMarkdownFrontMatter(
+      '---\ntitle: "Test Post"\npublished: true\npriority: 3\ntags: ["jekyll", "cms"]\n---\n\nBody copy'
+    );
+
+    expect(result.frontMatter).toEqual({
+      title: 'Test Post',
+      published: true,
+      priority: 3,
+      tags: ['jekyll', 'cms'],
     });
+    expect(result.markdown).toBe('Body copy');
   });
 
-  it('renders editor form', () => {
-    render(
-      <QueryClientProvider client={queryClient}>
-        <Editor />
-      </QueryClientProvider>
-    );
-
-    expect(screen.getByPlaceholderText(/title/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/content/i)).toBeInTheDocument();
+  it('serializes front matter safely and excludes unset values', () => {
+    expect(
+      serializeToMarkdown({ title: 'A "quoted" title', draft: false, empty: null }, 'Body')
+    ).toBe('---\ntitle: "A \\"quoted\\" title"\ndraft: false\n---\n\nBody');
   });
 
-  it('allows user to type in title field', async () => {
-    const user = userEvent.setup();
-
-    render(
-      <QueryClientProvider client={queryClient}>
-        <Editor />
-      </QueryClientProvider>
-    );
-
-    const titleInput = screen.getByPlaceholderText(/title/i);
-    await user.type(titleInput, 'New Blog Post');
-
-    expect(titleInput).toHaveValue('New Blog Post');
+  it('calculates a non-zero reading time for short content', () => {
+    expect(wordCount('one two three')).toBe(3);
+    expect(readingTime('one two three')).toBe(1);
   });
 
-  it('allows user to type in content field', async () => {
-    const user = userEvent.setup();
+  it('renders the real editor shell under the normal Vitest suite', () => {
+    render(<Editor />);
 
-    render(
-      <QueryClientProvider client={queryClient}>
-        <Editor />
-      </QueryClientProvider>
-    );
-
-    const contentInput = screen.getByPlaceholderText(/content/i);
-    await user.type(contentInput, 'This is the post content');
-
-    expect(contentInput).toHaveValue('This is the post content');
-  });
-
-  it('submits form with valid data', async () => {
-    const user = userEvent.setup();
-    const mockMutate = vi.fn();
-
-    vi.mocked(require('../lib/trpc').trpc.posts.create.useMutation).mockReturnValueOnce({
-      mutate: mockMutate,
-      isPending: false,
-      error: null,
-    });
-
-    render(
-      <QueryClientProvider client={queryClient}>
-        <Editor />
-      </QueryClientProvider>
-    );
-
-    const titleInput = screen.getByPlaceholderText(/title/i);
-    const contentInput = screen.getByPlaceholderText(/content/i);
-    const submitButton = screen.getByRole('button', { name: /publish|submit/i });
-
-    await user.type(titleInput, 'Test Post');
-    await user.type(contentInput, 'Test content');
-    await user.click(submitButton);
-
-    await waitFor(() => {
-      expect(mockMutate).toHaveBeenCalled();
-    });
+    expect(screen.getByPlaceholderText('Start writing your post in Markdown...')).toBeInTheDocument();
+    expect(screen.getByText('Front matter')).toBeInTheDocument();
+    expect(screen.getByText('Preview')).toBeInTheDocument();
   });
 });

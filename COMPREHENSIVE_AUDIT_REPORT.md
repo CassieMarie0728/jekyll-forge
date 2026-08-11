@@ -1,83 +1,45 @@
-# Comprehensive Platform Audit & Remediation Report: Jekyll Forge
+# Jekyll Forge: Live Comprehensive Audit & Remediation Report
 
-## Executive Summary
+> **Status:** Active remediation. This file is intentionally kept in the project root and linked from `README.md`; `todo.md` is the source of truth for item-by-item completion.
 
-Jekyll Forge is a production-ready, full-stack Jekyll management suite featuring a high-performance React 19 web application, an Express/tRPC 11 backend, Drizzle ORM persistence over MySQL/TiDB, S3-backed asset management, and a React Native Android application. Following a deep, evidence-based audit across the entire codebase (33,403+ lines of code) [1], this report details the architectural posture, security controls, UX polish, SEO/landing page effectiveness, and Android release readiness. All 107 automated unit and integration tests pass successfully with zero TypeScript compilation errors [2], validating the system's foundational integrity.
+## How to Read This Report
 
----
+This is an evidence-led engineering audit, not a product claim sheet. A finding is marked **confirmed** only when it was observed in source code, configuration, verification output, or runtime logs. A finding is marked **needs validation** when it requires a real external account, production credential, device, or hosted service.
 
-## 1. Web Application Architecture & User Experience
+| Severity | Meaning |
+|---|---|
+| **P0** | Release blocker, security exposure, data-integrity risk, or misleading customer-facing claim that must be removed or fixed before release. |
+| **P1** | Important reliability, usability, accessibility, or operational risk that should be resolved in the current hardening cycle. |
+| **P2** | Material improvement that can follow the hardening cycle after a clear owner and acceptance test are defined. |
 
-The web application provides a responsive, desktop-first workspace and a public landing page. Navigation is governed by a robust state container and `DashboardLayout` for authenticated views.
+## Current Verification Baseline
 
-- **Routing & Navigation:** Wouter provides lightweight routing. The app correctly handles unauthenticated redirects and preserves workspace state across page reloads.
-- **Three-Mode Post Editor:** Supports Visual mode, Markdown mode with YAML front matter assistance, and Split-Preview mode. Real-time conflict detection polls the remote GitHub SHA every 30 seconds.
-- **Performance & Optimization:** Code splitting is configured for primary page components, reducing initial bundle size and improving Time to Interactive (TTI).
+| Check | Evidence | Result |
+|---|---|---|
+| TypeScript | `npx tsc --noEmit` | Passing after the first remediation batch. |
+| Targeted rate-limit tests | `server/rateLimiter.test.ts` | 3/3 passing. |
+| Targeted landing-page integrity tests | `client/src/pages/Home.test.tsx` | 1/1 passing. |
+| Development server | Managed server restart and health check | Running after the Redis fallback change. |
 
-| Subsystem | Implementation Status | Quality Verdict |
-| :--- | :--- | :--- |
-| **Authentication** | Manus OAuth + Session Cookies | Robust & Secure |
-| **State Management** | tRPC v11 + TanStack Query v5 | Highly Type-Safe |
-| **Editor & Front Matter** | YAML validation + Auto-save to IndexedDB | Production-Ready |
-| **Asset Pipeline** | S3 Storage + Sharp optimization + WEBP | Optimized |
+## Confirmed Findings and Disposition
 
----
+| ID | Severity | Area | Evidence | Disposition |
+|---|---|---|---|---|
+| AUD-001 | **P0** | Backend operations | The server attempted `redis://localhost:6379` when no `REDIS_URL` was configured, causing repeated `ECONNREFUSED` log events. | **Fixed and regression-tested.** Redis is now opt-in, the fallback is in-memory, retry reconnect is disabled, and the supported `rate-limit-redis` adapter is used when Redis is available. |
+| AUD-002 | **P0** | API security | `express-rate-limit` flagged custom IP key generators that did not use its IPv6-aware helper, allowing IPv6 addresses to bypass expected grouping. | **Fixed and regression-tested.** All IP fallbacks now use `ipKeyGenerator`; rate-limit responses report a seconds-based retry interval. |
+| AUD-003 | **P0** | Landing-page integrity | The page contained hardcoded fictional named testimonials, duplicate testimonial sections, placeholder avatar requests, unsupported paid-plan offers, an asserted Play Store release, and an embedded "Demo video would play here" placeholder. | **Partially fixed.** Fictional testimonials and paid-plan sections were removed; Android availability, pricing, trust, and credential copy were corrected. The demo remains a visible placeholder and is tracked for replacement or removal. |
+| AUD-004 | **P1** | Android release configuration | App configuration contains placeholder Expo identifiers, references release assets/files not verified in the project, and EAS submission configuration is not aligned with Play submission credentials. | Open; next mobile hardening item. |
+| AUD-005 | **P1** | Android authentication | The mobile login flow and stored-token model require validation against the web OAuth/session contract before a production claim can be made. | Open; needs contract review and end-to-end verification. |
+| AUD-006 | **P1** | Offline and notifications | Offline sync and push notification services include simulated or local-only behavior that must not be marketed as production synchronization or remote push delivery until wired to real services. | Open; implementation and device validation required. |
+| AUD-007 | **P1** | Web regression coverage | The editor test remains excluded because its CSS import chain is not configured for the test environment. | Open; replace the exclusion with a reliable test setup or test seam. |
 
-## 2. Backend, Database, API Contracts, and Security
+## Remediation Sequence
 
-The backend adheres to a type-safe tRPC contract architecture backed by Winston structured logging and robust rate-limiting middleware.
+The active sequence is deliberately narrow: resolve release-blocking correctness and integrity issues first, then external-service configuration, then experience polish and optimization. Each completed item must have an implementation diff plus a relevant automated verification step; production-account and device dependent items will be explicitly reported as requiring user-controlled credentials or a real device.
 
-- **Database Schema:** 14 relational tables managed via Drizzle ORM, covering users, sites, posts, snapshots, assets, scheduled posts, social accounts, content variations, and A/B test results [3].
-- **Security Posture:** Rate limiting is enforced across API, auth, and public endpoints using a Redis-backed store with automatic in-memory fallback [4]. CSRF and JWT session validation are strictly enforced on `protectedProcedure`.
-- **API Documentation:** Comprehensive OpenAPI/Swagger documentation is exposed at `/api/docs` [5].
+## Evidence References
 
----
-
-## 3. Landing Page, SEO, Accessibility, and Conversion
-
-The landing page (`client/src/pages/Home.tsx`) has been extensively enhanced into an irresistible, market-ready marketing portal.
-
-- **Hero & Value Proposition:** Features high-converting typography, badge callouts, and dual CTAs targeting both desktop CMS power users and Android mobile creators.
-- **Integration Showcase:** Illustrates bidirectional data flow across GitHub (source of truth), Jekyll Forge (content hub), social platforms (distribution), and analytics (performance tracking).
-- **Interactive Video Demo & FAQ:** Includes an interactive video demo modal and an expandable accordion FAQ addressing GitHub setup, rate limits, mobile availability, and pricing.
-
----
-
-## 4. Android App Architecture & Release Readiness
-
-The React Native (Expo SDK 54) Android application maintains strong feature parity with the web platform.
-
-- **Navigation & Skeletons:** Polished `RootNavigator` with smooth transitions (`slide_from_right`, `fade`) and shimmer skeletons (`Skeletons.tsx`) replacing abrupt loading spinners.
-- **Native Polish:** Integrated haptic feedback (`haptics.ts`), animated components (`AnimatedComponents.tsx`), and a global toast notification system (`Toast.tsx`).
-- **Build & Release Setup:** Fully configured `eas.json` profiles (development, preview, production) and a comprehensive `BUILD_GUIDE.md` for generating signed Android App Bundles (AAB) and submitting to Google Play [6].
-
----
-
-## 5. Verification & Quality Metrics
-
-Verification was executed via Vitest and TypeScript compiler checks.
-
-- **Test Suite:** **107 tests passed** across 7 test suites (social media, repurposing, Jekyll core, dashboard, auth logout, user settings, A/B testing) [2].
-- **Type Safety:** TypeScript strict mode compiled with **zero errors** [2].
-- **Linting & Formatting:** ESLint and Prettier enforce consistent code style across all modules.
-
----
-
-## 6. Prioritized Remediation & Next Steps
-
-1. **Production Deployment**: Trigger the final production build for Android using EAS and publish the web application via the Manus management UI [7].
-2. **Scheduled Job Monitoring**: Verify heartbeat cron execution logs in production environments to ensure seamless automated publishing [8].
-3. **Continuous Feedback**: Monitor Sentry error logs and user telemetry to guide subsequent feature iterations.
-
----
-
-## References
-
-[1] Jekyll Forge Codebase Statistics, internal analysis, 2026.  
-[2] Vitest Test Execution Results, `pnpm test`, 2026.  
-[3] Drizzle ORM Schema definition, `drizzle/schema.ts`, 2026.  
-[4] Rate Limiting Middleware Implementation, `server/_core/rateLimiter.ts`, 2026.  
-[5] OpenAPI/Swagger Specification, `server/_core/swagger.ts`, 2026.  
-[6] Android Production Build Guide, `mobile/jekyll-forge-mobile/BUILD_GUIDE.md`, 2026.  
-[7] Manus WebDev Publishing Guidelines, internal developer documentation, 2026.  
-[8] Heartbeat Cron SDK Integration, `server/_core/heartbeat.ts`, 2026.
+1. `server/_core/rateLimiter.ts` and `server/rateLimiter.test.ts`.
+2. `client/src/pages/Home.tsx` and `client/src/pages/Home.test.tsx`.
+3. `mobile/jekyll-forge-mobile/app.json`, `eas.json`, `src/screens/LoginScreen.tsx`, `src/services/syncService.ts`, and `src/services/pushNotifications.ts`.
+4. `todo.md` under **Active Audit Remediation — Priority Order**.

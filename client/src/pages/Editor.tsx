@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -57,6 +57,12 @@ import {
   Share2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  parseMarkdownFrontMatter,
+  readingTime,
+  serializeToMarkdown,
+  wordCount,
+} from "@/lib/editorMarkdown";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -90,63 +96,6 @@ import { RepurposingModal } from "@/components/RepurposingModal";
 import { Link } from "wouter";
 
 type EditorMode = "visual" | "markdown" | "split";
-
-function parseMarkdownFrontMatter(raw: string): {
-  frontMatter: Record<string, unknown>;
-  markdown: string;
-} {
-  if (!raw.startsWith("---")) return { frontMatter: {}, markdown: raw };
-  const end = raw.indexOf("\n---", 3);
-  if (end === -1) return { frontMatter: {}, markdown: raw };
-  const yamlStr = raw.slice(4, end);
-  const markdown = raw.slice(end + 4).trimStart();
-  const frontMatter: Record<string, unknown> = {};
-  for (const line of yamlStr.split("\n")) {
-    const colonIdx = line.indexOf(":");
-    if (colonIdx === -1) continue;
-    const key = line.slice(0, colonIdx).trim();
-    const val = line.slice(colonIdx + 1).trim();
-    if (!key) continue;
-    if (val === "true") frontMatter[key] = true;
-    else if (val === "false") frontMatter[key] = false;
-    else if (!isNaN(Number(val)) && val !== "") frontMatter[key] = Number(val);
-    else if (val.startsWith("[") && val.endsWith("]")) {
-      try {
-        frontMatter[key] = JSON.parse(val);
-      } catch {
-        frontMatter[key] = val;
-      }
-    } else frontMatter[key] = val.replace(/^["']|["']$/g, "");
-  }
-  return { frontMatter, markdown };
-}
-
-function serializeToMarkdown(
-  frontMatter: Record<string, unknown>,
-  markdown: string
-): string {
-  const lines = ["---"];
-  for (const [k, v] of Object.entries(frontMatter)) {
-    if (v === null || v === undefined) continue;
-    if (Array.isArray(v))
-      lines.push(`${k}: [${v.map(i => `"${i}"`).join(", ")}]`);
-    else if (typeof v === "boolean") lines.push(`${k}: ${v}`);
-    else if (typeof v === "number") lines.push(`${k}: ${v}`);
-    else lines.push(`${k}: "${String(v).replace(/"/g, '\\"')}"`);
-  }
-  lines.push("---");
-  lines.push("");
-  lines.push(markdown);
-  return lines.join("\n");
-}
-
-function wordCount(text: string) {
-  return text.trim().split(/\s+/).filter(Boolean).length;
-}
-
-function readingTime(text: string) {
-  return Math.max(1, Math.round(wordCount(text) / 200));
-}
 
 const TOOLBAR_ACTIONS = [
   {

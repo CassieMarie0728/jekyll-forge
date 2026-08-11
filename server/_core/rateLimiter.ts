@@ -1,10 +1,9 @@
-import rateLimit from 'express-rate-limit';
-import { createClient } from 'redis';
-import { RedisStore } from 'rate-limit-redis';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
+import { createClient, type RedisClientType } from 'redis';
+import { RedisStore, type RedisReply } from 'rate-limit-redis';
 import type { Request, Response } from 'express';
 import logger from './logger';
 
-// Augment Express Request type to include rateLimit
 declare global {
   namespace Express {
     interface Request {
@@ -12,176 +11,185 @@ declare global {
         limit: number;
         current: number;
         remaining: number;
-        resetTime?: number;
+        resetTime?: Date;
       };
     }
   }
 }
 
-// Create Redis client for rate limiting
-let redisClient: ReturnType<typeof createClient> | null = null;
+type AuthenticatedRequest = Request & {
+  user?: {
+    id?: string;
+  };
+};
 
-async function initializeRedisClient() {
-  if (redisClient) return redisClient;
+function getIpRateLimitKey(req: Request): string {
+  return ipKeyGenerator(req.ip || 'unknown');
+}
+
+function getRetryAfterSeconds(req: Request): number | undefined {
+  const resetTime = req.rateLimit?.resetTime;
+  return resetTime
+    ? Math.max(0, Math.ceil((resetTime.getTime() - Date.now()) / 1_000))
+    : undefined;
+}
+
+// Redis is optional. Local development and deployments without REDIS_URL use
+// the express-rate-limit in-memory store rather than attempting localhost.
+let redisClient: RedisClientType | null = null;
+let redisConnectionAttempted = false;
+
+async function initializeRedisClient(): Promise<RedisClientType | null> {
+  if (redisClient?.isOpen) return redisClient;
+
+  const redisUrl = process.env.REDIS_URL;
+  if (!redisUrl) {
+    logger.info('REDIS_URL is not configured; rate limiting is using the in-memory store');
+    return null;
+  }
+
+  if (redisConnectionAttempted) return null;
+  redisConnectionAttempted = true;
 
   try {
-    redisClient = createClient({
-      url: process.env.REDIS_URL || 'redis://localhost:6379',
+    const candidate = createClient({
+      url: redisUrl,
+      socket: {
+        connectTimeout: 2_000,
+        reconnectStrategy: false,
+      },
     });
 
-    redisClient.on('error', (err) => {
-      logger.error('Redis client error:', err);
+    candidate.on('error', error => {
+      logger.error('Redis rate-limit client error', { error });
     });
 
-    await redisClient.connect();
+    await candidate.connect();
+    redisClient = candidate;
     logger.info('Redis client connected for rate limiting');
     return redisClient;
   } catch (error) {
-    logger.warn('Failed to connect to Redis, using in-memory store:', error);
+    logger.warn('Redis rate-limit connection failed; using the in-memory store for this process', {
+      error,
+    });
     return null;
   }
 }
 
-// Create rate limiters with different configurations
+function createRedisStore(client: RedisClientType, prefix: string): RedisStore {
+  return new RedisStore({
+    prefix,
+    sendCommand: (...args: string[]) => client.sendCommand(args) as Promise<RedisReply>,
+  });
+}
+
 export const createApiRateLimiter = async (
-  windowMs: number = 15 * 60 * 1000, // 15 minutes
-  max: number = 100, // 100 requests per window
+  windowMs: number = 15 * 60 * 1_000,
+  max: number = 100,
   keyGenerator?: (req: Request) => string
 ) => {
   const client = await initializeRedisClient();
 
-  const limiter = rateLimit({
-    store: client
-      ? new (RedisStore as any)({
-          client,
-          prefix: 'rate-limit:api:',
-          sendUnlimitedResponse: false,
-        })
-      : undefined,
+  return rateLimit({
+    store: client ? createRedisStore(client, 'rate-limit:api:') : undefined,
     windowMs,
     max,
     message: 'Too many requests from this IP, please try again later.',
     standardHeaders: true,
     legacyHeaders: false,
-    keyGenerator: keyGenerator || ((req) => req.ip || 'unknown'),
-    skip: (req) => {
-      return req.path === '/health' || req.path === '/api/health';
-    },
+    keyGenerator: keyGenerator || getIpRateLimitKey,
+    skip: req => req.path === '/health' || req.path === '/api/health',
     handler: (req: Request, res: Response) => {
       logger.warn(`Rate limit exceeded for IP: ${req.ip}, path: ${req.path}`);
       res.status(429).json({
         error: 'Too many requests',
-        retryAfter: (req as any).rateLimit?.resetTime,
+        retryAfter: getRetryAfterSeconds(req),
       });
     },
   });
-
-  return limiter;
 };
 
-// Strict limiter for authentication endpoints
 export const createAuthRateLimiter = async () => {
   const client = await initializeRedisClient();
 
   return rateLimit({
-    store: client
-      ? new (RedisStore as any)({
-          client,
-          prefix: 'rate-limit:auth:',
-          sendUnlimitedResponse: false,
-        })
-      : undefined,
-    windowMs: 15 * 60 * 1000,
+    store: client ? createRedisStore(client, 'rate-limit:auth:') : undefined,
+    windowMs: 15 * 60 * 1_000,
     max: 5,
     message: 'Too many login attempts, please try again later.',
     standardHeaders: true,
     legacyHeaders: false,
-    keyGenerator: (req) => {
-      return (req.body?.email || req.ip || 'unknown').toLowerCase();
+    keyGenerator: req => {
+      const email = typeof req.body?.email === 'string' ? req.body.email.trim() : '';
+      return email ? email.toLowerCase() : getIpRateLimitKey(req);
     },
     handler: (req: Request, res: Response) => {
-      logger.warn(
-        `Auth rate limit exceeded for: ${req.body?.email || req.ip}, path: ${req.path}`
-      );
+      logger.warn(`Auth rate limit exceeded for: ${req.body?.email || req.ip}, path: ${req.path}`);
       res.status(429).json({
         error: 'Too many login attempts',
-        retryAfter: (req as any).rateLimit?.resetTime,
+        retryAfter: getRetryAfterSeconds(req),
       });
     },
   });
 };
 
-// Lenient limiter for public endpoints
 export const createPublicRateLimiter = async () => {
   const client = await initializeRedisClient();
 
   return rateLimit({
-    store: client
-      ? new (RedisStore as any)({
-          client,
-          prefix: 'rate-limit:public:',
-          sendUnlimitedResponse: false,
-        })
-      : undefined,
-    windowMs: 60 * 60 * 1000,
-    max: 1000,
+    store: client ? createRedisStore(client, 'rate-limit:public:') : undefined,
+    windowMs: 60 * 60 * 1_000,
+    max: 1_000,
     message: 'Too many requests from this IP, please try again later.',
     standardHeaders: true,
     legacyHeaders: false,
-    keyGenerator: (req) => req.ip || 'unknown',
+    keyGenerator: getIpRateLimitKey,
     handler: (req: Request, res: Response) => {
       logger.warn(`Public rate limit exceeded for IP: ${req.ip}, path: ${req.path}`);
       res.status(429).json({
         error: 'Too many requests',
-        retryAfter: (req as any).rateLimit?.resetTime,
+        retryAfter: getRetryAfterSeconds(req),
       });
     },
   });
 };
 
-// Per-user rate limiter (requires authentication)
 export const createUserRateLimiter = async (
-  windowMs: number = 60 * 1000,
+  windowMs: number = 60 * 1_000,
   max: number = 30
 ) => {
   const client = await initializeRedisClient();
 
   return rateLimit({
-    store: client
-      ? new (RedisStore as any)({
-          client,
-          prefix: 'rate-limit:user:',
-          sendUnlimitedResponse: false,
-        })
-      : undefined,
+    store: client ? createRedisStore(client, 'rate-limit:user:') : undefined,
     windowMs,
     max,
     message: 'Too many requests, please try again later.',
     standardHeaders: true,
     legacyHeaders: false,
-    keyGenerator: (req) => {
-      return (req as any).user?.id || req.ip || 'unknown';
+    keyGenerator: req => {
+      const userId = (req as AuthenticatedRequest).user?.id;
+      return userId || getIpRateLimitKey(req);
     },
-    skip: (req) => {
-      return !(req as any).user;
-    },
+    skip: req => !(req as AuthenticatedRequest).user,
     handler: (req: Request, res: Response) => {
       logger.warn(
-        `User rate limit exceeded for user: ${(req as any).user?.id || req.ip}, path: ${req.path}`
+        `User rate limit exceeded for user: ${(req as AuthenticatedRequest).user?.id || req.ip}, path: ${req.path}`
       );
       res.status(429).json({
         error: 'Too many requests',
-        retryAfter: (req as any).rateLimit?.resetTime,
+        retryAfter: getRetryAfterSeconds(req),
       });
     },
   });
 };
 
-// Cleanup function to close Redis connection
 export async function closeRedisClient() {
-  if (redisClient) {
+  if (redisClient?.isOpen) {
     await redisClient.quit();
-    redisClient = null;
     logger.info('Redis client closed');
   }
+
+  redisClient = null;
+  redisConnectionAttempted = false;
 }

@@ -2,6 +2,13 @@
 
 Jekyll Forge is a visual CMS for Jekyll blogs.
 
+## Platform audit and active remediation
+
+The current evidence-backed audit and its prioritized remediation tracker are maintained in the repository so they are available from the project file tree:
+
+- [`COMPREHENSIVE_AUDIT_REPORT.md`](./COMPREHENSIVE_AUDIT_REPORT.md) — platform findings, verification evidence, and release considerations.
+- [`todo.md`](./todo.md#active-audit-remediation--priority-order) — the live, ordered remediation checklist. Items are only marked complete after code changes and verification.
+
 The public landing page lives in [`landing/`](./landing/) and is deployed to GitHub Pages by the `Deploy Landing Page to GitHub Pages` workflow.
 
 If GitHub Pages is accidentally configured to deploy from the repository root instead of the workflow artifact, the root [`index.html`](./index.html) redirects visitors to the landing page.
