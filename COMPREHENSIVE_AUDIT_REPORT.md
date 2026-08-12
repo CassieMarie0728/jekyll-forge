@@ -18,10 +18,12 @@ This is an evidence-led engineering audit, not a product claim sheet. A finding 
 |---|---|---|
 | Web TypeScript | `./node_modules/.bin/tsc --noEmit` | Passing after the web/API remediations. |
 | Android TypeScript | `mobile/jekyll-forge-mobile/./node_modules/.bin/tsc --noEmit` | Passing after the mobile auth, sync, and push-boundary remediations. |
-| Targeted rate-limit tests | `server/rateLimiter.test.ts` | 3/3 passing. |
-| Targeted landing-page integrity tests | `client/src/pages/Home.test.tsx` | 1/1 passing. |
+| Full web Vitest suite | `CI=true pnpm test` | 117 passing, 7 skipped across 12 test files. |
+| Targeted rate-limit tests | `server/rateLimiter.test.ts` | 3/3 passing within the full suite. |
+| Targeted landing-page integrity tests | `client/src/pages/Home.test.tsx` | 1/1 passing within the full suite. |
 | Android auth persistence tests | `mobile/src/stores/authStore.test.ts` | 2/2 passing. |
 | Database migration | `drizzle/0008_curved_la_nuit.sql` | Mobile device-token table applied successfully; unrelated destructive generated statements were excluded. |
+| Production web build | `pnpm build` | Passing; authenticated routes are lazy-loaded and the main JavaScript chunk is approximately 979 kB, with heavier Editor/diagram chunks deferred. |
 | Development server | Managed server restart and health check | Running after the Redis fallback change. |
 
 ## Confirmed Findings and Disposition

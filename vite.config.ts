@@ -173,6 +173,24 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    chunkSizeWarningLimit: 500,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return undefined;
+          if (id.includes("mermaid") || id.includes("cytoscape")) {
+            return "diagram-vendor";
+          }
+          if (id.includes("react-syntax-highlighter") || id.includes("refractor")) {
+            return "editor-vendor";
+          }
+          if (id.includes("recharts") || id.includes("d3-")) {
+            return "chart-vendor";
+          }
+          return undefined;
+        },
+      },
+    },
   },
   server: {
     host: true,

@@ -195,7 +195,7 @@
 
 - [x] Restore the full audit report and an evidence-backed remediation tracker in an easily discoverable project location
 - [x] Stop Redis connection-refusal retry noise and verify the API rate-limiter degrades cleanly when Redis is unavailable
-- [ ] Reconcile the Android app source tree, declared dependencies, Expo SDK compatibility, and build documentation
+- [x] Reconcile the Android app source tree, declared dependencies, Expo SDK compatibility, and build documentation
 - [x] Re-enable the editor component regression test with CSS-heavy child modules mocked as needed in the normal Vitest suite
 - [x] Extract editor markdown parsing and serialization into a CSS-free module with regression coverage
 - [ ] Conduct route-by-route automated checks for landing-to-auth-to-repository-picker and authenticated dashboard flows
@@ -399,4 +399,11 @@
 - [x] Add a mobile auth/session regression test covering SecureStore token, persisted user, restart restore, and logout cleanup
 
 - [x] Add a protected server-side post-delete procedure with ownership checks before enabling mobile offline delete actions
+
+- [x] Add public SEO/social metadata, restore pinch zoom, and add a global prefers-reduced-motion safeguard
+
+- [x] Lazy-load authenticated feature routes and verify the production main chunk drops below 1 MB
+- [ ] Further split or defer the remaining heavy Editor and diagram tooling chunks
+
+- [x] Replace the broken Watch Demo CTA, which currently scrolls to a missing `demo-section`, with a truthful workflow destination or a real demo asset
 

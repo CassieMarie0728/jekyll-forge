@@ -254,12 +254,12 @@ export default function Home() {
               size="lg"
               className="gap-2 text-lg h-14 px-10 bg-background/50 backdrop-blur-sm hover:bg-accent transition-all"
               onClick={() => {
-                const demoSection = document.getElementById('demo-section');
+                const demoSection = document.getElementById('workflow-overview');
                 demoSection?.scrollIntoView({ behavior: 'smooth' });
               }}
             >
               <Play className="w-5 h-5" />
-              Watch Demo
+              See Workflow
             </Button>
           </motion.div>
           
@@ -315,7 +315,7 @@ export default function Home() {
       </section>
 
       {/* Workflow overview */}
-      <section className="px-6 py-16">
+      <section id="workflow-overview" className="px-6 py-16">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-display font-bold mb-3">

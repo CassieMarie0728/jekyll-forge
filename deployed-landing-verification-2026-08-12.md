@@ -1,0 +1,5 @@
+# Deployed landing verification — 2026-08-12
+
+The deployed public route `https://jekyllforge.manus.space/` hydrated successfully after an initial loading state. The visible public entry flow contains `Sign In`, `Sign Up`, and `Start Forging Free` controls, plus FAQ accordion controls. The page currently uses accountable copy: the Android capability is described as being in active release validation, analytics is described as available connected-account data, and no fabricated testimonials or inert video player were observed in the extracted public content.
+
+The public page still contains a visible `Watch Demo` CTA in the hero. The audited source removed the prior fake/inert demo interaction; this CTA should remain either explicitly disabled/qualified or be replaced by a real hosted demo asset before marketing launch. Browser flow verification is currently limited to the public route; authenticated OAuth, repository selection, and dashboard routes require a real logged-in session and were not claimed as end-to-end verified here.

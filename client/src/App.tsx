@@ -1,26 +1,32 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { lazy, Suspense } from "react";
 import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
-import Dashboard from "./pages/Dashboard";
 import RepoPicker from "./pages/RepoPicker";
-import Editor from "./pages/Editor";
-import AssetManager from "./pages/AssetManager";
-import ThemeManager from "./pages/ThemeManager";
-import AISettings from "./pages/AISettings";
-import SiteHealth from "./pages/SiteHealth";
-import Scheduler from "./pages/Scheduler";
-import SocialAnalytics from "./pages/SocialAnalytics";
-import UserSettings from "./pages/UserSettings";
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Editor = lazy(() => import("./pages/Editor"));
+const AssetManager = lazy(() => import("./pages/AssetManager"));
+const ThemeManager = lazy(() => import("./pages/ThemeManager"));
+const AISettings = lazy(() => import("./pages/AISettings"));
+const SiteHealth = lazy(() => import("./pages/SiteHealth"));
+const Scheduler = lazy(() => import("./pages/Scheduler"));
+const SocialAnalytics = lazy(() => import("./pages/SocialAnalytics"));
+const UserSettings = lazy(() => import("./pages/UserSettings"));
 import AppLayout from "./components/AppLayout";
 import { WorkspaceProvider } from "./contexts/WorkspaceContext";
 
+function RouteFallback() {
+  return <div className="min-h-screen bg-background" aria-busy="true" />;
+}
+
 function Router() {
   return (
-    <Switch>
+    <Suspense fallback={<RouteFallback />}>
+      <Switch>
       <Route path="/" component={Home} />
       <Route path="/repos" component={RepoPicker} />
       <Route
@@ -104,8 +110,9 @@ function Router() {
         )}
       />
       <Route path="/404" component={NotFound} />
-      <Route component={NotFound} />
-    </Switch>
+        <Route component={NotFound} />
+      </Switch>
+    </Suspense>
   );
 }
 
