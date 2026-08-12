@@ -181,7 +181,10 @@ export default defineConfig({
           if (id.includes("mermaid") || id.includes("cytoscape")) {
             return "diagram-vendor";
           }
-          if (id.includes("react-syntax-highlighter") || id.includes("refractor")) {
+          if (
+            id.includes("react-syntax-highlighter") ||
+            id.includes("refractor")
+          ) {
             return "editor-vendor";
           }
           if (id.includes("recharts") || id.includes("d3-")) {

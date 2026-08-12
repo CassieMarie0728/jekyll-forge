@@ -4,7 +4,10 @@ import { describe, expect, it } from "vitest";
 
 describe("public HTML shell", () => {
   it("keeps mobile zoom available and exposes accountable metadata", () => {
-    const html = readFileSync(resolve(process.cwd(), "client/index.html"), "utf8");
+    const html = readFileSync(
+      resolve(process.cwd(), "client/index.html"),
+      "utf8"
+    );
 
     expect(html).toContain('name="viewport"');
     expect(html).not.toContain("maximum-scale");

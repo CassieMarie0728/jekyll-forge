@@ -74,11 +74,15 @@ class PushNotificationService {
     try {
       const projectId = process.env.EXPO_PUBLIC_EAS_PROJECT_ID;
       if (!projectId) {
-        console.warn("Push notifications unavailable until EXPO_PUBLIC_EAS_PROJECT_ID is configured");
+        console.warn(
+          "Push notifications unavailable until EXPO_PUBLIC_EAS_PROJECT_ID is configured"
+        );
         return;
       }
 
-      const tokenResponse = await Notifications.getExpoPushTokenAsync({ projectId });
+      const tokenResponse = await Notifications.getExpoPushTokenAsync({
+        projectId,
+      });
       const token = tokenResponse.data;
       this.pushToken = token;
       await AsyncStorage.setItem(PUSH_TOKEN_KEY, token);

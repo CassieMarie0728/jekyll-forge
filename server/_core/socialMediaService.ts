@@ -189,7 +189,7 @@ export class TwitterService {
         }
 
         const data = (await response.json()) as TwitterTweetResponse;
-        const tweetId = data.data?.id || '';
+        const tweetId = data.data?.id || "";
         previousTweetId = tweetId;
         if (!firstTweetId) firstTweetId = tweetId;
       }
@@ -308,7 +308,7 @@ export class LinkedInService {
       }
 
       const data = (await response.json()) as LinkedInResponse;
-      const postId = data.id || '';
+      const postId = data.id || "";
 
       return {
         success: true,
@@ -383,7 +383,7 @@ export class FacebookService {
 
       const urlParams = new URLSearchParams();
       Object.entries(payload).forEach(([key, value]) => {
-        if (typeof value === 'string' || typeof value === 'number') {
+        if (typeof value === "string" || typeof value === "number") {
           urlParams.append(key, String(value));
         }
       });
@@ -405,7 +405,7 @@ export class FacebookService {
 
       return {
         success: true,
-        externalPostId: data.id || '',
+        externalPostId: data.id || "",
         externalUrl: `https://facebook.com/${data.id}`,
         platform: "facebook",
       };
@@ -468,7 +468,7 @@ export class InstagramService {
 
       const urlParams = new URLSearchParams();
       Object.entries(payload).forEach(([key, value]) => {
-        if (typeof value === 'string' || typeof value === 'number') {
+        if (typeof value === "string" || typeof value === "number") {
           urlParams.append(key, String(value));
         }
       });
@@ -490,7 +490,7 @@ export class InstagramService {
 
       return {
         success: true,
-        externalPostId: data.id || '',
+        externalPostId: data.id || "",
         externalUrl: `https://instagram.com/p/${data.id}`,
         platform: "instagram",
       };

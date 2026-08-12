@@ -9,7 +9,9 @@ export interface SyncStatus {
   failedItems: number;
 }
 
-type SyncQueueItem = Awaited<ReturnType<typeof offlineStorage.getSyncQueue>>[number];
+type SyncQueueItem = Awaited<
+  ReturnType<typeof offlineStorage.getSyncQueue>
+>[number];
 type SyncProcessor = (item: SyncQueueItem) => Promise<void>;
 
 class SyncService {
@@ -34,14 +36,16 @@ class SyncService {
 
   private initializeNetworkListener() {
     this.unsubscribeNetwork = NetInfo.addEventListener(state => {
-      void this.setOnlineStatus(Boolean(state.isConnected && state.isInternetReachable !== false));
+      void this.setOnlineStatus(
+        Boolean(state.isConnected && state.isInternetReachable !== false)
+      );
     });
   }
 
   private async refreshQueueMetrics() {
     const queue = await offlineStorage.getSyncQueue();
-    this.pendingItems = queue.filter(item => (item.retries || 0) < 3).length;
-    this.failedItems = queue.filter(item => (item.retries || 0) >= 3).length;
+    this.pendingItems = queue.filter(item => item.status !== "failed").length;
+    this.failedItems = queue.filter(item => item.status === "failed").length;
     this.notifyListeners();
   }
 
@@ -91,7 +95,7 @@ class SyncService {
         throw new Error("Offline sync processor is not configured");
       }
 
-      for (const item of queue) {
+      for (const item of queue.filter(item => item.status !== "failed")) {
         try {
           await this.processSyncItem(item);
           await offlineStorage.removeFromSyncQueue(item.id);
@@ -100,14 +104,12 @@ class SyncService {
 
           // Increment retry count
           const newRetries = (item.retries || 0) + 1;
-          if (newRetries > 3) {
-            // Remove after 3 failed attempts
-            await offlineStorage.removeFromSyncQueue(item.id);
-          } else {
-            await offlineStorage.updateSyncQueueItem(item.id, {
-              retries: newRetries,
-            });
-          }
+          await offlineStorage.updateSyncQueueItem(item.id, {
+            retries: newRetries,
+            status: newRetries >= 3 ? "failed" : "pending",
+            lastError:
+              error instanceof Error ? error.message : "Unknown sync error",
+          });
         }
       }
     } finally {
@@ -127,7 +129,7 @@ class SyncService {
 
   async queueAction(
     action: "create" | "update" | "delete" | "publish",
-    data: any
+    data: unknown
   ) {
     const item = {
       id: `${action}-${Date.now()}-${Math.random()}`,
@@ -135,6 +137,7 @@ class SyncService {
       data,
       timestamp: Date.now(),
       retries: 0,
+      status: "pending" as const,
     };
 
     await offlineStorage.addToSyncQueue(item);

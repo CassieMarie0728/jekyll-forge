@@ -1,8 +1,8 @@
-import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
-import { createClient, type RedisClientType } from 'redis';
-import { RedisStore, type RedisReply } from 'rate-limit-redis';
-import type { Request, Response } from 'express';
-import logger from './logger';
+import rateLimit, { ipKeyGenerator } from "express-rate-limit";
+import { createClient, type RedisClientType } from "redis";
+import { RedisStore, type RedisReply } from "rate-limit-redis";
+import type { Request, Response } from "express";
+import logger from "./logger";
 
 declare global {
   namespace Express {
@@ -24,7 +24,7 @@ type AuthenticatedRequest = Request & {
 };
 
 function getIpRateLimitKey(req: Request): string {
-  return ipKeyGenerator(req.ip || 'unknown');
+  return ipKeyGenerator(req.ip || "unknown");
 }
 
 function getRetryAfterSeconds(req: Request): number | undefined {
@@ -44,7 +44,9 @@ async function initializeRedisClient(): Promise<RedisClientType | null> {
 
   const redisUrl = process.env.REDIS_URL;
   if (!redisUrl) {
-    logger.info('REDIS_URL is not configured; rate limiting is using the in-memory store');
+    logger.info(
+      "REDIS_URL is not configured; rate limiting is using the in-memory store"
+    );
     return null;
   }
 
@@ -60,18 +62,21 @@ async function initializeRedisClient(): Promise<RedisClientType | null> {
       },
     });
 
-    candidate.on('error', error => {
-      logger.error('Redis rate-limit client error', { error });
+    candidate.on("error", error => {
+      logger.error("Redis rate-limit client error", { error });
     });
 
     await candidate.connect();
     redisClient = candidate;
-    logger.info('Redis client connected for rate limiting');
+    logger.info("Redis client connected for rate limiting");
     return redisClient;
   } catch (error) {
-    logger.warn('Redis rate-limit connection failed; using the in-memory store for this process', {
-      error,
-    });
+    logger.warn(
+      "Redis rate-limit connection failed; using the in-memory store for this process",
+      {
+        error,
+      }
+    );
     return null;
   }
 }
@@ -79,7 +84,8 @@ async function initializeRedisClient(): Promise<RedisClientType | null> {
 function createRedisStore(client: RedisClientType, prefix: string): RedisStore {
   return new RedisStore({
     prefix,
-    sendCommand: (...args: string[]) => client.sendCommand(args) as Promise<RedisReply>,
+    sendCommand: (...args: string[]) =>
+      client.sendCommand(args) as Promise<RedisReply>,
   });
 }
 
@@ -91,18 +97,18 @@ export const createApiRateLimiter = async (
   const client = await initializeRedisClient();
 
   return rateLimit({
-    store: client ? createRedisStore(client, 'rate-limit:api:') : undefined,
+    store: client ? createRedisStore(client, "rate-limit:api:") : undefined,
     windowMs,
     max,
-    message: 'Too many requests from this IP, please try again later.',
+    message: "Too many requests from this IP, please try again later.",
     standardHeaders: true,
     legacyHeaders: false,
     keyGenerator: keyGenerator || getIpRateLimitKey,
-    skip: req => req.path === '/health' || req.path === '/api/health',
+    skip: req => req.path === "/health" || req.path === "/api/health",
     handler: (req: Request, res: Response) => {
       logger.warn(`Rate limit exceeded for IP: ${req.ip}, path: ${req.path}`);
       res.status(429).json({
-        error: 'Too many requests',
+        error: "Too many requests",
         retryAfter: getRetryAfterSeconds(req),
       });
     },
@@ -113,20 +119,23 @@ export const createAuthRateLimiter = async () => {
   const client = await initializeRedisClient();
 
   return rateLimit({
-    store: client ? createRedisStore(client, 'rate-limit:auth:') : undefined,
+    store: client ? createRedisStore(client, "rate-limit:auth:") : undefined,
     windowMs: 15 * 60 * 1_000,
     max: 5,
-    message: 'Too many login attempts, please try again later.',
+    message: "Too many login attempts, please try again later.",
     standardHeaders: true,
     legacyHeaders: false,
     keyGenerator: req => {
-      const email = typeof req.body?.email === 'string' ? req.body.email.trim() : '';
+      const email =
+        typeof req.body?.email === "string" ? req.body.email.trim() : "";
       return email ? email.toLowerCase() : getIpRateLimitKey(req);
     },
     handler: (req: Request, res: Response) => {
-      logger.warn(`Auth rate limit exceeded for: ${req.body?.email || req.ip}, path: ${req.path}`);
+      logger.warn(
+        `Auth rate limit exceeded for: ${req.body?.email || req.ip}, path: ${req.path}`
+      );
       res.status(429).json({
-        error: 'Too many login attempts',
+        error: "Too many login attempts",
         retryAfter: getRetryAfterSeconds(req),
       });
     },
@@ -137,17 +146,19 @@ export const createPublicRateLimiter = async () => {
   const client = await initializeRedisClient();
 
   return rateLimit({
-    store: client ? createRedisStore(client, 'rate-limit:public:') : undefined,
+    store: client ? createRedisStore(client, "rate-limit:public:") : undefined,
     windowMs: 60 * 60 * 1_000,
     max: 1_000,
-    message: 'Too many requests from this IP, please try again later.',
+    message: "Too many requests from this IP, please try again later.",
     standardHeaders: true,
     legacyHeaders: false,
     keyGenerator: getIpRateLimitKey,
     handler: (req: Request, res: Response) => {
-      logger.warn(`Public rate limit exceeded for IP: ${req.ip}, path: ${req.path}`);
+      logger.warn(
+        `Public rate limit exceeded for IP: ${req.ip}, path: ${req.path}`
+      );
       res.status(429).json({
-        error: 'Too many requests',
+        error: "Too many requests",
         retryAfter: getRetryAfterSeconds(req),
       });
     },
@@ -161,10 +172,10 @@ export const createUserRateLimiter = async (
   const client = await initializeRedisClient();
 
   return rateLimit({
-    store: client ? createRedisStore(client, 'rate-limit:user:') : undefined,
+    store: client ? createRedisStore(client, "rate-limit:user:") : undefined,
     windowMs,
     max,
-    message: 'Too many requests, please try again later.',
+    message: "Too many requests, please try again later.",
     standardHeaders: true,
     legacyHeaders: false,
     keyGenerator: req => {
@@ -177,7 +188,7 @@ export const createUserRateLimiter = async (
         `User rate limit exceeded for user: ${(req as AuthenticatedRequest).user?.id || req.ip}, path: ${req.path}`
       );
       res.status(429).json({
-        error: 'Too many requests',
+        error: "Too many requests",
         retryAfter: getRetryAfterSeconds(req),
       });
     },
@@ -187,7 +198,7 @@ export const createUserRateLimiter = async (
 export async function closeRedisClient() {
   if (redisClient?.isOpen) {
     await redisClient.quit();
-    logger.info('Redis client closed');
+    logger.info("Redis client closed");
   }
 
   redisClient = null;

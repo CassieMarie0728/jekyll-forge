@@ -1,4 +1,21 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { vi } from "vitest";
+
+vi.mock("./_core/llm", () => ({
+  invokeLLM: vi.fn(async () => ({
+    choices: [
+      {
+        message: {
+          content: JSON.stringify({
+            headline: "Deterministic generated headline",
+            content: "Deterministic generated content",
+          }),
+        },
+      },
+    ],
+  })),
+}));
+
 import {
   generatePostVariations,
   determineWinner,

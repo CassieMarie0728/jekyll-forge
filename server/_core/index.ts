@@ -84,26 +84,28 @@ async function startServer() {
 
   server.listen(port, () => {
     logger.info(`Server running on http://localhost:${port}/`);
-    logger.info(`API documentation available at http://localhost:${port}/api/docs`);
+    logger.info(
+      `API documentation available at http://localhost:${port}/api/docs`
+    );
     // Register periodic heartbeat jobs
     registerHeartbeatJobs();
   });
 }
 
-startServer().catch((error) => {
-  logger.error('Server startup failed:', error);
+startServer().catch(error => {
+  logger.error("Server startup failed:", error);
   process.exit(1);
 });
 
 // Graceful shutdown
-process.on('SIGTERM', async () => {
-  logger.info('SIGTERM received, shutting down gracefully');
+process.on("SIGTERM", async () => {
+  logger.info("SIGTERM received, shutting down gracefully");
   await closeRedisClient();
   process.exit(0);
 });
 
-process.on('SIGINT', async () => {
-  logger.info('SIGINT received, shutting down gracefully');
+process.on("SIGINT", async () => {
+  logger.info("SIGINT received, shutting down gracefully");
   await closeRedisClient();
   process.exit(0);
 });

@@ -26,17 +26,37 @@ describe("mobile auth persistence", () => {
   });
 
   it("stores credentials in the intended stores and restores them after restart", async () => {
-    const user = { id: "1", name: "Forge User", email: "user@example.com", openId: "open-1" };
-    const secureGet = SecureStore.getItemAsync as jest.MockedFunction<typeof SecureStore.getItemAsync>;
-    const asyncGet = AsyncStorage.getItem as jest.MockedFunction<typeof AsyncStorage.getItem>;
+    const user = {
+      id: "1",
+      name: "Forge User",
+      email: "user@example.com",
+      openId: "open-1",
+    };
+    const secureGet = SecureStore.getItemAsync as jest.MockedFunction<
+      typeof SecureStore.getItemAsync
+    >;
+    const asyncGet = AsyncStorage.getItem as jest.MockedFunction<
+      typeof AsyncStorage.getItem
+    >;
 
     await useAuthStore.getState().setToken("secure-token");
     await useAuthStore.getState().setUser(user);
 
-    expect(SecureStore.setItemAsync).toHaveBeenCalledWith("authToken", "secure-token");
-    expect(AsyncStorage.setItem).toHaveBeenCalledWith("user", JSON.stringify(user));
+    expect(SecureStore.setItemAsync).toHaveBeenCalledWith(
+      "authToken",
+      "secure-token"
+    );
+    expect(AsyncStorage.setItem).toHaveBeenCalledWith(
+      "user",
+      JSON.stringify(user)
+    );
 
-    useAuthStore.setState({ isAuthenticated: false, isLoading: true, user: null, token: null });
+    useAuthStore.setState({
+      isAuthenticated: false,
+      isLoading: true,
+      user: null,
+      token: null,
+    });
     secureGet.mockResolvedValue("secure-token");
     asyncGet.mockResolvedValue(JSON.stringify(user));
 

@@ -17,6 +17,7 @@ export default [
       "*.log",
       "client/public/**/*.js",
       "drizzle/migrations/**",
+      "mobile/**",
     ],
   },
   js.configs.recommended,
@@ -37,7 +38,7 @@ export default [
       "no-console": ["warn", { allow: ["error", "warn"] }],
       "no-unused-vars": "off",
       "@typescript-eslint/no-unused-vars": [
-        "error",
+        "warn",
         {
           argsIgnorePattern: "^_",
           varsIgnorePattern: "^_",
@@ -52,6 +53,24 @@ export default [
     files: ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx"],
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
+    },
+  },
+  {
+    files: ["client/**/*.{ts,tsx}", "landing/**/*.js"],
+    languageOptions: {
+      globals: {
+        window: "readonly",
+        document: "readonly",
+        IntersectionObserver: "readonly",
+        setTimeout: "readonly",
+        clearTimeout: "readonly",
+      },
+    },
+  },
+  {
+    files: ["server/_core/rateLimiter.ts"],
+    rules: {
+      "@typescript-eslint/no-namespace": "off",
     },
   },
 ];

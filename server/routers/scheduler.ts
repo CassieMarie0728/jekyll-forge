@@ -9,6 +9,7 @@ import {
 } from "../_core/heartbeat";
 import {
   createScheduledPost,
+  getSiteById,
   getScheduledPostsBySite,
   getScheduledPostById,
   updateScheduledPost,
@@ -58,6 +59,15 @@ export const schedulerRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      const site = await getSiteById(input.siteId, ctx.user.id);
+      if (!site) {
+        throw new Error("Site not found");
+      }
+
+      if (input.scheduledAt.getTime() <= Date.now()) {
+        throw new Error("Scheduled publish time must be in the future");
+      }
+
       // Create the DB row first
       const id = await createScheduledPost({
         userId: ctx.user.id,
@@ -200,19 +210,30 @@ export const schedulerRouter = router({
    */
   markPublished: protectedProcedure
     .input(z.object({ id: z.number() }))
-    .mutation(({ input }) =>
-      updateScheduledPost(input.id, {
+    .mutation(async ({ ctx, input }) => {
+      const row = await getScheduledPostById(input.id, ctx.user.id);
+      if (!row) {
+        throw new Error("Scheduled post not found");
+      }
+
+      await updateScheduledPost(input.id, {
         status: "published",
         publishedAt: new Date(),
-      })
-    ),
+      });
+      return { success: true };
+    }),
 
   /**
    * Manually mark a scheduled post as failed with an error message.
    */
   markFailed: protectedProcedure
-    .input(z.object({ id: z.number(), errorMessage: z.string() }))
-    .mutation(async ({ input }) => {
+    .input(z.object({ id: z.number(), errorMessage: z.string().max(2000) }))
+    .mutation(async ({ ctx, input }) => {
+      const row = await getScheduledPostById(input.id, ctx.user.id);
+      if (!row) {
+        throw new Error("Scheduled post not found");
+      }
+
       await updateScheduledPost(input.id, {
         status: "failed",
         errorMessage: input.errorMessage,

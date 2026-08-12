@@ -12,7 +12,7 @@
     "build:android": "eas build --platform android",
     "build:ios": "eas build --platform ios",
     "test": "jest",
-    "lint": "eslint src --ext .ts,.tsx"
+    "lint": "eslint src"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^1.21.0",

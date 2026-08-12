@@ -206,11 +206,37 @@
 - [x] Prevent OAuth access and refresh tokens from being returned by connected-account API queries
 - [x] Verify database migrations match the Drizzle schema and identify non-destructive migration gaps (documented in MIGRATION_AUDIT.md)
 - [ ] Verify Android offline queues, synchronization conflict behavior, notification configuration, and release packaging prerequisites
-- [x] Replace placeholder Expo/EAS identifiers and correct Android build, Play submission, and environment-variable documentation
+- [ ] Replace placeholder Expo/EAS identifiers and complete Android build, Play submission, and environment-variable configuration
 - [ ] Reconcile the Android authentication flow with the web OAuth contract and secure token-storage model
 - [x] Align mobile token persistence across SecureStore, AsyncStorage, login, logout, and tRPC request headers
 - [x] Add protected Android device-token registration and revocation backed by a durable database table
 - [ ] Configure a real Expo project ID, branded Android assets, Firebase configuration, and Google Play submission credentials
+
+## Independent Production-Readiness Audit — August 2026
+- [x] Reproduce the complete web test, type-check, lint, build, and migration-validation baseline from a clean audit pass
+- [ ] Verify public route navigation, CTA targets, semantic heading order, keyboard reachability, focus visibility, and reduced-motion behavior
+- [ ] Verify authenticated web flows through real OAuth, repository selection, dashboard access, and protected-route denial without authentication
+- [ ] Review every protected API procedure for authorization scope, ownership checks, validation, sensitive-data redaction, and platform-specific error handling
+- [x] Compile and inspect the Android app for type health, OAuth contract alignment, SecureStore usage, offline-queue producers, sync conflict handling, and push configuration
+- [x] Identify or remediate reproducible defects, add regression tests, and update the comprehensive audit report with evidence and release blockers
+- [x] Remove the production CSS-order warning by moving the Google Fonts request from stylesheet imports into the HTML document head
+- [x] Replace the inert workflow play affordance with non-interactive workflow artwork or wire it to a real accessible media experience
+- [x] Move authenticated-route redirect logic out of AppLayout render and preserve a stable protected-route experience
+- [x] Add accessible names and focus treatment to custom icon-only AppLayout controls
+- [x] Add explicit visible focus styles to all custom icon-only AppLayout controls and verify keyboard focus treatment
+- [x] Stabilize the long-content A/B variation regression test so the full web suite completes reliably within its configured timeout
+- [x] Re-run the complete web validation suite after A/B test stabilization and record the passing evidence
+- [x] Repair the web ESLint and TypeScript-ESLint version/configuration mismatch so root linting runs successfully
+- [x] Resolve or formally baseline the 677 root lint errors now exposed by the repaired ESLint toolchain, beginning with safe automatic formatting fixes
+- [x] Enforce scheduled-post ownership in scheduler recovery mutations and validate site ownership before creating a scheduled post
+- [x] Dispatch social publishing and analytics metrics through platform-specific typed service methods instead of `any` casts and the Twitter-only metric path
+- [x] Repair the Android lint script for the installed ESLint flat-config command-line interface and verify mobile linting
+- [ ] Replace the Android login flow's nonexistent `/api/oauth/authorize` and token-JSON callback assumptions with a supported mobile OAuth contract
+- [x] Route Android tRPC headers through SecureStore instead of the stale AsyncStorage token location
+- [ ] Integrate offline queue producers into mobile mutation screens and retain failed operations for recovery rather than deleting them after retries
+- [ ] Replace placeholder Expo project identifiers and supply real branded assets, Firebase `google-services.json`, and Play submission credentials before Android release
+- [ ] Align Android post hooks and screen mutations with the server's actual `posts.get`, `posts.upsert`, `posts.update`, and `posts.delete` contract
+- [ ] Replace the Android editor's simulated publish success path with an authenticated server mutation and offline-safe persistence behavior
 
 ## Deployment Notes
 - **Cron jobs activate after deployment**: The scheduler infrastructure is fully implemented, but heartbeat cron jobs only activate once the site is published to production (Manus platform requirement)
@@ -330,7 +356,7 @@
 - [x] Set up React Native project with Expo
 - [x] Configure tRPC client for mobile
 - [x] Set up React Navigation for mobile navigation
-- [x] Implement OAuth authentication flow for mobile
+- [ ] Implement a supported OAuth authentication flow for mobile
 - [x] Build mobile dashboard with statistics
 - [x] Implement three-mode editor (visual, markdown, preview) for mobile
 - [x] Build asset manager with camera/gallery upload
@@ -339,7 +365,7 @@
 - [x] Add social media analytics screen (SocialAnalyticsScreen)
 - [x] Create SocialAccountManager component
 - [x] Implement custom hooks for social operations
-- [x] Implement publishing workflow for mobile (PublishScreen with draft/publish options)
+- [ ] Implement an authenticated, server-backed mobile publishing workflow (current editor publish path is simulated)
 - [x] Add AI assistant to mobile editor (AIAssistantScreen with 6 task types)
 - [x] Implement repurposing engine UI for mobile (RepurposingScreen with 8 formats)
 - [x] Implement A/B testing UI for mobile (ABTestingScreen with variation generation)
@@ -360,7 +386,7 @@
 - [x] UI/UX Polish: Loading skeleton components with shimmer effects
 - [x] Implement push notifications (pushNotifications.ts with local notification management)
 - [x] Testing and optimization (TypeScript configuration fixed, JSX support added)
-- [x] Production build and Android app signing (eas.json configured, BUILD_GUIDE.md ready)
+- [ ] Produce a signed Android release after real Expo, Firebase, asset, and Play credentials are configured
 
 
 ## Implementation Tasks - Next Phase
@@ -406,4 +432,3 @@
 - [ ] Further split or defer the remaining heavy Editor and diagram tooling chunks
 
 - [x] Replace the broken Watch Demo CTA, which currently scrolls to a missing `demo-section`, with a truthful workflow destination or a real demo asset
-

@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink } from "@trpc/client";
 import superjson from "superjson";
 import { View, ActivityIndicator } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from "expo-secure-store";
 import { useAuthStore } from "./stores/authStore";
 import { trpc } from "./utils/trpc";
 import RootNavigator from "./navigation/RootNavigator";
@@ -28,7 +28,7 @@ const getTrpcClient = () => {
         url:
           process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000/api/trpc",
         async headers() {
-          const token = await AsyncStorage.getItem("authToken");
+          const token = await SecureStore.getItemAsync("authToken");
           return {
             authorization: token ? `Bearer ${token}` : "",
           };

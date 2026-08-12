@@ -46,7 +46,6 @@ import {
 import CommandPalette from "./CommandPalette";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/contexts/ThemeContext";
-import { getLoginUrl } from "@/const";
 import { toast } from "sonner";
 
 const NAV_ITEMS = [
@@ -83,7 +82,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
   const [location] = useLocation();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, loading, logout } = useAuth({
+    redirectOnUnauthenticated: true,
+  });
   const { activeSite } = useWorkspace();
   const { theme, toggleTheme } = useTheme();
 
@@ -109,8 +110,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
+  if (loading) {
+    return <div className="min-h-screen bg-background" aria-busy="true" />;
+  }
+
   if (!isAuthenticated) {
-    window.location.href = getLoginUrl();
     return null;
   }
 
@@ -230,8 +234,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
+              aria-label="Open user menu"
               className={cn(
-                "flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-sidebar-accent transition-colors w-full",
+                "flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-sidebar-accent transition-colors w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar",
                 collapsed && "justify-center w-auto"
               )}
             >
@@ -276,7 +281,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Collapse Toggle */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="absolute -right-3 top-20 w-6 h-6 rounded-full bg-sidebar border border-sidebar-border flex items-center justify-center hover:bg-sidebar-accent transition-colors z-10"
+        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        className="absolute -right-3 top-20 w-6 h-6 rounded-full bg-sidebar border border-sidebar-border flex items-center justify-center hover:bg-sidebar-accent transition-colors z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar"
       >
         {collapsed ? (
           <ChevronRight className="w-3 h-3" />
@@ -305,7 +311,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <Sidebar />
             <button
               onClick={() => setMobileOpen(false)}
-              className="absolute top-4 right-4 text-muted-foreground"
+              aria-label="Close navigation menu"
+              className="absolute top-4 right-4 text-muted-foreground rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar"
             >
               <X className="w-4 h-4" />
             </button>
@@ -317,7 +324,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top Bar */}
         <header className="h-12 flex items-center gap-3 px-4 border-b border-border bg-card/50 flex-shrink-0">
-          <button className="md:hidden" onClick={() => setMobileOpen(true)}>
+          <button
+            aria-label="Open navigation menu"
+            className="md:hidden rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            onClick={() => setMobileOpen(true)}
+          >
             <Menu className="w-5 h-5 text-muted-foreground" />
           </button>
 

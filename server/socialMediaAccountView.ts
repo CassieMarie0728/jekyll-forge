@@ -3,7 +3,13 @@ type CredentialBearingAccount = {
   refreshToken: unknown;
 };
 
-export function toPublicSocialMediaAccount<T extends CredentialBearingAccount>(account: T) {
-  const { accessToken: _accessToken, refreshToken: _refreshToken, ...publicAccount } = account;
+export function toPublicSocialMediaAccount<T extends CredentialBearingAccount>(
+  account: T
+) {
+  const {
+    accessToken: _accessToken,
+    refreshToken: _refreshToken,
+    ...publicAccount
+  } = account;
   return publicAccount;
 }

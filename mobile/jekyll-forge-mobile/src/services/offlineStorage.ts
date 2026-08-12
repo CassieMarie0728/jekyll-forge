@@ -10,12 +10,14 @@ interface StoredDraft {
   status: "draft" | "pending_sync" | "synced";
 }
 
-interface SyncQueue {
+export interface SyncQueue {
   id: string;
   action: "create" | "update" | "delete" | "publish";
-  data: any;
+  data: unknown;
   timestamp: number;
   retries: number;
+  status: "pending" | "failed";
+  lastError?: string;
 }
 
 const DRAFTS_KEY = "@jekyll_forge_drafts";

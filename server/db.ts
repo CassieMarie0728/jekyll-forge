@@ -849,7 +849,7 @@ export async function getContentAnalyticsByRepurposedId(
 
 export async function getContentAnalyticsByPlatform(
   userId: number,
-  platform: "twitter" | "linkedin"
+  platform: "twitter" | "linkedin" | "facebook" | "instagram"
 ): Promise<ContentAnalytics[]> {
   const db = await getDb();
   if (!db) return [];

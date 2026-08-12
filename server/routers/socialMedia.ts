@@ -18,7 +18,13 @@ import {
   getScheduledSocialPostsByRepurposedContent,
   cancelScheduledSocialPost,
 } from "../db";
-import { getSocialMediaService } from "../_core/socialMediaService";
+import {
+  FacebookService,
+  getSocialMediaService,
+  InstagramService,
+  LinkedInService,
+  TwitterService,
+} from "../_core/socialMediaService";
 import { toPublicSocialMediaAccount } from "../socialMediaAccountView";
 import { TRPCError } from "@trpc/server";
 
@@ -137,7 +143,13 @@ export const socialMediaRouter = router({
             .split("\n\n")
             .filter(t => t.trim())
             .map(t => t.trim());
-          result = await (service as any).postThread(tweets);
+          if (!(service instanceof TwitterService)) {
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: "Twitter service was not initialized",
+            });
+          }
+          result = await service.postThread(tweets);
         } else if (
           account.platform === "linkedin" &&
           content.format === "linkedin"
@@ -146,7 +158,13 @@ export const socialMediaRouter = router({
           const lines = content.content.split("\n");
           const title = lines[0] || "Check out this article";
           const body = lines.slice(1).join("\n");
-          result = await (service as any).postArticle(title, body);
+          if (!(service instanceof LinkedInService)) {
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: "LinkedIn service was not initialized",
+            });
+          }
+          result = await service.postArticle(title, body);
         } else {
           throw new TRPCError({
             code: "BAD_REQUEST",
@@ -166,7 +184,7 @@ export const socialMediaRouter = router({
           clicks: 0,
         });
 
-        return { success: true, analyticsId, ...result };
+        return { analyticsId, ...result };
       } catch (error) {
         if (error instanceof TRPCError) throw error;
         console.error("[SocialMedia] Publish error:", error);
@@ -193,7 +211,11 @@ export const socialMediaRouter = router({
    * Get analytics by platform
    */
   getAnalyticsByPlatform: protectedProcedure
-    .input(z.object({ platform: z.enum(["twitter", "linkedin"]) }))
+    .input(
+      z.object({
+        platform: z.enum(["twitter", "linkedin", "facebook", "instagram"]),
+      })
+    )
     .query(async ({ ctx, input }) => {
       return getContentAnalyticsByPlatform(ctx.user.id, input.platform);
     }),
@@ -241,9 +263,29 @@ export const socialMediaRouter = router({
           account.platform,
           account.accessToken
         );
-        const metrics = await (service as any).getTweetMetrics(
-          analytics.externalPostId
-        );
+        let metrics;
+        switch (account.platform) {
+          case "twitter":
+            if (!(service instanceof TwitterService))
+              throw new Error("Twitter service was not initialized");
+            metrics = await service.getTweetMetrics(analytics.externalPostId);
+            break;
+          case "linkedin":
+            if (!(service instanceof LinkedInService))
+              throw new Error("LinkedIn service was not initialized");
+            metrics = await service.getPostMetrics(analytics.externalPostId);
+            break;
+          case "facebook":
+            if (!(service instanceof FacebookService))
+              throw new Error("Facebook service was not initialized");
+            metrics = await service.getMetrics(analytics.externalPostId);
+            break;
+          case "instagram":
+            if (!(service instanceof InstagramService))
+              throw new Error("Instagram service was not initialized");
+            metrics = await service.getMetrics(analytics.externalPostId);
+            break;
+        }
 
         // Update analytics
         await updateContentAnalytics(input.analyticsId, ctx.user.id, {
@@ -255,7 +297,7 @@ export const socialMediaRouter = router({
           retweets: metrics.retweets,
           shares: metrics.shares,
           lastSyncedAt: new Date(),
-          rawMetrics: metrics,
+          rawMetrics: { ...metrics },
         });
 
         return { success: true, metrics };

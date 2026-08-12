@@ -14,7 +14,7 @@ export default defineConfig({
   },
   css: {
     modules: {
-      classNameStrategy: 'non-scoped',
+      classNameStrategy: "non-scoped",
     },
   },
   test: {

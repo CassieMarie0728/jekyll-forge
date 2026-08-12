@@ -62,7 +62,7 @@ function parseMarkdown(md: string): string {
     // Horizontal rule
     .replace(/^---$/gm, '<hr class="border-border my-6" />')
     // Unordered lists
-    .replace(/^[\*\-] (.+)$/gm, '<li class="ml-4 list-disc">$1</li>')
+    .replace(/^[*-] (.+)$/gm, '<li class="ml-4 list-disc">$1</li>')
     // Ordered lists
     .replace(/^\d+\. (.+)$/gm, '<li class="ml-4 list-decimal">$1</li>')
     // Tables (basic)

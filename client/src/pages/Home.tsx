@@ -222,7 +222,9 @@ export default function Home() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-5xl md:text-7xl lg:text-8xl font-display font-bold tracking-tight mb-8 leading-[1.1]"
           >
-            The ultimate <span className="forge-text-gradient">content engine</span><br className="hidden md:block" /> for Jekyll blogs.
+            The ultimate{" "}
+            <span className="forge-text-gradient">content engine</span>
+            <br className="hidden md:block" /> for Jekyll blogs.
           </motion.h1>
 
           <motion.p
@@ -231,7 +233,9 @@ export default function Home() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed"
           >
-            Write visually, repurpose for social media with AI, and publish from anywhere with our native mobile app. The only CMS that turns your GitHub repo into a full-scale media operation.
+            Write visually, repurpose for social media with AI, and publish from
+            anywhere with our native mobile app. The only CMS that turns your
+            GitHub repo into a full-scale media operation.
           </motion.p>
 
           <motion.div
@@ -254,16 +258,21 @@ export default function Home() {
               size="lg"
               className="gap-2 text-lg h-14 px-10 bg-background/50 backdrop-blur-sm hover:bg-accent transition-all"
               onClick={() => {
-                const demoSection = document.getElementById('workflow-overview');
-                const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-                demoSection?.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+                const demoSection =
+                  document.getElementById("workflow-overview");
+                const prefersReducedMotion = window.matchMedia(
+                  "(prefers-reduced-motion: reduce)"
+                ).matches;
+                demoSection?.scrollIntoView({
+                  behavior: prefersReducedMotion ? "auto" : "smooth",
+                });
               }}
             >
               <Play className="w-5 h-5" />
               See Workflow
             </Button>
           </motion.div>
-          
+
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -271,13 +280,15 @@ export default function Home() {
             className="mt-12 flex items-center justify-center gap-6 text-sm text-muted-foreground"
           >
             <div className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-primary" /> No payment setup required to explore
+              <Check className="w-4 h-4 text-primary" /> No payment setup
+              required to explore
             </div>
             <div className="flex items-center gap-2">
               <Check className="w-4 h-4 text-primary" /> Connects in seconds
             </div>
             <div className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-primary" /> Keep your source content in GitHub
+              <Check className="w-4 h-4 text-primary" /> Keep your source
+              content in GitHub
             </div>
           </motion.div>
         </div>
@@ -323,7 +334,8 @@ export default function Home() {
               Explore the Jekyll Forge workflow
             </h2>
             <p className="text-muted-foreground">
-              Connect a repository, shape a draft, review the change, and publish through the tools available to your workspace.
+              Connect a repository, shape a draft, review the change, and
+              publish through the tools available to your workspace.
             </p>
           </div>
 
@@ -336,11 +348,12 @@ export default function Home() {
           >
             <div className="absolute inset-0 bg-gradient-to-br from-slate-900 to-slate-800 opacity-20" />
 
-            <motion.div
-              className="relative z-10 w-16 h-16 rounded-full bg-primary flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow"
+            <div
+              aria-hidden="true"
+              className="relative z-10 w-16 h-16 rounded-2xl bg-primary/15 border border-primary/30 flex items-center justify-center shadow-lg"
             >
-              <Play className="w-7 h-7 text-primary-foreground fill-primary-foreground ml-1" />
-            </motion.div>
+              <GitBranch className="w-7 h-7 text-primary" />
+            </div>
 
             <div className="absolute inset-0 flex items-end p-6 bg-gradient-to-t from-black/50 to-transparent z-5">
               <div className="text-white">
@@ -358,14 +371,18 @@ export default function Home() {
       <section className="px-6 py-24 bg-gradient-to-b from-background to-card/20">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <Badge variant="outline" className="mb-4 border-primary/30 text-primary bg-primary/10 px-3 py-1 text-xs">
+            <Badge
+              variant="outline"
+              className="mb-4 border-primary/30 text-primary bg-primary/10 px-3 py-1 text-xs"
+            >
               Powerful Capabilities
             </Badge>
             <h2 className="text-4xl font-display font-bold mb-4 tracking-tight">
               Everything you need to run a world-class blog
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Visual enough for writers. Powerful enough for developers. Mobile-first for creators on-the-go.
+              Visual enough for writers. Powerful enough for developers.
+              Mobile-first for creators on-the-go.
             </p>
           </div>
 
@@ -383,9 +400,7 @@ export default function Home() {
                   <Icon className="w-7 h-7 text-primary group-hover:text-primary-foreground transition-colors" />
                 </div>
                 <h3 className="font-semibold text-xl mb-3">{title}</h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  {desc}
-                </p>
+                <p className="text-muted-foreground leading-relaxed">{desc}</p>
               </motion.div>
             ))}
           </div>
@@ -459,7 +474,9 @@ export default function Home() {
               Seamlessly integrate with your essential tools
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Jekyll Forge connects directly to your favorite platforms, streamlining your content workflow from creation to distribution and analysis.
+              Jekyll Forge connects directly to your favorite platforms,
+              streamlining your content workflow from creation to distribution
+              and analysis.
             </p>
           </div>
 
@@ -479,14 +496,19 @@ export default function Home() {
                 <h3 className="text-2xl font-semibold">GitHub</h3>
               </div>
               <p className="text-muted-foreground mb-6 leading-relaxed">
-                Your content lives in your GitHub repository. Jekyll Forge provides a powerful visual interface to manage your Jekyll site directly, with full control over commits, branches, and pull requests.
+                Your content lives in your GitHub repository. Jekyll Forge
+                provides a powerful visual interface to manage your Jekyll site
+                directly, with full control over commits, branches, and pull
+                requests.
               </p>
               <div className="text-sm font-mono bg-muted p-4 rounded-lg text-muted-foreground border border-border">
                 <div className="flex items-center gap-2 mb-1">
                   <Terminal className="w-4 h-4 text-primary" />
                   <span>Your Jekyll Repo</span>
                 </div>
-                <div className="text-primary text-center py-1">↓ Read/Write via API ↓</div>
+                <div className="text-primary text-center py-1">
+                  ↓ Read/Write via API ↓
+                </div>
                 <div className="flex items-center gap-2">
                   <Zap className="w-4 h-4 text-primary" />
                   <span>Jekyll Forge CMS</span>
@@ -509,14 +531,19 @@ export default function Home() {
                 <h3 className="text-2xl font-semibold">Social Media</h3>
               </div>
               <p className="text-muted-foreground mb-6 leading-relaxed">
-                Amplify your reach by repurposing and scheduling content across Twitter, LinkedIn, Facebook, and Instagram. Jekyll Forge intelligently adapts your posts for each platform, ensuring maximum impact.
+                Amplify your reach by repurposing and scheduling content across
+                Twitter, LinkedIn, Facebook, and Instagram. Jekyll Forge
+                intelligently adapts your posts for each platform, ensuring
+                maximum impact.
               </p>
               <div className="text-sm font-mono bg-muted p-4 rounded-lg text-muted-foreground border border-border">
                 <div className="flex items-center gap-2 mb-1">
                   <Zap className="w-4 h-4 text-primary" />
                   <span>Jekyll Forge Content</span>
                 </div>
-                <div className="text-primary text-center py-1">↓ Repurpose & Schedule ↓</div>
+                <div className="text-primary text-center py-1">
+                  ↓ Repurpose & Schedule ↓
+                </div>
                 <div className="flex flex-wrap justify-center gap-2">
                   <Twitter className="w-5 h-5 text-blue-400" />
                   <Linkedin className="w-5 h-5 text-blue-700" />
@@ -541,7 +568,9 @@ export default function Home() {
                 <h3 className="text-2xl font-semibold">Analytics</h3>
               </div>
               <p className="text-muted-foreground mb-6 leading-relaxed">
-                Gain deep insights into your content performance. Track impressions, engagement, and click-through rates across all your social platforms directly from your Jekyll Forge dashboard.
+                Gain deep insights into your content performance. Track
+                impressions, engagement, and click-through rates across all your
+                social platforms directly from your Jekyll Forge dashboard.
               </p>
               <div className="text-sm font-mono bg-muted p-4 rounded-lg text-muted-foreground border border-border">
                 <div className="flex flex-wrap justify-center gap-2 mb-1">
@@ -550,7 +579,9 @@ export default function Home() {
                   <Facebook className="w-5 h-5 text-blue-600" />
                   <Instagram className="w-5 h-5 text-pink-500" />
                 </div>
-                <div className="text-primary text-center py-1">↓ Aggregate Metrics ↓</div>
+                <div className="text-primary text-center py-1">
+                  ↓ Aggregate Metrics ↓
+                </div>
                 <div className="flex items-center gap-2">
                   <LineChart className="w-4 h-4 text-primary" />
                   <span>Jekyll Forge Dashboard</span>
@@ -577,7 +608,9 @@ export default function Home() {
                   <Github className="w-10 h-10 text-white dark:text-black" />
                 </div>
                 <div className="font-semibold">GitHub</div>
-                <div className="text-sm text-muted-foreground">Source of Truth</div>
+                <div className="text-sm text-muted-foreground">
+                  Source of Truth
+                </div>
               </div>
               <div className="hidden md:block text-primary text-5xl font-bold animate-bounce-horizontal">
                 →
@@ -590,7 +623,9 @@ export default function Home() {
                   <Zap className="w-10 h-10 text-primary-foreground" />
                 </div>
                 <div className="font-semibold">Jekyll Forge</div>
-                <div className="text-sm text-muted-foreground">Intelligent CMS</div>
+                <div className="text-sm text-muted-foreground">
+                  Intelligent CMS
+                </div>
               </div>
               <div className="hidden md:block text-primary text-5xl font-bold animate-bounce-horizontal">
                 →
@@ -603,7 +638,9 @@ export default function Home() {
                   <Share2 className="w-10 h-10 text-white" />
                 </div>
                 <div className="font-semibold">Social Media</div>
-                <div className="text-sm text-muted-foreground">Audience Reach</div>
+                <div className="text-sm text-muted-foreground">
+                  Audience Reach
+                </div>
               </div>
               <div className="hidden md:block text-primary text-5xl font-bold animate-bounce-horizontal">
                 →
@@ -616,7 +653,9 @@ export default function Home() {
                   <BarChart3 className="w-10 h-10 text-white" />
                 </div>
                 <div className="font-semibold">Analytics</div>
-                <div className="text-sm text-muted-foreground">Performance Insights</div>
+                <div className="text-sm text-muted-foreground">
+                  Performance Insights
+                </div>
               </div>
             </div>
           </motion.div>
@@ -631,7 +670,9 @@ export default function Home() {
               Built for an accountable publishing workflow
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Jekyll Forge keeps the repository, publishing decisions, and connected-account permissions visible instead of obscuring them behind a proprietary content store.
+              Jekyll Forge keeps the repository, publishing decisions, and
+              connected-account permissions visible instead of obscuring them
+              behind a proprietary content store.
             </p>
           </div>
 
@@ -640,17 +681,20 @@ export default function Home() {
               {
                 icon: Github,
                 title: "Your repository stays central",
-                description: "Jekyll source files, history, and deployment configuration remain in the GitHub repository you connect.",
+                description:
+                  "Jekyll source files, history, and deployment configuration remain in the GitHub repository you connect.",
               },
               {
                 icon: Shield,
                 title: "Connected accounts stay reviewable",
-                description: "Social publishing is tied to explicit connected accounts so permissions can be inspected or removed from the workspace.",
+                description:
+                  "Social publishing is tied to explicit connected accounts so permissions can be inspected or removed from the workspace.",
               },
               {
                 icon: GitBranch,
                 title: "Changes are meant to be inspectable",
-                description: "Drafts, front matter, publishing decisions, and repository commits are surfaced as part of the authoring workflow.",
+                description:
+                  "Drafts, front matter, publishing decisions, and repository commits are surfaced as part of the authoring workflow.",
               },
             ].map(({ icon: Icon, title, description }, index) => (
               <motion.div
@@ -665,7 +709,9 @@ export default function Home() {
                   <Icon className="w-6 h-6 text-primary" />
                 </div>
                 <h3 className="font-semibold text-lg mb-2">{title}</h3>
-                <p className="text-muted-foreground leading-relaxed">{description}</p>
+                <p className="text-muted-foreground leading-relaxed">
+                  {description}
+                </p>
               </motion.div>
             ))}
           </div>
@@ -674,14 +720,19 @@ export default function Home() {
 
       <section className="px-6 py-16">
         <div className="max-w-4xl mx-auto text-center">
-          <Badge variant="outline" className="mb-4 border-primary/30 text-primary bg-primary/10">
+          <Badge
+            variant="outline"
+            className="mb-4 border-primary/30 text-primary bg-primary/10"
+          >
             Current availability
           </Badge>
           <h2 className="text-3xl font-display font-bold mb-3">
             Start with the web workspace
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            The web workspace is available for connected GitHub repositories. Android distribution and paid packaging are not advertised until their release, billing, and support workflows are fully configured.
+            The web workspace is available for connected GitHub repositories.
+            Android distribution and paid packaging are not advertised until
+            their release, billing, and support workflows are fully configured.
           </p>
         </div>
       </section>
@@ -699,14 +750,18 @@ export default function Home() {
                   Manage your content on-the-go
                 </h3>
                 <p className="text-muted-foreground">
-                  The Android companion is undergoing release validation. Its current screens support an evolving subset of the web workflow.
+                  The Android companion is undergoing release validation. Its
+                  current screens support an evolving subset of the web
+                  workflow.
                 </p>
               </div>
             </div>
             <ul className="space-y-2 text-sm">
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-primary flex-shrink-0" />
-                <span>Android editor and Markdown workflows under validation</span>
+                <span>
+                  Android editor and Markdown workflows under validation
+                </span>
               </li>
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-primary flex-shrink-0" />
@@ -737,7 +792,8 @@ export default function Home() {
               Frequently asked questions
             </h2>
             <p className="text-muted-foreground">
-              Review the current product scope and connection requirements before starting.
+              Review the current product scope and connection requirements
+              before starting.
             </p>
           </div>
 
@@ -755,7 +811,9 @@ export default function Home() {
                   className="bg-background border border-border rounded-lg px-6 data-[state=open]:border-primary/30"
                 >
                   <AccordionTrigger className="hover:no-underline py-4">
-                    <span className="text-left font-semibold">{item.question}</span>
+                    <span className="text-left font-semibold">
+                      {item.question}
+                    </span>
                   </AccordionTrigger>
                   <AccordionContent className="text-muted-foreground pb-4">
                     {item.answer}

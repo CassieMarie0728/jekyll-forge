@@ -14,7 +14,8 @@ export const getTrpcClient = (token?: string) => {
         url:
           process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000/api/trpc",
         async headers() {
-          const authToken = token || (await SecureStore.getItemAsync("authToken"));
+          const authToken =
+            token || (await SecureStore.getItemAsync("authToken"));
           return {
             authorization: authToken ? `Bearer ${authToken}` : "",
           };

@@ -1,17 +1,17 @@
-import React from 'react';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import UserSettings from './UserSettings';
+import React from "react";
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { render, screen } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import UserSettings from "./UserSettings";
 
 // Mock useAuth
-vi.mock('@/_core/hooks/useAuth', () => ({
+vi.mock("@/_core/hooks/useAuth", () => ({
   useAuth: () => ({
     user: {
-      id: 'user1',
-      name: 'Test User',
-      email: 'test@example.com',
-      role: 'user',
+      id: "user1",
+      name: "Test User",
+      email: "test@example.com",
+      role: "user",
       createdAt: new Date().toISOString(),
     },
     isAuthenticated: true,
@@ -19,7 +19,7 @@ vi.mock('@/_core/hooks/useAuth', () => ({
 }));
 
 // Mock tRPC
-vi.mock('../lib/trpc', () => ({
+vi.mock("../lib/trpc", () => ({
   trpc: {
     socialMedia: {
       getAccounts: {
@@ -41,7 +41,7 @@ vi.mock('../lib/trpc', () => ({
   },
 }));
 
-describe('UserSettings Component', () => {
+describe("UserSettings Component", () => {
   let queryClient: QueryClient;
 
   beforeEach(() => {
@@ -52,15 +52,15 @@ describe('UserSettings Component', () => {
     });
   });
 
-  it('renders account settings header and profile info', () => {
+  it("renders account settings header and profile info", () => {
     render(
       <QueryClientProvider client={queryClient}>
         <UserSettings />
       </QueryClientProvider>
     );
 
-    expect(screen.getByText('Account Settings')).toBeInTheDocument();
-    expect(screen.getByText('Profile Information')).toBeInTheDocument();
-    expect(screen.getByText('Test User')).toBeInTheDocument();
+    expect(screen.getByText("Account Settings")).toBeInTheDocument();
+    expect(screen.getByText("Profile Information")).toBeInTheDocument();
+    expect(screen.getByText("Test User")).toBeInTheDocument();
   });
 });

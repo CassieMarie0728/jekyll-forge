@@ -1,9 +1,6 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
-import {
-  registerMobileDeviceToken,
-  revokeMobileDeviceToken,
-} from "../db";
+import { registerMobileDeviceToken, revokeMobileDeviceToken } from "../db";
 
 export const notificationsRouter = router({
   registerDevice: protectedProcedure
