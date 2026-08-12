@@ -1,4 +1,5 @@
-import { eq, and, desc, asc, lt, inArray } from "drizzle-orm";
+import { eq, and, desc, asc, lt, inArray, gt, isNull } from "drizzle-orm";
+import { createHash } from "crypto";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser,
@@ -30,6 +31,7 @@ import {
   InsertScheduledSocialPost,
   ScheduledSocialPost,
   mobileDeviceTokens,
+  mobileAuthCodes,
   contentAnalytics,
   InsertContentAnalytics,
   ContentAnalytics,
@@ -53,6 +55,62 @@ export async function getDb() {
     }
   }
   return _db;
+}
+
+const hashMobileAuthCode = (code: string) =>
+  createHash("sha256").update(code).digest("hex");
+
+export async function createMobileAuthCode(
+  userId: number,
+  code: string,
+  expiresAt: Date
+): Promise<void> {
+  const database = await getDb();
+  if (!database) throw new Error("DB not available");
+
+  await database.insert(mobileAuthCodes).values({
+    userId,
+    codeHash: hashMobileAuthCode(code),
+    expiresAt,
+  });
+}
+
+export async function consumeMobileAuthCode(code: string) {
+  const database = await getDb();
+  if (!database) throw new Error("DB not available");
+
+  const codeHash = hashMobileAuthCode(code);
+  const now = new Date();
+  const records = await database
+    .select()
+    .from(mobileAuthCodes)
+    .where(
+      and(
+        eq(mobileAuthCodes.codeHash, codeHash),
+        isNull(mobileAuthCodes.usedAt),
+        gt(mobileAuthCodes.expiresAt, now)
+      )
+    )
+    .limit(1);
+
+  const record = records[0];
+  if (!record) return null;
+
+  const updateResult = await database
+    .update(mobileAuthCodes)
+    .set({ usedAt: now })
+    .where(
+      and(eq(mobileAuthCodes.id, record.id), isNull(mobileAuthCodes.usedAt))
+    );
+
+  if (updateResult[0]?.affectedRows !== 1) return null;
+
+  const usersFound = await database
+    .select()
+    .from(users)
+    .where(eq(users.id, record.userId))
+    .limit(1);
+  return usersFound[0] ?? null;
 }
 
 export async function registerMobileDeviceToken(

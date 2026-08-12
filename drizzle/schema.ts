@@ -46,6 +46,20 @@ export const mobileDeviceTokens = mysqlTable("mobile_device_tokens", {
 export type MobileDeviceToken = typeof mobileDeviceTokens.$inferSelect;
 export type InsertMobileDeviceToken = typeof mobileDeviceTokens.$inferInsert;
 
+// ─── Mobile OAuth authorization tickets ─────────────────────────────────────
+// A short-lived, one-time code is redirected into the Android app after the
+// browser OAuth callback. The app exchanges it for a session token over tRPC.
+export const mobileAuthCodes = mysqlTable("mobile_auth_codes", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  codeHash: varchar("codeHash", { length: 64 }).notNull().unique(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  usedAt: timestamp("usedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type MobileAuthCode = typeof mobileAuthCodes.$inferSelect;
+
 // ─── Sites (GitHub Repositories) ────────────────────────────────────────────
 export const sites = mysqlTable("sites", {
   id: int("id").autoincrement().primaryKey(),

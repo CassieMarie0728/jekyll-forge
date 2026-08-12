@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import * as WebBrowser from "expo-web-browser";
 import { useAuthStore } from "../stores/authStore";
+import { getTrpcClient } from "../utils/trpc";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -19,17 +20,23 @@ export default function LoginScreen() {
   const handleLogin = async () => {
     setLoading(true);
     try {
-      const apiUrl = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
+      const configuredUrl = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
+      const apiUrl = configuredUrl.replace(/\/api\/trpc\/?$/, "").replace(/\/$/, "");
       const redirectUrl = "jekyllforge://auth-callback";
 
-      // Construct OAuth URL
-      const oauthUrl = new URL(`${apiUrl}/api/oauth/authorize`);
-      oauthUrl.searchParams.append("redirect_uri", redirectUrl);
-      oauthUrl.searchParams.append("response_type", "code");
+      const startResponse = await fetch(`${apiUrl}/api/oauth/mobile/start`);
+      if (!startResponse.ok) {
+        throw new Error("Unable to start mobile sign-in.");
+      }
+      const { authorizationUrl } = (await startResponse.json()) as {
+        authorizationUrl?: string;
+      };
+      if (!authorizationUrl) {
+        throw new Error("Mobile sign-in did not return an authorization URL.");
+      }
 
-      // Open browser for OAuth
       const result = await WebBrowser.openAuthSessionAsync(
-        oauthUrl.toString(),
+        authorizationUrl,
         redirectUrl
       );
 
@@ -38,19 +45,11 @@ export default function LoginScreen() {
         const code = url.searchParams.get("code");
 
         if (code) {
-          // Exchange code for token
-          const response = await fetch(`${apiUrl}/api/oauth/callback`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ code }),
+          const data = await getTrpcClient().auth.exchangeMobileCode.mutate({
+            code,
           });
-
-          const data = await response.json();
-
-          if (data.token && data.user) {
-            await setToken(data.token);
-            await setUser(data.user);
-          }
+          await setToken(data.token);
+          await setUser(data.user);
         }
       }
     } catch (error) {

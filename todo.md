@@ -232,6 +232,9 @@
 - [x] Dispatch social publishing and analytics metrics through platform-specific typed service methods instead of `any` casts and the Twitter-only metric path
 - [x] Repair the Android lint script for the installed ESLint flat-config command-line interface and verify mobile linting
 - [ ] Replace the Android login flow's nonexistent `/api/oauth/authorize` and token-JSON callback assumptions with a supported mobile OAuth contract
+- [x] Add one-time mobile OAuth exchange tickets and a trusted deep-link callback without exposing session tokens in redirect URLs
+- [x] Accept validated mobile bearer session tokens in server authentication while retaining existing cookie authentication
+- [ ] Verify the Android deep-link registration matches `jekyllforge://auth-callback` and add end-to-end auth-store persistence coverage
 - [x] Route Android tRPC headers through SecureStore instead of the stale AsyncStorage token location
 - [ ] Integrate offline queue producers into mobile mutation screens and retain failed operations for recovery rather than deleting them after retries
 - [ ] Replace placeholder Expo project identifiers and supply real branded assets, Firebase `google-services.json`, and Play submission credentials before Android release

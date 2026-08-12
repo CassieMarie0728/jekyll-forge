@@ -1,5 +1,9 @@
-import { COOKIE_NAME } from "@shared/const";
+import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
+import * as db from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
+import { sdk } from "./_core/sdk";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import { githubRouter } from "./routers/github";
@@ -24,6 +28,33 @@ export const appRouter = router({
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
       return { success: true } as const;
     }),
+    exchangeMobileCode: publicProcedure
+      .input(z.object({ code: z.string().min(32).max(256) }))
+      .mutation(async ({ input }) => {
+        const user = await db.consumeMobileAuthCode(input.code);
+        if (!user) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message:
+              "The mobile authorization code is invalid, expired, or already used.",
+          });
+        }
+
+        const token = await sdk.createSessionToken(user.openId, {
+          name: user.name || "",
+          expiresInMs: ONE_YEAR_MS,
+        });
+        return {
+          token,
+          user: {
+            id: user.id,
+            openId: user.openId,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+          },
+        };
+      }),
   }),
   github: githubRouter,
   sites: sitesRouter,

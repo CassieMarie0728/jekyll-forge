@@ -24,6 +24,16 @@ export type SessionPayload = {
   name: string;
 };
 
+export function extractSessionToken(req: Request): string | undefined {
+  const authorization = req.headers.authorization;
+  if (typeof authorization === "string") {
+    const bearerMatch = /^Bearer\s+(.+)$/i.exec(authorization.trim());
+    if (bearerMatch?.[1]) return bearerMatch[1];
+  }
+
+  return parseCookieHeader(req.headers.cookie ?? "")[COOKIE_NAME];
+}
+
 const EXCHANGE_TOKEN_PATH = `/webdev.v1.WebDevAuthPublicService/ExchangeToken`;
 const GET_USER_INFO_PATH = `/webdev.v1.WebDevAuthPublicService/GetUserInfo`;
 const GET_USER_INFO_WITH_JWT_PATH = `/webdev.v1.WebDevAuthPublicService/GetUserInfoWithJwt`;
@@ -259,17 +269,18 @@ class SDKServer {
   }
 
   async authenticateRequest(req: Request): Promise<AuthenticatedUser> {
-    // Regular authentication flow
-    const cookies = this.parseCookies(req.headers.cookie);
-    const sessionCookie = cookies.get(COOKIE_NAME);
-    const session = await this.verifySession(sessionCookie);
+    // Browser requests use the session cookie. Native clients exchange a
+    // one-time authorization ticket and send the same signed session as a
+    // bearer token stored in SecureStore.
+    const sessionToken = extractSessionToken(req);
+    const session = await this.verifySession(sessionToken);
 
     if (!session) {
       throw ForbiddenError("Invalid session cookie");
     }
 
     if (session.openId.startsWith(CRON_OPEN_ID_PREFIX)) {
-      const userInfo = await this.getUserInfoWithJwt(sessionCookie ?? "");
+      const userInfo = await this.getUserInfoWithJwt(sessionToken ?? "");
       const taskUid = userInfo.taskUid ?? null;
       if (!taskUid) {
         throw ForbiddenError("Cron session missing task_uid");
@@ -284,7 +295,7 @@ class SDKServer {
     // If user not in DB, sync from OAuth server automatically
     if (!user) {
       try {
-        const userInfo = await this.getUserInfoWithJwt(sessionCookie ?? "");
+        const userInfo = await this.getUserInfoWithJwt(sessionToken ?? "");
         await db.upsertUser({
           openId: userInfo.openId,
           name: userInfo.name || null,

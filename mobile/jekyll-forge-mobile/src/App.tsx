@@ -1,11 +1,8 @@
 import { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { httpBatchLink } from "@trpc/client";
-import superjson from "superjson";
 import { View, ActivityIndicator } from "react-native";
-import * as SecureStore from "expo-secure-store";
 import { useAuthStore } from "./stores/authStore";
-import { trpc } from "./utils/trpc";
+import { getTrpcClient, trpc } from "./utils/trpc";
 import RootNavigator from "./navigation/RootNavigator";
 import { ToastProvider } from "./components/Toast";
 import { haptics } from "./utils/haptics";
@@ -21,24 +18,6 @@ const queryClient = new QueryClient({
   },
 });
 
-const getTrpcClient = () => {
-  return trpc.createClient({
-    links: [
-      httpBatchLink({
-        url:
-          process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000/api/trpc",
-        async headers() {
-          const token = await SecureStore.getItemAsync("authToken");
-          return {
-            authorization: token ? `Bearer ${token}` : "",
-          };
-        },
-      }),
-    ],
-    transformer: superjson,
-  });
-};
-
 function AppContent() {
   const { isLoading, checkAuth } = useAuthStore();
   const trpcClient = getTrpcClient();
@@ -53,8 +32,9 @@ function AppContent() {
         await client.posts.update.mutate(item.data);
         return;
       case "publish":
-        await client.socialMedia.publishContent.mutate(item.data);
-        return;
+        throw new Error(
+          "Offline post publishing is not configured until the mobile GitHub publish contract is available."
+        );
       case "delete":
         await client.posts.delete.mutate(item.data);
         return;
