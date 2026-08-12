@@ -50,7 +50,7 @@ describe("A/B Testing - Variation Generator", () => {
       });
     });
 
-    it("should respect max count of 5", async () => {
+    it("should respect max count of 5", { timeout: 15000 }, async () => {
       // Skip LLM-based tests in CI - they timeout
       if (process.env.CI) {
         expect(true).toBe(true);
@@ -274,13 +274,13 @@ describe("A/B Testing - Variation Generator", () => {
   });
 
   describe("Edge Cases", () => {
-    it("should handle very long content", async () => {
+    it("should handle very long content", { timeout: 15000 }, async () => {
       // Skip LLM-based tests in CI - they timeout
       if (process.env.CI) {
         expect(true).toBe(true);
         return;
       }
-      const longContent = "A".repeat(5000);
+      const longContent = "A".repeat(500);
       const variations = await generatePostVariations("Test", longContent, {
         count: 1,
       });

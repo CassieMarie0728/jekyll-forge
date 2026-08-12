@@ -201,8 +201,8 @@
 - [ ] Conduct route-by-route automated checks for landing-to-auth-to-repository-picker and authenticated dashboard flows
 - [ ] Audit and harden landing-page metadata, semantic hierarchy, keyboard behavior, accessible labels, and reduced-motion behavior
 - [x] Remove fictional testimonials and unsupported “trusted by,” pricing, Play Store, and security claims from the landing page
-- [ ] Audit frontend bundle boundaries, dead routes, unimplemented CTAs, and error/loading/empty states across all web screens
-- [ ] Audit protected API procedures for ownership enforcement, input validation, sensitive token exposure, and social-platform error handling
+- [x] Audit frontend bundle boundaries, dead routes, unimplemented CTAs, and error/loading/empty states across all web screens
+- [x] Audit protected API procedures for ownership enforcement, input validation, sensitive token exposure, and social-platform error handling
 - [x] Prevent OAuth access and refresh tokens from being returned by connected-account API queries
 - [x] Verify database migrations match the Drizzle schema and identify non-destructive migration gaps (documented in MIGRATION_AUDIT.md)
 - [ ] Verify Android offline queues, synchronization conflict behavior, notification configuration, and release packaging prerequisites

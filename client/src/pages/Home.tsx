@@ -255,7 +255,8 @@ export default function Home() {
               className="gap-2 text-lg h-14 px-10 bg-background/50 backdrop-blur-sm hover:bg-accent transition-all"
               onClick={() => {
                 const demoSection = document.getElementById('workflow-overview');
-                demoSection?.scrollIntoView({ behavior: 'smooth' });
+                const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                demoSection?.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth' });
               }}
             >
               <Play className="w-5 h-5" />

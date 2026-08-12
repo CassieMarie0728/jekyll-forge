@@ -30,7 +30,7 @@ export async function generatePostVariations(
   originalContent: string,
   options: VariationOptions = {}
 ): Promise<GeneratedVariation[]> {
-  const count = options.count || 3;
+  const count = Math.min(options.count || 3, 5);
   const tones = options.tones || DEFAULT_TONES;
   const angles = options.angles || DEFAULT_ANGLES;
 
