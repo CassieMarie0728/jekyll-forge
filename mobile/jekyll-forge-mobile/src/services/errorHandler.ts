@@ -20,6 +20,19 @@ export interface AppError {
   originalError?: Error;
 }
 
+function normalizeError(error: unknown): Error {
+  if (error instanceof Error) return error;
+  if (
+    error &&
+    typeof error === "object" &&
+    "message" in error &&
+    typeof (error as { message?: unknown }).message === "string"
+  ) {
+    return new Error((error as { message: string }).message);
+  }
+  return new Error("Unknown mobile application error");
+}
+
 // Parse errors into user-friendly messages
 export function parseError(error: unknown): AppError {
   // Network errors
@@ -61,7 +74,7 @@ export function parseError(error: unknown): AppError {
           userMessage: "Your session has expired. Please log in again.",
           code,
           retryable: false,
-          originalError: error as Error,
+          originalError: normalizeError(error),
         };
       case "FORBIDDEN":
         return {
@@ -70,7 +83,7 @@ export function parseError(error: unknown): AppError {
           userMessage: "You don't have permission to perform this action.",
           code,
           retryable: false,
-          originalError: error as Error,
+          originalError: normalizeError(error),
         };
       case "NOT_FOUND":
         return {
@@ -79,7 +92,7 @@ export function parseError(error: unknown): AppError {
           userMessage: "The requested item was not found.",
           code,
           retryable: false,
-          originalError: error as Error,
+          originalError: normalizeError(error),
         };
       case "BAD_REQUEST":
         return {
@@ -90,7 +103,7 @@ export function parseError(error: unknown): AppError {
             "Invalid input. Please check your data and try again.",
           code,
           retryable: false,
-          originalError: error as Error,
+          originalError: normalizeError(error),
         };
       case "INTERNAL_SERVER_ERROR":
         return {
@@ -100,7 +113,7 @@ export function parseError(error: unknown): AppError {
             "Something went wrong on our end. Please try again later.",
           code,
           retryable: true,
-          originalError: error as Error,
+          originalError: normalizeError(error),
         };
       case "TOO_MANY_REQUESTS":
         return {
@@ -110,7 +123,7 @@ export function parseError(error: unknown): AppError {
             "You're making too many requests. Please wait a moment and try again.",
           code,
           retryable: true,
-          originalError: error as Error,
+          originalError: normalizeError(error),
         };
       default:
         return {
@@ -121,7 +134,7 @@ export function parseError(error: unknown): AppError {
             "An unexpected error occurred. Please try again.",
           code,
           retryable: true,
-          originalError: error as Error,
+          originalError: normalizeError(error),
         };
     }
   }

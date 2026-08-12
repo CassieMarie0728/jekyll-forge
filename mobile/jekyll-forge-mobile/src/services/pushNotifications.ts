@@ -1,3 +1,4 @@
+import * as Notifications from "expo-notifications";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const PUSH_TOKEN_KEY = "@jekyll_forge_push_token";
@@ -37,6 +38,11 @@ class PushNotificationService {
   private notificationListeners: ((notification: LocalNotification) => void)[] =
     [];
   private notifications: LocalNotification[] = [];
+  private apiClient: any = null;
+
+  configureClient(client: unknown) {
+    this.apiClient = client;
+  }
 
   async initialize(): Promise<void> {
     try {
@@ -58,20 +64,24 @@ class PushNotificationService {
   }
 
   private async requestPermissions(): Promise<boolean> {
-    // In a real app, this would use expo-notifications or react-native-push-notification
-    // For now, we'll simulate permission request
-    return true;
+    const current = await Notifications.getPermissionsAsync();
+    if (current.status === "granted") return true;
+    const requested = await Notifications.requestPermissionsAsync();
+    return requested.status === "granted";
   }
 
   private async registerForPushNotifications(): Promise<void> {
     try {
-      // In a real app, this would get the Expo push token or FCM token
-      // Simulating token generation
-      const token = `ExponentPushToken[${Date.now()}]`;
+      const projectId = process.env.EXPO_PUBLIC_EAS_PROJECT_ID;
+      if (!projectId) {
+        console.warn("Push notifications unavailable until EXPO_PUBLIC_EAS_PROJECT_ID is configured");
+        return;
+      }
+
+      const tokenResponse = await Notifications.getExpoPushTokenAsync({ projectId });
+      const token = tokenResponse.data;
       this.pushToken = token;
       await AsyncStorage.setItem(PUSH_TOKEN_KEY, token);
-
-      // Register token with backend
       await this.registerTokenWithBackend(token);
     } catch (error) {
       console.error("Failed to register for push notifications:", error);
@@ -79,9 +89,13 @@ class PushNotificationService {
   }
 
   private async registerTokenWithBackend(token: string): Promise<void> {
-    // This would call your tRPC procedure to register the device token
-    // trpc.notifications.registerDevice.mutate({ token, platform: 'android' });
-    console.log("Registered push token with backend:", token);
+    if (!this.apiClient?.notifications?.registerDevice?.mutate) {
+      throw new Error("Notification API client is not configured");
+    }
+    await this.apiClient.notifications.registerDevice.mutate({
+      token,
+      platform: "android",
+    });
   }
 
   async getPushToken(): Promise<string | null> {

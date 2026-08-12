@@ -57,6 +57,13 @@
       "when": 1780994496925,
       "tag": "0007_sad_killraven",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1786517268614,
+      "tag": "0008_curved_la_nuit",
+      "breakpoints": true
     }
   ]
 }

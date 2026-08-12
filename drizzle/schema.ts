@@ -32,6 +32,20 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
+// ─── Mobile device tokens ────────────────────────────────────────────────────
+export const mobileDeviceTokens = mysqlTable("mobile_device_tokens", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  token: varchar("token", { length: 512 }).notNull().unique(),
+  platform: mysqlEnum("platform", ["android"]).default("android").notNull(),
+  enabled: boolean("enabled").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type MobileDeviceToken = typeof mobileDeviceTokens.$inferSelect;
+export type InsertMobileDeviceToken = typeof mobileDeviceTokens.$inferInsert;
+
 // ─── Sites (GitHub Repositories) ────────────────────────────────────────────
 export const sites = mysqlTable("sites", {
   id: int("id").autoincrement().primaryKey(),

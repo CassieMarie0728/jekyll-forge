@@ -13,6 +13,7 @@ import { blocksRouter } from "./routers/blocks";
 import { repurposingRouter } from "./routers/repurposing";
 import { socialMediaRouter } from "./routers/socialMedia";
 import { abTestingRouter } from "./routers/abTesting";
+import { notificationsRouter } from "./routers/notifications";
 
 export const appRouter = router({
   system: systemRouter,
@@ -35,6 +36,7 @@ export const appRouter = router({
   repurposing: repurposingRouter,
   socialMedia: socialMediaRouter,
   abTesting: abTestingRouter,
+  notifications: notificationsRouter,
 });
 
 export type AppRouter = typeof appRouter;

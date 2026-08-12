@@ -29,6 +29,7 @@ import {
   scheduledSocialPosts,
   InsertScheduledSocialPost,
   ScheduledSocialPost,
+  mobileDeviceTokens,
   contentAnalytics,
   InsertContentAnalytics,
   ContentAnalytics,
@@ -52,6 +53,50 @@ export async function getDb() {
     }
   }
   return _db;
+}
+
+export async function registerMobileDeviceToken(
+  userId: number,
+  token: string,
+  platform: "android" = "android"
+): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+
+  const existing = await db
+    .select({ id: mobileDeviceTokens.id })
+    .from(mobileDeviceTokens)
+    .where(eq(mobileDeviceTokens.token, token))
+    .limit(1);
+
+  if (existing[0]) {
+    await db
+      .update(mobileDeviceTokens)
+      .set({ userId, platform, enabled: true })
+      .where(eq(mobileDeviceTokens.id, existing[0].id));
+    return;
+  }
+
+  await db
+    .insert(mobileDeviceTokens)
+    .values({ userId, token, platform, enabled: true });
+}
+
+export async function revokeMobileDeviceToken(
+  userId: number,
+  token: string
+): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db
+    .update(mobileDeviceTokens)
+    .set({ enabled: false })
+    .where(
+      and(
+        eq(mobileDeviceTokens.userId, userId),
+        eq(mobileDeviceTokens.token, token)
+      )
+    );
 }
 
 // ─── Repurposed Content ───────────────────────────────────────────────────────
@@ -312,6 +357,12 @@ export async function updatePost(
     .update(posts)
     .set(data)
     .where(and(eq(posts.id, id), eq(posts.userId, userId)));
+}
+
+export async function deletePost(id: number, userId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.delete(posts).where(and(eq(posts.id, id), eq(posts.userId, userId)));
 }
 
 export async function autosavePost(

@@ -1,3 +1,4 @@
+import NetInfo from "@react-native-community/netinfo";
 import { offlineStorage } from "./offlineStorage";
 
 export interface SyncStatus {
@@ -8,26 +9,40 @@ export interface SyncStatus {
   failedItems: number;
 }
 
+type SyncQueueItem = Awaited<ReturnType<typeof offlineStorage.getSyncQueue>>[number];
+type SyncProcessor = (item: SyncQueueItem) => Promise<void>;
+
 class SyncService {
-  private isOnline = true;
+  private isOnline = false;
   private isSyncing = false;
+  private lastSyncTime: number | null = null;
+  private pendingItems = 0;
+  private failedItems = 0;
   private syncListeners: ((status: SyncStatus) => void)[] = [];
   private syncInterval: NodeJS.Timeout | null = null;
+  private unsubscribeNetwork: (() => void) | null = null;
+  private processor: SyncProcessor | null = null;
 
   constructor() {
     this.initializeNetworkListener();
+    void this.refreshQueueMetrics();
+  }
+
+  configureProcessor(processor: SyncProcessor) {
+    this.processor = processor;
   }
 
   private initializeNetworkListener() {
-    // In a real app, you'd use react-native-netinfo or similar
-    // For now, we'll use a simple approach
-    this.checkNetworkStatus();
+    this.unsubscribeNetwork = NetInfo.addEventListener(state => {
+      void this.setOnlineStatus(Boolean(state.isConnected && state.isInternetReachable !== false));
+    });
   }
 
-  private checkNetworkStatus() {
-    // This would be replaced with actual network detection
-    // For demo purposes, we'll assume online
-    this.isOnline = true;
+  private async refreshQueueMetrics() {
+    const queue = await offlineStorage.getSyncQueue();
+    this.pendingItems = queue.filter(item => (item.retries || 0) < 3).length;
+    this.failedItems = queue.filter(item => (item.retries || 0) >= 3).length;
+    this.notifyListeners();
   }
 
   async setOnlineStatus(isOnline: boolean) {
@@ -48,9 +63,9 @@ class SyncService {
     return {
       isOnline: this.isOnline,
       isSyncing: this.isSyncing,
-      lastSyncTime: null,
-      pendingItems: 0,
-      failedItems: 0,
+      lastSyncTime: this.lastSyncTime,
+      pendingItems: this.pendingItems,
+      failedItems: this.failedItems,
     };
   }
 
@@ -71,6 +86,10 @@ class SyncService {
 
     try {
       const queue = await offlineStorage.getSyncQueue();
+
+      if (!this.processor) {
+        throw new Error("Offline sync processor is not configured");
+      }
 
       for (const item of queue) {
         try {
@@ -93,16 +112,17 @@ class SyncService {
       }
     } finally {
       this.isSyncing = false;
+      this.lastSyncTime = Date.now();
+      await this.refreshQueueMetrics();
       this.notifyListeners();
     }
   }
 
-  private async processSyncItem(item: any) {
-    // This would call your tRPC procedures
-    // For now, we'll simulate the sync
-    return new Promise(resolve => {
-      setTimeout(resolve, 500);
-    });
+  private async processSyncItem(item: SyncQueueItem) {
+    if (!this.processor) {
+      throw new Error("Offline sync processor is not configured");
+    }
+    await this.processor(item);
   }
 
   async queueAction(
@@ -124,6 +144,7 @@ class SyncService {
       await this.syncPendingItems();
     }
 
+    await this.refreshQueueMetrics();
     this.notifyListeners();
   }
 
@@ -144,6 +165,8 @@ class SyncService {
       clearInterval(this.syncInterval);
       this.syncInterval = null;
     }
+    this.unsubscribeNetwork?.();
+    this.unsubscribeNetwork = null;
   }
 }
 

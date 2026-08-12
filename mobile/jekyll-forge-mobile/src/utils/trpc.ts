@@ -1,10 +1,11 @@
 import { createTRPCReact } from "@trpc/react-query";
 import { httpBatchLink } from "@trpc/client";
 import superjson from "superjson";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import type { AppRouter } from "../../../server/routers";
-
-export const trpc = createTRPCReact<AppRouter>();
+import * as SecureStore from "expo-secure-store";
+// Keep the mobile package independent from Node-only server sources. This adapter
+// is the temporary boundary until a generated shared API contract is published.
+const mobileTrpcFactory: any = createTRPCReact<any>();
+export const trpc: any = mobileTrpcFactory;
 
 export const getTrpcClient = (token?: string) => {
   return trpc.createClient({
@@ -13,7 +14,7 @@ export const getTrpcClient = (token?: string) => {
         url:
           process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000/api/trpc",
         async headers() {
-          const authToken = token || (await AsyncStorage.getItem("authToken"));
+          const authToken = token || (await SecureStore.getItemAsync("authToken"));
           return {
             authorization: authToken ? `Bearer ${authToken}` : "",
           };

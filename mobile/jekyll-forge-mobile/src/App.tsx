@@ -9,6 +9,8 @@ import { trpc } from "./utils/trpc";
 import RootNavigator from "./navigation/RootNavigator";
 import { ToastProvider } from "./components/Toast";
 import { haptics } from "./utils/haptics";
+import { syncService } from "./services/syncService";
+import { pushNotificationService } from "./services/pushNotifications";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -37,17 +39,35 @@ const getTrpcClient = () => {
   });
 };
 
-interface AppContentProps {
-  isAuthenticated: boolean;
-}
-
-function AppContent({ isAuthenticated }: AppContentProps) {
+function AppContent() {
   const { isLoading, checkAuth } = useAuthStore();
   const trpcClient = getTrpcClient();
+
+  syncService.configureProcessor(async item => {
+    const client = trpcClient as any;
+    switch (item.action) {
+      case "create":
+        await client.posts.upsert.mutate(item.data);
+        return;
+      case "update":
+        await client.posts.update.mutate(item.data);
+        return;
+      case "publish":
+        await client.socialMedia.publishContent.mutate(item.data);
+        return;
+      case "delete":
+        await client.posts.delete.mutate(item.data);
+        return;
+      default:
+        throw new Error(`Unsupported offline action: ${String(item.action)}`);
+    }
+  });
 
   useEffect(() => {
     checkAuth();
     haptics.initialize();
+    pushNotificationService.configureClient(trpcClient);
+    void pushNotificationService.initialize();
   }, []);
 
   if (isLoading) {
@@ -68,17 +88,16 @@ function AppContent({ isAuthenticated }: AppContentProps) {
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
-        <RootNavigator isAuthenticated={isAuthenticated} />
+        <RootNavigator />
       </QueryClientProvider>
     </trpc.Provider>
   );
 }
 
 export default function App() {
-  const { isAuthenticated } = useAuthStore();
   return (
     <ToastProvider>
-      <AppContent isAuthenticated={isAuthenticated} />
+      <AppContent />
     </ToastProvider>
   );
 }

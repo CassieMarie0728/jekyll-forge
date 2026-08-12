@@ -206,8 +206,11 @@
 - [x] Prevent OAuth access and refresh tokens from being returned by connected-account API queries
 - [ ] Verify database migrations match the Drizzle schema and identify non-destructive migration gaps
 - [ ] Verify Android offline queues, synchronization conflict behavior, notification configuration, and release packaging prerequisites
-- [ ] Replace placeholder Expo/EAS identifiers and correct Android build, Play submission, and environment-variable documentation
+- [x] Replace placeholder Expo/EAS identifiers and correct Android build, Play submission, and environment-variable documentation
 - [ ] Reconcile the Android authentication flow with the web OAuth contract and secure token-storage model
+- [x] Align mobile token persistence across SecureStore, AsyncStorage, login, logout, and tRPC request headers
+- [x] Add protected Android device-token registration and revocation backed by a durable database table
+- [ ] Configure a real Expo project ID, branded Android assets, Firebase configuration, and Google Play submission credentials
 
 ## Deployment Notes
 - **Cron jobs activate after deployment**: The scheduler infrastructure is fully implemented, but heartbeat cron jobs only activate once the site is published to production (Manus platform requirement)
@@ -392,3 +395,8 @@
 - [x] Improve Features Grid and Descriptions (Redesigned into 3-column layout with hover effects and icons)
 - [ ] Full QA Testing and Link Verification
 - [ ] Final Polish and Deployment Readiness
+- [ ] Wire mobile screens and mutations into the offline queue processor; currently no screen calls `queueAction`, so the queue is infrastructure-only
+- [x] Add a mobile auth/session regression test covering SecureStore token, persisted user, restart restore, and logout cleanup
+
+- [x] Add a protected server-side post-delete procedure with ownership checks before enabling mobile offline delete actions
+

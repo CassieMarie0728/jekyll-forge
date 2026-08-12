@@ -1,10 +1,12 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
+import { TRPCError } from "@trpc/server";
 import {
   getPostsBySiteId,
   getPostById,
   upsertPost,
   updatePost,
+  deletePost,
   autosavePost,
   getFrontMatterTemplates,
 } from "../db";
@@ -71,6 +73,17 @@ export const postsRouter = router({
     .mutation(({ ctx, input }) => {
       const { id, ...data } = input;
       return updatePost(id, ctx.user.id, data);
+    }),
+
+  delete: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const existing = await getPostById(input.id, ctx.user.id);
+      if (!existing) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Post not found" });
+      }
+      await deletePost(input.id, ctx.user.id);
+      return { success: true };
     }),
 
   autosave: protectedProcedure

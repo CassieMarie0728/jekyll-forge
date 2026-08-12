@@ -8,7 +8,6 @@ import {
   ActivityIndicator,
 } from "react-native";
 import * as WebBrowser from "expo-web-browser";
-import * as SecureStore from "expo-secure-store";
 import { useAuthStore } from "../stores/authStore";
 
 WebBrowser.maybeCompleteAuthSession();
@@ -49,9 +48,8 @@ export default function LoginScreen() {
           const data = await response.json();
 
           if (data.token && data.user) {
-            await SecureStore.setItemAsync("authToken", data.token);
-            setToken(data.token);
-            setUser(data.user);
+            await setToken(data.token);
+            await setUser(data.user);
           }
         }
       }
