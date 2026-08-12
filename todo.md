@@ -204,7 +204,7 @@
 - [ ] Audit frontend bundle boundaries, dead routes, unimplemented CTAs, and error/loading/empty states across all web screens
 - [ ] Audit protected API procedures for ownership enforcement, input validation, sensitive token exposure, and social-platform error handling
 - [x] Prevent OAuth access and refresh tokens from being returned by connected-account API queries
-- [ ] Verify database migrations match the Drizzle schema and identify non-destructive migration gaps
+- [x] Verify database migrations match the Drizzle schema and identify non-destructive migration gaps (documented in MIGRATION_AUDIT.md)
 - [ ] Verify Android offline queues, synchronization conflict behavior, notification configuration, and release packaging prerequisites
 - [x] Replace placeholder Expo/EAS identifiers and correct Android build, Play submission, and environment-variable documentation
 - [ ] Reconcile the Android authentication flow with the web OAuth contract and secure token-storage model
