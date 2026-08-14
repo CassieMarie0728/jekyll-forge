@@ -1,6 +1,8 @@
 // Haptic feedback utility
 // Uses expo-haptics when available, gracefully degrades otherwise
 
+import type * as ExpoHaptics from "expo-haptics";
+
 type HapticStyle =
   | "light"
   | "medium"
@@ -11,7 +13,7 @@ type HapticStyle =
   | "selection";
 
 class HapticService {
-  private haptics: any = null;
+  private haptics: typeof ExpoHaptics | null = null;
   private enabled: boolean = true;
 
   async initialize(): Promise<void> {

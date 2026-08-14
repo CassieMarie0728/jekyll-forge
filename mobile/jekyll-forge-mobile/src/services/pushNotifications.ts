@@ -30,17 +30,25 @@ export interface LocalNotification {
   category: keyof NotificationPreferences;
   timestamp: number;
   read: boolean;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
 }
+
+type NotificationApiClient = {
+  notifications: {
+    registerDevice: {
+      mutate: (input: { token: string; platform: "android" }) => Promise<unknown>;
+    };
+  };
+};
 
 class PushNotificationService {
   private pushToken: string | null = null;
   private notificationListeners: ((notification: LocalNotification) => void)[] =
     [];
   private notifications: LocalNotification[] = [];
-  private apiClient: any = null;
+  private apiClient: NotificationApiClient | null = null;
 
-  configureClient(client: unknown) {
+  configureClient(client: NotificationApiClient): void {
     this.apiClient = client;
   }
 
