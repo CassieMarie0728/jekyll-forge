@@ -3,6 +3,7 @@ import { protectedProcedure, router } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
 import {
   getAssetsBySiteId,
+  getAssetById,
   createAsset,
   updateAsset,
   deleteAsset,
@@ -253,16 +254,19 @@ export const assetsRouter = router({
     .input(
       z.object({
         id: z.number(),
-        siteId: z.number(),
-        storageUrl: z.string(),
         maxWidth: z.number().default(1920),
         outputFormat: z.enum(["webp", "jpeg", "png"]).default("webp"),
         quality: z.number().min(1).max(100).default(82),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      // Fetch the current asset from storage
-      const fetchRes = await fetch(input.storageUrl);
+      const asset = await getAssetById(input.id, ctx.user.id);
+      if (!asset?.storageUrl) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Asset not found" });
+      }
+
+      // Fetch only the caller-owned persisted storage URL, never a request-supplied URL.
+      const fetchRes = await fetch(asset.storageUrl);
       if (!fetchRes.ok)
         throw new TRPCError({
           code: "NOT_FOUND",
@@ -278,7 +282,7 @@ export const assetsRouter = router({
         stripMetadata: true,
       });
 
-      const storageKey = `assets/${ctx.user.id}/${input.siteId}/${Date.now()}-optimized.${input.outputFormat}`;
+      const storageKey = `assets/${ctx.user.id}/${asset.siteId}/${Date.now()}-optimized.${input.outputFormat}`;
       const { url } = await storagePut(
         storageKey,
         result.data,

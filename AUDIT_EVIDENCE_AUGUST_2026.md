@@ -35,6 +35,8 @@ The continuing protected-procedure review identified a high-severity A/B testing
 
 The social-path review additionally found that analytics synchronization searched only Twitter and LinkedIn records despite supporting Facebook and Instagram. A centralized supported-platform list now queries all four platforms using the caller ID before locating the requested record. Focused regression coverage proves the complete user-scoped platform set is queried. The full web gate then passed with 22 files, 140 tests, 7 intentional skips, zero lint errors, and clean TypeScript and Drizzle validation.
 
+The asset-path review found that re-optimization trusted a caller-supplied storage URL and fetched it before verifying the asset record. The endpoint now loads the caller-owned asset first and uses only its persisted storage URL and site ID; an unowned or missing asset returns before a network fetch. Focused regression coverage proves both the rejection-before-fetch behavior and persisted-URL use. The full web gate then passed with 23 files, 142 tests, 7 intentional skips, zero lint errors, and clean TypeScript and Drizzle validation.
+
 Unauthenticated navigation to `/dashboard/1` did not expose dashboard content. It redirected to the configured Manus sign-in endpoint with the deployed callback URL. Completing OAuth and entering a user account would require account credentials and user confirmation, so the authenticated repository-picker and dashboard portions remain explicitly unverified in this independent browser pass.
 
 ## API Authorization and Contract Review

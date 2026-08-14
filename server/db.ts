@@ -492,6 +492,17 @@ export async function getAssetsBySiteId(siteId: number, userId: number) {
     .orderBy(desc(assets.createdAt));
 }
 
+export async function getAssetById(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db
+    .select()
+    .from(assets)
+    .where(and(eq(assets.id, id), eq(assets.userId, userId)))
+    .limit(1);
+  return result[0];
+}
+
 export async function createAsset(data: InsertAsset): Promise<number> {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
