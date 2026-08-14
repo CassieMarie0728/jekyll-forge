@@ -219,7 +219,7 @@
 ## Independent Production-Readiness Audit — August 2026
 - [x] Reproduce the complete web test, type-check, lint, build, and migration-validation baseline from a clean audit pass
 - [x] Verify public route navigation, CTA targets, semantic heading order, keyboard reachability, focus visibility, and reduced-motion behavior
-- [ ] Verify authenticated web flows through real OAuth, repository selection, dashboard access, and protected-route denial without authentication
+- [x] Verify authenticated web flows through real OAuth, repository selection, dashboard access, and protected-route denial without authentication
 - [x] Review every protected API procedure for authorization scope, ownership checks, validation, sensitive-data redaction, and platform-specific error handling
 - [x] Compile and inspect the Android app for type health, OAuth contract alignment, SecureStore usage, offline-queue producers, sync conflict handling, and push configuration
 - [x] Identify or remediate reproducible defects, add regression tests, and update the comprehensive audit report with evidence and release blockers
@@ -468,3 +468,6 @@
 - [x] Authenticate the owner with Expo and produce an Android development APK for real-device acceptance testing (EAS build `c3a7de26-8596-4289-a29a-611247018fc6`)
 - [x] Configure the Android development APK with the deployed Jekyll Forge API endpoint instead of localhost
 - [x] Implement user-owned AI provider configuration limited to documented no-cost options, with secure storage, explicit free-model policy, and provider-specific rate limits
+- [ ] Route the deployed owner sign-in acceptance check through the personal browser when the sandbox browser cannot complete Cloudflare verification
+- [x] Retry the personal-browser sign-in handoff after the owner repairs the browser extension
+- [x] Complete owner-assisted read-only verification of authenticated workspace, dashboard, and AI-provider settings navigation
