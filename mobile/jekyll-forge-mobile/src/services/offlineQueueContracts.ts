@@ -54,6 +54,15 @@ export type OfflinePublishQueueData =
   | RepositoryPublishQueueData
   | SocialPublishQueueData;
 
+export type SchedulerCancelQueueData = {
+  id: number;
+};
+
+export type SchedulerRescheduleQueueData = {
+  id: number;
+  scheduledAt: string;
+};
+
 export function isRepositoryPublishQueueData(
   value: unknown
 ): value is RepositoryPublishQueueData {
@@ -79,5 +88,23 @@ export function isSocialPublishQueueData(
     payload.kind === "social-content" &&
     typeof payload.repurposedContentId === "number" &&
     typeof payload.accountId === "number"
+  );
+}
+
+export function isSchedulerCancelQueueData(
+  value: unknown
+): value is SchedulerCancelQueueData {
+  return isPostDeleteInput(value);
+}
+
+export function isSchedulerRescheduleQueueData(
+  value: unknown
+): value is SchedulerRescheduleQueueData {
+  if (!value || typeof value !== "object") return false;
+  const payload = value as { id?: unknown; scheduledAt?: unknown };
+  return (
+    typeof payload.id === "number" &&
+    typeof payload.scheduledAt === "string" &&
+    !Number.isNaN(new Date(payload.scheduledAt).getTime())
   );
 }

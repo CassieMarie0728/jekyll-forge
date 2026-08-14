@@ -13,6 +13,8 @@ import {
   isPostUpdateInput,
   isPostUpsertInput,
   isRepositoryPublishQueueData,
+  isSchedulerCancelQueueData,
+  isSchedulerRescheduleQueueData,
   isSocialPublishQueueData,
 } from "./services/offlineQueueContracts";
 
@@ -84,6 +86,21 @@ function AppContent() {
           throw new Error("Offline delete payload is invalid.");
         }
         await trpcClient.posts.delete.mutate(item.data);
+        return;
+      case "scheduler-cancel":
+        if (!isSchedulerCancelQueueData(item.data)) {
+          throw new Error("Offline scheduler cancellation payload is invalid.");
+        }
+        await trpcClient.scheduler.cancel.mutate(item.data);
+        return;
+      case "scheduler-reschedule":
+        if (!isSchedulerRescheduleQueueData(item.data)) {
+          throw new Error("Offline scheduler reschedule payload is invalid.");
+        }
+        await trpcClient.scheduler.reschedule.mutate({
+          id: item.data.id,
+          scheduledAt: new Date(item.data.scheduledAt),
+        });
         return;
       default:
         throw new Error(`Unsupported offline action: ${String(item.action)}`);

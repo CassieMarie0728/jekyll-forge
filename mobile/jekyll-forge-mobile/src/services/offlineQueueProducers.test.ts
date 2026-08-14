@@ -6,6 +6,8 @@ import { syncService } from "./syncService";
 import {
   enqueuePostStatusUpdate,
   enqueueRepositoryPublish,
+  enqueueSchedulerCancel,
+  enqueueSchedulerReschedule,
   enqueueSocialPublish,
 } from "./offlineQueueProducers";
 
@@ -47,6 +49,22 @@ describe("offline queue producers", () => {
       2,
       "update",
       updatePayload
+    );
+  });
+
+  it("queues scheduler cancellation and serializes a reschedule time for persistence", async () => {
+    const scheduledAt = new Date("2026-09-01T12:00:00.000Z");
+    await enqueueSchedulerCancel(14);
+    await enqueueSchedulerReschedule(14, scheduledAt);
+    expect(syncService.queueAction).toHaveBeenNthCalledWith(
+      1,
+      "scheduler-cancel",
+      { id: 14 }
+    );
+    expect(syncService.queueAction).toHaveBeenNthCalledWith(
+      2,
+      "scheduler-reschedule",
+      { id: 14, scheduledAt: "2026-09-01T12:00:00.000Z" }
     );
   });
 });

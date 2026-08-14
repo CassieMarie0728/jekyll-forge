@@ -31,8 +31,8 @@ The Android companion is **not release-ready**. The native sign-in contract has 
 | Production web/server build | **Pass** | `pnpm build`; Google-Fonts CSS-order warning removed |
 | Migration consistency | **Pass** | `pnpm exec drizzle-kit check` reported “Everything's fine” |
 | Mobile TypeScript | **Pass** | `pnpm exec tsc --noEmit` in `mobile/jekyll-forge-mobile` |
-| Mobile Jest | **Pass** | 5 files and 12 tests passed |
-| Mobile lint | **Pass with 42 warnings, 0 errors** | Local ESLint flat config now resolves correctly; safe screen-level route typing and dead-code cleanup reduced the baseline by 18 warnings during this remediation pass |
+| Mobile Jest | **Pass** | 5 files and 13 tests passed |
+| Mobile lint | **Pass with 40 warnings, 0 errors** | Local ESLint flat config now resolves correctly; safe screen-level route typing and dead-code cleanup reduced the baseline by 20 warnings during this remediation pass |
 | Expo Doctor | **15/16 checks passed** | SDK dependency alignment and required peers are resolved; only missing branded image files prevent a clean schema check |
 | Expo/Firebase identity | **Pass** | Resolved Expo config, EAS project ID, update URL, and Firebase package all match `com.cassandracrossno.jekyllforge` |
 | Deployed public landing | **Pass with scope limit** | Landing loaded; public controls and workflow anchor inspected |
@@ -65,8 +65,8 @@ The Android companion is **not release-ready**. The native sign-in contract has 
 | Priority | Finding | Evidence | Required next action |
 |---|---|---|---|
 | P1 | **A real-device mobile sign-in acceptance run is still required.** The exported Expo scheme is `jekyllforge`, and code-level callback/ticket tests pass, but no user-controlled Android/identity-provider run was performed. | `app.json`; mobile auth regression suite | Run sign-in on an Android device or emulator against the deployed app before release. |
-| P1 | **Real-device offline recovery acceptance is still required.** Code now queues repository publishing, social publishing, and post-status updates; no Android network-loss/reconnect run has been completed. | `EditorScreen.tsx`; `SocialPublishScreen.tsx`; `PublishScreen.tsx`; offline queue tests | On a device or emulator, disconnect the network during each mutation, restore it, and confirm each queued item completes or remains visible with recovery details. |
-| P1 | **Mobile type/lint debt remains.** Lint completes but reports 42 warnings, chiefly legacy `any` boundaries and unused values. | Final mobile lint run | Continue removing legacy unused code and typing storage/navigation edges, then raise relevant warnings to errors. |
+| P1 | **Real-device offline recovery acceptance is still required.** Code now queues repository publishing, social publishing, post-status updates, and scheduler cancel/reschedule actions; no Android network-loss/reconnect run has been completed. | `EditorScreen.tsx`; `SocialPublishScreen.tsx`; `PublishScreen.tsx`; `ScheduledPostsScreen.tsx`; offline queue tests | On a device or emulator, disconnect the network during each mutation, restore it, and confirm each queued item completes or remains visible with recovery details. |
+| P1 | **Mobile type/lint debt remains.** Lint completes but reports 40 warnings, chiefly legacy `any` boundaries and unused values. | Final mobile lint run | Continue removing legacy unused code and typing storage/navigation edges, then raise relevant warnings to errors. |
 
 ### Android Distribution Blockers
 

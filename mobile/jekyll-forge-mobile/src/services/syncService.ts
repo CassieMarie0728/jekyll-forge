@@ -128,7 +128,13 @@ class SyncService {
   }
 
   async queueAction(
-    action: "create" | "update" | "delete" | "publish",
+    action:
+      | "create"
+      | "update"
+      | "delete"
+      | "publish"
+      | "scheduler-cancel"
+      | "scheduler-reschedule",
     data: unknown
   ) {
     const item = {

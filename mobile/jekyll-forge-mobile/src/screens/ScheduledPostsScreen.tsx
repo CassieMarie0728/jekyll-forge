@@ -11,6 +11,10 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { trpc } from "../utils/trpc";
+import {
+  enqueueSchedulerCancel,
+  enqueueSchedulerReschedule,
+} from "../services/offlineQueueProducers";
 
 interface ScheduledPost {
   id: number;
@@ -69,8 +73,14 @@ export default function ScheduledPostsScreen({ route, navigation }: any) {
             await cancelScheduleMutation.mutateAsync({ id: post.id });
             await scheduledPostsQuery.refetch();
             Alert.alert("Success", "Schedule cancelled");
-          } catch (error: any) {
-            Alert.alert("Error", error.message || "Failed to cancel schedule");
+          } catch (error: unknown) {
+            await enqueueSchedulerCancel(post.id);
+            Alert.alert(
+              "Cancellation queued",
+              error instanceof Error
+                ? `${error.message} The cancellation will retry when online.`
+                : "The cancellation will retry when online."
+            );
           }
         },
         style: "destructive",
@@ -88,9 +98,9 @@ export default function ScheduledPostsScreen({ route, navigation }: any) {
           text: "Reschedule",
           onPress: async newDate => {
             if (!newDate) return;
+            const scheduledAt = new Date(newDate);
 
             try {
-              const scheduledAt = new Date(newDate);
               if (Number.isNaN(scheduledAt.getTime())) {
                 Alert.alert("Error", "Enter a valid future date and time.");
                 return;
@@ -101,8 +111,14 @@ export default function ScheduledPostsScreen({ route, navigation }: any) {
               });
               await scheduledPostsQuery.refetch();
               Alert.alert("Success", "Post rescheduled");
-            } catch (error: any) {
-              Alert.alert("Error", error.message || "Failed to reschedule");
+            } catch (error: unknown) {
+              await enqueueSchedulerReschedule(post.id, scheduledAt);
+              Alert.alert(
+                "Reschedule queued",
+                error instanceof Error
+                  ? `${error.message} The update will retry when online.`
+                  : "The update will retry when online."
+              );
             }
           },
         },

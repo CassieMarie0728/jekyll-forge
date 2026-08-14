@@ -12,7 +12,13 @@ interface StoredDraft {
 
 export interface SyncQueue {
   id: string;
-  action: "create" | "update" | "delete" | "publish";
+  action:
+    | "create"
+    | "update"
+    | "delete"
+    | "publish"
+    | "scheduler-cancel"
+    | "scheduler-reschedule";
   data: unknown;
   timestamp: number;
   retries: number;

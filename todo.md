@@ -239,7 +239,7 @@
 - [x] Accept validated mobile bearer session tokens in server authentication while retaining existing cookie authentication
 - [x] Verify the Android deep-link registration matches `jekyllforge://auth-callback` and add end-to-end auth-store persistence coverage
 - [x] Route Android tRPC headers through SecureStore instead of the stale AsyncStorage token location
-- [ ] Extend offline queue producers to the remaining mobile mutation flows beyond editor, social publication, and post-status updates; add end-to-end replay coverage for every supported queue action
+- [ ] Extend offline queue producers to the remaining mobile mutation flows beyond editor, social publication, post-status updates, and scheduler changes; add end-to-end replay coverage for every supported queue action
 - [ ] Complete the remaining Android release inputs: branded assets and Play submission credentials (package, Expo ID, and Firebase are configured)
 - [x] Align Android post hooks and screen mutations with the server's actual `posts.get`, `posts.upsert`, `posts.update`, and `posts.delete` contract
 - [x] Replace the temporary `any` mobile tRPC adapter with a shared `AppRouter` type contract and compile every mobile procedure use against it
