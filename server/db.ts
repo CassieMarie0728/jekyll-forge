@@ -1016,17 +1016,24 @@ export async function createContentVariation(
   });
 }
 
-export async function getContentVariations(postId: number) {
+export async function getContentVariations(postId: number, userId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   return db
     .select()
     .from(contentVariations)
-    .where(eq(contentVariations.postId, postId));
+    .where(
+      and(
+        eq(contentVariations.postId, postId),
+        eq(contentVariations.userId, userId)
+      )
+    );
 }
 
 export async function updateVariationStatus(
-  variationId: number,
+  postId: number,
+  userId: number,
+  variationIndex: number,
   status: "draft" | "published" | "archived"
 ) {
   const db = await getDb();
@@ -1034,7 +1041,13 @@ export async function updateVariationStatus(
   return db
     .update(contentVariations)
     .set({ status, updatedAt: new Date() })
-    .where(eq(contentVariations.id, variationId));
+    .where(
+      and(
+        eq(contentVariations.postId, postId),
+        eq(contentVariations.userId, userId),
+        eq(contentVariations.variationIndex, variationIndex)
+      )
+    );
 }
 
 export async function createAbTestResult(
@@ -1058,6 +1071,7 @@ export async function createAbTestResult(
 
 export async function updateAbTestMetrics(
   testResultId: number,
+  userId: number,
   metrics: {
     impressions?: number;
     engagements?: number;
@@ -1081,16 +1095,20 @@ export async function updateAbTestMetrics(
       engagementRate: engagementRate.toString() as any,
       updatedAt: new Date(),
     })
-    .where(eq(abTestResults.id, testResultId));
+    .where(
+      and(eq(abTestResults.id, testResultId), eq(abTestResults.userId, userId))
+    );
 }
 
-export async function getAbTestResults(postId: number) {
+export async function getAbTestResults(postId: number, userId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   return db
     .select()
     .from(abTestResults)
-    .where(eq(abTestResults.postId, postId));
+    .where(
+      and(eq(abTestResults.postId, postId), eq(abTestResults.userId, userId))
+    );
 }
 
 export async function createAbTestSummary(
@@ -1112,6 +1130,7 @@ export async function createAbTestSummary(
 
 export async function updateAbTestSummary(
   summaryId: number,
+  userId: number,
   winningVariationIndex: number,
   winningMetric: string,
   insights: Record<string, unknown>
@@ -1127,15 +1146,19 @@ export async function updateAbTestSummary(
       status: "completed",
       updatedAt: new Date(),
     })
-    .where(eq(abTestSummary.id, summaryId));
+    .where(
+      and(eq(abTestSummary.id, summaryId), eq(abTestSummary.userId, userId))
+    );
 }
 
-export async function getAbTestSummary(postId: number) {
+export async function getAbTestSummary(postId: number, userId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   return db
     .select()
     .from(abTestSummary)
-    .where(eq(abTestSummary.postId, postId))
+    .where(
+      and(eq(abTestSummary.postId, postId), eq(abTestSummary.userId, userId))
+    )
     .limit(1);
 }

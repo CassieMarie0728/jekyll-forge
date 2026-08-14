@@ -31,6 +31,8 @@ On 14 August 2026, the current deployed landing page hydrated successfully after
 
 The live QA pass also identified and removed the remaining unsupported instant-result and optimization wording from the workflow section. The public copy now describes the supported GitHub connection flow, platform-specific content formatting, and user-chosen scheduling time without promising immediate connection, optimal timing, or performance impact. The focused landing regression test and TypeScript check passed after the revision.
 
+The continuing protected-procedure review identified a high-severity A/B testing ownership gap: its procedures accepted a post ID while querying or mutating variation, result, and summary records through helpers that only filtered by post or row ID. The remediation now checks the caller-owned post before every A/B operation, adds `userId` to A/B helper predicates, and scopes variation-status updates by post, user, and variation index. The added ownership regression test rejects an unowned post and proves owned reads receive the caller ID. The full web gate passed afterward with 21 files, 139 tests, 7 intentional skips, zero lint errors, and clean TypeScript and Drizzle validation.
+
 Unauthenticated navigation to `/dashboard/1` did not expose dashboard content. It redirected to the configured Manus sign-in endpoint with the deployed callback URL. Completing OAuth and entering a user account would require account credentials and user confirmation, so the authenticated repository-picker and dashboard portions remain explicitly unverified in this independent browser pass.
 
 ## API Authorization and Contract Review

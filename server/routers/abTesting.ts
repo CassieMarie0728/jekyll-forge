@@ -16,12 +16,21 @@ import {
   createAbTestSummary,
   updateAbTestSummary,
   getAbTestSummary,
+  getPostById,
 } from "../db";
 import {
   generatePostVariations,
   determineWinner,
   VariationOptions,
 } from "../variationGenerator";
+
+async function requireOwnedPost(postId: number, userId: number) {
+  const post = await getPostById(postId, userId);
+  if (!post) {
+    throw new TRPCError({ code: "NOT_FOUND", message: "Post not found" });
+  }
+  return post;
+}
 
 export const abTestingRouter = router({
   /**
@@ -40,6 +49,7 @@ export const abTestingRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       try {
+        await requireOwnedPost(input.postId, ctx.user.id);
         const options: VariationOptions = {
           count: input.count || 3,
           tones: input.tones,
@@ -82,6 +92,7 @@ export const abTestingRouter = router({
           message: `Generated ${variations.length} variations for testing`,
         };
       } catch (error) {
+        if (error instanceof TRPCError) throw error;
         console.error("[abTesting.generateVariations] Error:", error);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -97,9 +108,14 @@ export const abTestingRouter = router({
     .input(z.object({ postId: z.number() }))
     .query(async ({ ctx, input }) => {
       try {
-        const variations = await getContentVariations(input.postId);
+        await requireOwnedPost(input.postId, ctx.user.id);
+        const variations = await getContentVariations(
+          input.postId,
+          ctx.user.id
+        );
         return variations || [];
       } catch (error) {
+        if (error instanceof TRPCError) throw error;
         console.error("[abTesting.getVariations] Error:", error);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -130,6 +146,7 @@ export const abTestingRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       try {
+        await requireOwnedPost(input.postId, ctx.user.id);
         const results = [];
 
         for (const platform of input.platforms) {
@@ -149,7 +166,12 @@ export const abTestingRouter = router({
         }
 
         // Update variation status to published
-        await updateVariationStatus(input.variationIndex, "published");
+        await updateVariationStatus(
+          input.postId,
+          ctx.user.id,
+          input.variationIndex,
+          "published"
+        );
 
         return {
           success: true,
@@ -157,6 +179,7 @@ export const abTestingRouter = router({
           message: `Published variation to ${input.platforms.length} platform(s)`,
         };
       } catch (error) {
+        if (error instanceof TRPCError) throw error;
         console.error("[abTesting.publishVariation] Error:", error);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -186,7 +209,8 @@ export const abTestingRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       try {
-        const results = await getAbTestResults(input.postId);
+        await requireOwnedPost(input.postId, ctx.user.id);
+        const results = await getAbTestResults(input.postId, ctx.user.id);
         const testResult = results.find(
           r =>
             r.variationIndex === input.variationIndex &&
@@ -200,13 +224,14 @@ export const abTestingRouter = router({
           });
         }
 
-        await updateAbTestMetrics(testResult.id, input.metrics);
+        await updateAbTestMetrics(testResult.id, ctx.user.id, input.metrics);
 
         return {
           success: true,
           message: "Metrics updated successfully",
         };
       } catch (error) {
+        if (error instanceof TRPCError) throw error;
         console.error("[abTesting.updateMetrics] Error:", error);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -222,8 +247,9 @@ export const abTestingRouter = router({
     .input(z.object({ postId: z.number() }))
     .query(async ({ ctx, input }) => {
       try {
-        const results = await getAbTestResults(input.postId);
-        const summary = await getAbTestSummary(input.postId);
+        await requireOwnedPost(input.postId, ctx.user.id);
+        const results = await getAbTestResults(input.postId, ctx.user.id);
+        const summary = await getAbTestSummary(input.postId, ctx.user.id);
 
         // Format results for frontend
         const formattedResults = (results || []).map(r => ({
@@ -236,6 +262,7 @@ export const abTestingRouter = router({
           summary: summary?.[0] || null,
         };
       } catch (error) {
+        if (error instanceof TRPCError) throw error;
         console.error("[abTesting.getResults] Error:", error);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -251,8 +278,9 @@ export const abTestingRouter = router({
     .input(z.object({ postId: z.number() }))
     .mutation(async ({ ctx, input }) => {
       try {
-        const results = await getAbTestResults(input.postId);
-        const summary = await getAbTestSummary(input.postId);
+        await requireOwnedPost(input.postId, ctx.user.id);
+        const results = await getAbTestResults(input.postId, ctx.user.id);
+        const summary = await getAbTestSummary(input.postId, ctx.user.id);
 
         if (!summary || summary.length === 0) {
           throw new TRPCError({
@@ -291,6 +319,7 @@ export const abTestingRouter = router({
         // Update summary with winner
         await updateAbTestSummary(
           summary[0].id,
+          ctx.user.id,
           winningVariationIndex,
           winningMetric,
           insights
@@ -303,6 +332,7 @@ export const abTestingRouter = router({
           message: `Test completed. Variation ${winningVariationIndex} is the winner!`,
         };
       } catch (error) {
+        if (error instanceof TRPCError) throw error;
         console.error("[abTesting.completeTest] Error:", error);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -323,7 +353,11 @@ export const abTestingRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       try {
-        const variations = await getContentVariations(input.postId);
+        await requireOwnedPost(input.postId, ctx.user.id);
+        const variations = await getContentVariations(
+          input.postId,
+          ctx.user.id
+        );
         const winner = variations.find(
           v => v.variationIndex === input.winningVariationIndex
         );
@@ -337,7 +371,12 @@ export const abTestingRouter = router({
 
         // In a real implementation, this would update the original post
         // For now, we'll just mark it as archived and return the winner data
-        await updateVariationStatus(input.winningVariationIndex, "published");
+        await updateVariationStatus(
+          input.postId,
+          ctx.user.id,
+          input.winningVariationIndex,
+          "published"
+        );
 
         return {
           success: true,
@@ -350,6 +389,7 @@ export const abTestingRouter = router({
           message: "Winning variation applied successfully",
         };
       } catch (error) {
+        if (error instanceof TRPCError) throw error;
         console.error("[abTesting.applyWinner] Error:", error);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
