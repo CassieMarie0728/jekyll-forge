@@ -207,6 +207,9 @@
 - [x] Verify database migrations match the Drizzle schema and identify non-destructive migration gaps (documented in MIGRATION_AUDIT.md)
 - [ ] Verify Android offline queues, synchronization conflict behavior, notification configuration, and release packaging prerequisites
 - [ ] Replace placeholder Expo/EAS identifiers and complete Android build, Play submission, and environment-variable configuration
+- [x] Apply the supplied Expo project ID and Firebase Android configuration for `com.cassandracrossno.jekyllforge`, then validate the resolved Expo configuration
+- [x] Resolve Expo Doctor's missing peer dependencies and SDK-version alignment
+- [ ] Add the user-supplied branded assets to clear Expo config validation
 - [ ] Reconcile the Android authentication flow with the web OAuth contract and secure token-storage model
 - [x] Align mobile token persistence across SecureStore, AsyncStorage, login, logout, and tRPC request headers
 - [x] Add protected Android device-token registration and revocation backed by a durable database table
@@ -237,7 +240,7 @@
 - [ ] Verify the Android deep-link registration matches `jekyllforge://auth-callback` and add end-to-end auth-store persistence coverage
 - [x] Route Android tRPC headers through SecureStore instead of the stale AsyncStorage token location
 - [ ] Integrate offline queue producers into mobile mutation screens and retain failed operations for recovery rather than deleting them after retries
-- [ ] Replace placeholder Expo project identifiers and supply real branded assets, Firebase `google-services.json`, and Play submission credentials before Android release
+- [ ] Complete the remaining Android release inputs: branded assets and Play submission credentials (package, Expo ID, and Firebase are configured)
 - [ ] Align Android post hooks and screen mutations with the server's actual `posts.get`, `posts.upsert`, `posts.update`, and `posts.delete` contract
 - [ ] Replace the Android editor's simulated publish success path with an authenticated server mutation and offline-safe persistence behavior
 

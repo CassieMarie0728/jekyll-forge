@@ -17,7 +17,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0f172a"
       },
-      "package": "com.jekyllforge.app",
+      "package": "com.cassandracrossno.jekyllforge",
       "versionCode": 1,
       "permissions": [
         "CAMERA",
@@ -50,11 +50,11 @@
     "scheme": "jekyllforge",
     "extra": {
       "eas": {
-        "projectId": "your-project-id"
+        "projectId": "1921924b-7b89-4e88-92f5-0df9717315e9"
       }
     },
     "updates": {
-      "url": "https://u.expo.dev/your-project-id"
+      "url": "https://u.expo.dev/1921924b-7b89-4e88-92f5-0df9717315e9"
     },
     "runtimeVersion": {
       "policy": "appVersion"

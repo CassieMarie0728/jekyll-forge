@@ -9,7 +9,7 @@
 
 The web platform is in a substantially stronger state following this independent pass. Public navigation, the protected-route boundary, metadata and reduced-motion behavior, authorization checks, social-token redaction, scheduler ownership controls, migration parity, and the production build were independently examined. The web test suite now completes deterministically with **120 passing tests and 7 intentional skips**, and TypeScript, production build, and Drizzle migration validation all pass.
 
-The Android companion is **not release-ready**. The native sign-in contract has now been remediated in source: it starts server-backed OAuth, receives a short-lived one-time deep-link ticket, exchanges that ticket through tRPC, and stores the resulting session in SecureStore. The implementation is covered by server and store-level tests, but it still requires a real-device acceptance run through the external identity provider. Several screens retain simulated or mismatched mutation behavior, so full feature parity and real offline-first operation are not yet present. Android publishing is additionally blocked by missing release assets, Firebase configuration, and the user-owned Expo/EAS and Google Play credentials that cannot be safely invented.
+The Android companion is **not release-ready**. The native sign-in contract has now been remediated in source: it starts server-backed OAuth, receives a short-lived one-time deep-link ticket, exchanges that ticket through tRPC, and stores the resulting session in SecureStore. The implementation is covered by server and store-level tests, but it still requires a real-device acceptance run through the external identity provider. Several screens retain simulated or mismatched mutation behavior, so full feature parity and real offline-first operation are not yet present. The owner has now supplied a real Expo project ID and Firebase Android configuration for `com.cassandracrossno.jekyllforge`; remaining distribution blockers are the approved Android artwork and future Google Play credentials.
 
 > **Release conclusion:** The web application is suitable for continued deployed use subject to normal authenticated-flow testing with a real account. The Android app should remain in internal development until the blocking mobile authentication, API-contract, producer, and release-configuration items are completed.
 
@@ -33,6 +33,8 @@ The Android companion is **not release-ready**. The native sign-in contract has 
 | Mobile TypeScript | **Pass** | `pnpm exec tsc --noEmit` in `mobile/jekyll-forge-mobile` |
 | Mobile Jest | **Pass** | 2 files and 3 tests passed |
 | Mobile lint | **Pass with 60 warnings, 0 errors** | Local ESLint flat config now resolves correctly |
+| Expo Doctor | **15/16 checks passed** | SDK dependency alignment and required peers are resolved; only missing branded image files prevent a clean schema check |
+| Expo/Firebase identity | **Pass** | Resolved Expo config, EAS project ID, update URL, and Firebase package all match `com.cassandracrossno.jekyllforge` |
 | Deployed public landing | **Pass with scope limit** | Landing loaded; public controls and workflow anchor inspected |
 | Protected web route without session | **Pass** | `/dashboard/1` redirected to configured sign-in; dashboard content was not exposed |
 
@@ -70,9 +72,10 @@ The Android companion is **not release-ready**. The native sign-in contract has 
 
 | Priority | Finding | Evidence | Required owner input |
 |---|---|---|---|
-| P0 | Expo identifiers are placeholders. | `app.json` contains `your-project-id` in EAS and updates settings. | Real Expo/EAS project ID and configured update URL. |
-| P0 | Referenced Android assets do not exist. | `assets/icon.png`, `splash.png`, `adaptive-icon.png`, and `notification-icon.png` were all missing. | Approved branded asset set. |
-| P0 | Firebase / Play artifacts are absent. | `google-services.json` is missing; EAS submit refers to it. | Firebase Android configuration and Google Play service-account credentials. |
+| Resolved | Expo project identity is configured. | `app.json` now contains EAS project ID `1921924b-7b89-4e88-92f5-0df9717315e9` and its matching Expo Updates URL. | None. |
+| P0 | Referenced Android assets do not exist. | Expo Doctor confirms `assets/icon.png`, `splash.png`, and `adaptive-icon.png` are still unavailable; the notification asset is also pending. | Approved branded asset set. |
+| Resolved | Firebase Android configuration is present and package-aligned. | Supplied `google-services.json` is installed with package name `com.cassandracrossno.jekyllforge`. | None for Firebase configuration. |
+| P1 | Google Play submission credentials are unavailable. | Owner is deferring Play Console enrollment and service-account creation. | Create the Play Console account when ready, link its Cloud project, and upload the service-account key securely. |
 
 ### Web Follow-up Items
 
@@ -93,7 +96,7 @@ The audit did not fabricate third-party account credentials, Firebase files, pub
 
 1. Establish the mobile OAuth/deep-link session contract and replace the temporary mobile `any` tRPC boundary with generated shared types.
 2. Make the mobile editor and post hooks invoke the aligned API contract, then add concrete offline queue producers and conflict/recovery UX.
-3. Obtain and configure the real Expo project, Android branding, Firebase file, and Google Play credentials.
+3. Add the approved Android branding, then create Google Play credentials when enrollment is available.
 4. Execute a consented, authenticated end-to-end web acceptance run using a real GitHub-connected account.
 5. Reduce mobile lint warnings and high-cost optional web bundles before a broader public/mobile launch.
 

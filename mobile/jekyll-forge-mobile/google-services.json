@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "374940227545",
+    "project_id": "jekyll-forge",
+    "storage_bucket": "jekyll-forge.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:374940227545:android:f07be31fd19ff20143abc8",
+        "android_client_info": {
+          "package_name": "com.cassandracrossno.jekyllforge"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCzGaKydrJhhIcPhOcJOztUMZ5UWFBdK2Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
