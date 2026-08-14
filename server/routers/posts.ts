@@ -3,6 +3,7 @@ import { protectedProcedure, router } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
 import {
   getPostsBySiteId,
+  getSiteById,
   getPostById,
   upsertPost,
   updatePost,
@@ -44,9 +45,13 @@ export const postsRouter = router({
         scheduledAt: z.date().optional(),
       })
     )
-    .mutation(({ ctx, input }) =>
-      upsertPost({ ...input, userId: ctx.user.id })
-    ),
+    .mutation(async ({ ctx, input }) => {
+      const site = await getSiteById(input.siteId, ctx.user.id);
+      if (!site) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Site not found" });
+      }
+      return upsertPost({ ...input, userId: ctx.user.id });
+    }),
 
   update: protectedProcedure
     .input(

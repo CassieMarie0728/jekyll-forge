@@ -45,6 +45,8 @@ The repurposing-path review found that generation and regeneration accepted call
 
 The scheduler-path review found that scheduling validated the site but not the optional post-to-site relationship. Scheduling now resolves an optional post under the caller identity and requires it to belong to the validated site before it creates a schedule row or heartbeat job. The scheduler regression suite proves a cross-site post is rejected before schedule creation. The full web gate then passed with 25 files, 149 tests, 7 intentional skips, zero lint errors, and clean TypeScript and Drizzle validation.
 
+The post-router review found that upsert accepted a site ID without proving the caller owned the referenced site. Upsert now resolves the site under the caller identity before it persists a post. Focused tests prove an unowned site is rejected and a caller-owned site is persisted with the correct user scope. The full web gate then passed with 26 files, 151 tests, 7 intentional skips, zero lint errors, and clean TypeScript and Drizzle validation.
+
 Unauthenticated navigation to `/dashboard/1` did not expose dashboard content. It redirected to the configured Manus sign-in endpoint with the deployed callback URL. Completing OAuth and entering a user account would require account credentials and user confirmation, so the authenticated repository-picker and dashboard portions remain explicitly unverified in this independent browser pass.
 
 ## API Authorization and Contract Review
