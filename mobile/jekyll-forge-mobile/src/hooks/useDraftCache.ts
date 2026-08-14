@@ -1,15 +1,22 @@
 import { useEffect, useRef, useState } from "react";
 import { offlineStorage } from "../services/offlineStorage";
+import type { StoredDraft } from "../services/offlineStorage";
+
+export interface DraftCacheContent {
+  title?: string;
+  content?: string;
+  frontMatter?: Record<string, unknown>;
+}
 
 interface DraftCacheOptions {
   autoSaveInterval?: number; // milliseconds
-  onSave?: (draft: any) => void;
+  onSave?: (draft: StoredDraft) => void;
   onError?: (error: Error) => void;
 }
 
 export function useDraftCache(
   postId: string,
-  initialContent: any,
+  initialContent: DraftCacheContent,
   options: DraftCacheOptions = {}
 ) {
   const { autoSaveInterval = 2000, onSave, onError } = options;

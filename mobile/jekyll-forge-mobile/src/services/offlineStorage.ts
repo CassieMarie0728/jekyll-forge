@@ -1,11 +1,11 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-interface StoredDraft {
+export interface StoredDraft {
   id: string;
   siteId: string;
   title: string;
   content: string;
-  frontMatter: Record<string, any>;
+  frontMatter: Record<string, unknown>;
   lastModified: number;
   status: "draft" | "pending_sync" | "synced";
 }

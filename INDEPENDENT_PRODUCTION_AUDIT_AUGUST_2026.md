@@ -32,7 +32,7 @@ The Android companion is **not release-ready**. The native sign-in contract has 
 | Migration consistency | **Pass** | `pnpm exec drizzle-kit check` reported “Everything's fine” |
 | Mobile TypeScript | **Pass** | `pnpm exec tsc --noEmit` in `mobile/jekyll-forge-mobile` |
 | Mobile Jest | **Pass** | 6 files and 18 tests passed |
-| Mobile lint | **Pass with 27 warnings, 0 errors** | Local ESLint flat config now resolves correctly; safe screen-level route typing, unused-prop cleanup, image-picker typing, and explicit haptics/notification service contracts reduced the baseline by 33 warnings during this remediation pass |
+| Mobile lint | **Pass with 24 warnings, 0 errors** | Local ESLint flat config now resolves correctly; safe screen-level route typing, unused-prop cleanup, image-picker typing, explicit haptics/notification contracts, and draft-cache/storage typing reduced the baseline by 36 warnings during this remediation pass |
 | Resolved Expo configuration | **Pass** | `pnpm exec expo config --json --type public` resolves the Expo configuration with all four Android asset paths present |
 | Expo/Firebase identity | **Pass** | Resolved Expo config, EAS project ID, update URL, and Firebase package all match `com.cassandracrossno.jekyllforge` |
 | Deployed public landing | **Pass with scope limit** | Landing loaded; public controls and workflow anchor inspected |
@@ -67,7 +67,7 @@ The Android companion is **not release-ready**. The native sign-in contract has 
 |---|---|---|---|
 | P1 | **A real-device mobile sign-in acceptance run is still required.** The exported Expo scheme is `jekyllforge`, and code-level callback/ticket tests pass, but no user-controlled Android/identity-provider run was performed. | `app.json`; mobile auth regression suite | Run sign-in on an Android device or emulator against the deployed app before release. |
 | P1 | **Real-device offline recovery acceptance is still required.** Code now queues repository publishing, social publishing, post-status updates, scheduler cancel/reschedule actions, social disconnects, and A/B variation publishing; the replay dispatcher is unit-tested for every supported action, but no Android network-loss/reconnect run has been completed. | Mobile editor, social, scheduler, A/B, offline queue, and replay-dispatcher source/tests | On a device or emulator, disconnect the network during each supported mutation, restore it, and confirm each queued item completes or remains visible with recovery details. |
-| P1 | **Mobile type/lint debt remains.** Lint completes but reports 27 warnings, chiefly legacy `any` boundaries and unused values. | Final mobile lint run | Continue removing legacy unused code and typing storage/navigation edges, then raise relevant warnings to errors. |
+| P1 | **Mobile type/lint debt remains.** Lint completes but reports 24 warnings, chiefly legacy `any` boundaries and unused values. | Final mobile lint run | Continue removing legacy unused code and typing storage/navigation edges, then raise relevant warnings to errors. |
 
 ### Android Distribution Blockers
 
