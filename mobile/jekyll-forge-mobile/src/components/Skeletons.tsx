@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Animated, View, StyleSheet } from "react-native";
+import type { DimensionValue } from "react-native";
 
 // Shimmer animation for loading states
 function ShimmerEffect({
@@ -7,7 +8,7 @@ function ShimmerEffect({
   height,
   borderRadius = 8,
 }: {
-  width: number | string;
+  width: DimensionValue;
   height: number;
   borderRadius?: number;
 }) {
@@ -34,7 +35,7 @@ function ShimmerEffect({
     <View
       style={[
         styles.shimmerContainer,
-        { width: width as any, height, borderRadius },
+        { width, height, borderRadius },
       ]}
     >
       <Animated.View

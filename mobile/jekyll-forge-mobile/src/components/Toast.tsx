@@ -233,7 +233,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     <ToastContext.Provider value={{ showToast, success, error, warning, info }}>
       {children}
       <View style={styles.container} pointerEvents="box-none">
-        {toasts.map((toast, index) => (
+        {toasts.map(toast => (
           <ToastItem key={toast.id} toast={toast} onDismiss={dismissToast} />
         ))}
       </View>

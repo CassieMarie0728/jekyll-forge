@@ -15,7 +15,6 @@ import {
 import { enqueueSocialDisconnect } from "../services/offlineQueueProducers";
 
 interface Props {
-  onAccountConnected?: () => void;
   onAccountDisconnected?: () => void;
 }
 
@@ -34,7 +33,6 @@ const platformNames: Record<string, string> = {
 };
 
 export default function SocialAccountManager({
-  onAccountConnected,
   onAccountDisconnected,
 }: Props) {
   const { data: accounts, isLoading, refetch } = useConnectedAccounts();
