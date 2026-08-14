@@ -428,7 +428,7 @@
 - [x] Enhance Hero Section and Copy with accountable Jekyll workflow, GitHub, social, and Android release-validation messaging
 - [x] Add Trust Signals and Social Proof (Trust badges banner for GitHub Pages, Jekyll, Android, and Social)
 - [x] Improve Features Grid and Descriptions (Redesigned into 3-column layout with hover effects and icons)
-- [ ] Full QA Testing and Link Verification
+- [x] Full QA Testing and Link Verification
 - [ ] Final Polish and Deployment Readiness
 - [x] Wire mobile screens and mutations into the offline queue processor; typed repository publishing, social publishing, and post-status producers now queue retryable failures
 - [x] Add regression tests that prove the editor, social-publishing, and post-status offline producers enqueue their typed payloads; replay success/failure is covered at the queue processor level
