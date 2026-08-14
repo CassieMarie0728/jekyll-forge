@@ -71,8 +71,6 @@ const SERVER_TASKS: Record<string, string> = {
 type AIAssistantScreenProps = {
   route: {
     params?: {
-      siteId?: number;
-      postId?: number;
       currentContent?: string;
     };
   };
@@ -91,7 +89,7 @@ export default function AIAssistantScreen({
   route,
   navigation,
 }: AIAssistantScreenProps) {
-  const { siteId, postId, currentContent } = route.params || {};
+  const { currentContent } = route.params || {};
   const [selectedTask, setSelectedTask] = useState<string | null>(null);
   const [prompt, setPrompt] = useState("");
   const [isLoading, setIsLoading] = useState(false);

@@ -16,7 +16,7 @@ import {
   NotificationPreferences,
 } from "../services/pushNotifications";
 
-export default function NotificationsScreen({ navigation }: any) {
+export default function NotificationsScreen() {
   const [notifications, setNotifications] = useState<LocalNotification[]>([]);
   const [preferences, setPreferences] =
     useState<NotificationPreferences | null>(null);

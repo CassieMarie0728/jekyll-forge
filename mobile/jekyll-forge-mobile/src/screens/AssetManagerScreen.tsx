@@ -26,7 +26,6 @@ interface Asset {
 
 export default function AssetManagerScreen() {
   const [assets, setAssets] = useState<Asset[]>([]);
-  const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
@@ -79,7 +78,7 @@ export default function AssetManagerScreen() {
     }
   };
 
-  const uploadAsset = async (asset: any) => {
+  const uploadAsset = async (asset: ImagePicker.ImagePickerAsset) => {
     setUploading(true);
     try {
       // TODO: Implement tRPC upload mutation
