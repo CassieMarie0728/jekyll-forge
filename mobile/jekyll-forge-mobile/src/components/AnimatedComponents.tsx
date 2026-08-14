@@ -6,6 +6,7 @@ import {
   View,
   ViewStyle,
   StyleProp,
+  DimensionValue,
 } from "react-native";
 import {
   fadeIn,
@@ -181,7 +182,7 @@ export function StaggerItem({
 
 // Skeleton loading placeholder with shimmer
 interface SkeletonProps {
-  width: number | string;
+  width: DimensionValue;
   height: number;
   borderRadius?: number;
   style?: StyleProp<ViewStyle>;
@@ -208,7 +209,7 @@ export function Skeleton({
     <View
       style={[
         {
-          width: width as any,
+          width,
           height,
           borderRadius,
           backgroundColor: "#1e293b",

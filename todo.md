@@ -241,7 +241,7 @@
 - [x] Verify the Android deep-link registration matches `jekyllforge://auth-callback` and add end-to-end auth-store persistence coverage
 - [x] Route Android tRPC headers through SecureStore instead of the stale AsyncStorage token location
 - [x] Wire offline retry producers for every persistent mobile mutation flow (posts, social publishing/disconnect, scheduler changes, and A/B variation publishing) and add replay-dispatch coverage for every supported queue action
-- [ ] Complete the remaining Android release inputs: branded assets and Play submission credentials (package, Expo ID, and Firebase are configured)
+- [ ] Complete Google Play Console enrollment and submission credentials; package, Expo ID, Firebase configuration, and branded assets are configured
 - [x] Align Android post hooks and screen mutations with the server's actual `posts.get`, `posts.upsert`, `posts.update`, and `posts.delete` contract
 - [x] Replace the temporary `any` mobile tRPC adapter with a shared `AppRouter` type contract and compile every mobile procedure use against it
 - [x] Align Android tRPC packages with the server's tRPC 11 contract before enabling compile-time shared router types
@@ -444,4 +444,7 @@
 - [x] Replace the broken Watch Demo CTA, which currently scrolls to a missing `demo-section`, with a truthful workflow destination or a real demo asset
 - [x] Complete shared typed Android screen-to-server API contract alignment and regression validation
 - [x] Add an ownership-protected scheduler reschedule procedure needed by the Android scheduled-posts screen
-- [ ] Reduce Android lint warnings by removing safe unused code and replacing screen-level `any` boundaries with explicit navigation and route parameter types
+- [x] Replace the Android-incompatible scheduled-post `Alert.prompt` reschedule input with a native modal dialog and typed route contract
+- [x] Reduce Android lint warnings by removing safe unused code and replacing screen-level `any` boundaries with explicit navigation and route parameter types
+- [ ] Stabilize the resource-constrained production Vite build, which is externally terminated with SIGTERM during chunk rendering despite passing lint, tests, and TypeScript checks
+- [x] Document the managed-sandbox Vite build limitation and defer deeper editor/diagram chunk refactoring to a separate controlled optimization pass

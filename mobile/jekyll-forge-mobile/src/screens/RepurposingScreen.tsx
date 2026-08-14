@@ -37,7 +37,17 @@ const REPURPOSING_FORMATS = [
 
 type RepurposingFormat = (typeof REPURPOSING_FORMATS)[number]["format"];
 
-export default function RepurposingScreen({ route, navigation }: any) {
+type RepurposingScreenProps = {
+  route: {
+    params?: {
+      postId?: number;
+      siteId?: number;
+      post?: { title?: string; content?: string };
+    };
+  };
+};
+
+export default function RepurposingScreen({ route }: RepurposingScreenProps) {
   const { postId, siteId, post } = route.params || {};
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedFormats, setSelectedFormats] = useState<RepurposingFormat[]>(
@@ -98,8 +108,11 @@ export default function RepurposingScreen({ route, navigation }: any) {
 
       setRepurposedContent(results);
       setActiveTab("results");
-    } catch (error: any) {
-      Alert.alert("Error", error.message || "Failed to generate content");
+    } catch (error: unknown) {
+      Alert.alert(
+        "Error",
+        error instanceof Error ? error.message : "Failed to generate content"
+      );
     } finally {
       setIsGenerating(false);
     }
@@ -109,7 +122,7 @@ export default function RepurposingScreen({ route, navigation }: any) {
     Alert.alert("Copied", `${format} content copied to clipboard`);
   };
 
-  const handlePublishContent = (format: string, content: string) => {
+  const handlePublishContent = (format: string, _content: string) => {
     Alert.alert("Publish", `Ready to publish to ${format}?`, [
       { text: "Cancel", onPress: () => {} },
       {

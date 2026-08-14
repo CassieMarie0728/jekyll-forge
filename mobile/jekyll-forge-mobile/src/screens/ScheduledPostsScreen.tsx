@@ -9,6 +9,8 @@ import {
   FlatList,
   Alert,
   ActivityIndicator,
+  Modal,
+  TextInput,
 } from "react-native";
 import { trpc } from "../utils/trpc";
 import {
@@ -26,11 +28,27 @@ interface ScheduledPost {
   createdAt: string;
 }
 
-export default function ScheduledPostsScreen({ route, navigation }: any) {
+type ScheduledPostsScreenProps = {
+  route: { params?: { siteId?: number } };
+  navigation: {
+    navigate: (
+      routeName: "AppStack",
+      params: { screen: "EditorTab" }
+    ) => void;
+  };
+};
+
+export default function ScheduledPostsScreen({
+  route,
+  navigation,
+}: ScheduledPostsScreenProps) {
   const { siteId } = route.params || {};
   const [selectedFilter, setSelectedFilter] = useState<
     "all" | "scheduled" | "published" | "cancelled" | "failed"
   >("all");
+  const [postToReschedule, setPostToReschedule] =
+    useState<ScheduledPost | null>(null);
+  const [rescheduleValue, setRescheduleValue] = useState("");
   const normalizedSiteId = Number(siteId);
 
   const scheduledPostsQuery = trpc.scheduler.list.useQuery(
@@ -89,43 +107,40 @@ export default function ScheduledPostsScreen({ route, navigation }: any) {
   };
 
   const handleReschedule = (post: ScheduledPost) => {
-    Alert.prompt(
-      "Reschedule Post",
-      "Enter new date and time (YYYY-MM-DD HH:MM)",
-      [
-        { text: "Cancel", onPress: () => {} },
-        {
-          text: "Reschedule",
-          onPress: async newDate => {
-            if (!newDate) return;
-            const scheduledAt = new Date(newDate);
+    const localValue = new Date(post.scheduledDate)
+      .toISOString()
+      .slice(0, 16)
+      .replace("T", " ");
+    setPostToReschedule(post);
+    setRescheduleValue(localValue);
+  };
 
-            try {
-              if (Number.isNaN(scheduledAt.getTime())) {
-                Alert.alert("Error", "Enter a valid future date and time.");
-                return;
-              }
-              await reschedulePostMutation.mutateAsync({
-                id: post.id,
-                scheduledAt,
-              });
-              await scheduledPostsQuery.refetch();
-              Alert.alert("Success", "Post rescheduled");
-            } catch (error: unknown) {
-              await enqueueSchedulerReschedule(post.id, scheduledAt);
-              Alert.alert(
-                "Reschedule queued",
-                error instanceof Error
-                  ? `${error.message} The update will retry when online.`
-                  : "The update will retry when online."
-              );
-            }
-          },
-        },
-      ],
-      "plain-text",
-      post.scheduledDate
-    );
+  const submitReschedule = async () => {
+    if (!postToReschedule) return;
+    const scheduledAt = new Date(rescheduleValue.replace(" ", "T"));
+    if (Number.isNaN(scheduledAt.getTime()) || scheduledAt <= new Date()) {
+      Alert.alert("Error", "Enter a valid future date and time.");
+      return;
+    }
+
+    try {
+      await reschedulePostMutation.mutateAsync({
+        id: postToReschedule.id,
+        scheduledAt,
+      });
+      await scheduledPostsQuery.refetch();
+      Alert.alert("Success", "Post rescheduled");
+    } catch (error: unknown) {
+      await enqueueSchedulerReschedule(postToReschedule.id, scheduledAt);
+      Alert.alert(
+        "Reschedule queued",
+        error instanceof Error
+          ? `${error.message} The update will retry when online.`
+          : "The update will retry when online."
+      );
+    } finally {
+      setPostToReschedule(null);
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -161,8 +176,6 @@ export default function ScheduledPostsScreen({ route, navigation }: any) {
 
   const renderPostCard = (post: ScheduledPost) => {
     const scheduledTime = new Date(post.scheduledDate);
-    const isUpcoming =
-      scheduledTime > new Date() && post.status === "scheduled";
 
     return (
       <View key={post.id} style={styles.postCard}>
@@ -272,7 +285,7 @@ export default function ScheduledPostsScreen({ route, navigation }: any) {
             </Text>
             <TouchableOpacity
               style={styles.createButton}
-              onPress={() => navigation.navigate("Editor")}
+              onPress={() => navigation.navigate("AppStack", { screen: "EditorTab" })}
             >
               <Text style={styles.createButtonText}>✍️ Create Post</Text>
             </TouchableOpacity>
@@ -311,6 +324,45 @@ export default function ScheduledPostsScreen({ route, navigation }: any) {
           </View>
         </View>
       )}
+
+      <Modal
+        visible={postToReschedule !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setPostToReschedule(null)}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>Reschedule post</Text>
+            <Text style={styles.modalText}>
+              Enter a future local date and time in YYYY-MM-DD HH:MM format.
+            </Text>
+            <TextInput
+              value={rescheduleValue}
+              onChangeText={setRescheduleValue}
+              placeholder="2026-09-01 09:30"
+              placeholderTextColor="#64748b"
+              autoCapitalize="none"
+              autoCorrect={false}
+              style={styles.modalInput}
+            />
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                style={styles.modalSecondaryButton}
+                onPress={() => setPostToReschedule(null)}
+              >
+                <Text style={styles.modalSecondaryText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalPrimaryButton}
+                onPress={() => void submitReschedule()}
+              >
+                <Text style={styles.modalPrimaryText}>Reschedule</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -518,5 +570,63 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     color: "#3b82f6",
+  },
+  modalBackdrop: {
+    flex: 1,
+    justifyContent: "center",
+    padding: 24,
+    backgroundColor: "rgba(2, 6, 23, 0.72)",
+  },
+  modalCard: {
+    borderRadius: 12,
+    padding: 20,
+    backgroundColor: "#1e293b",
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#fff",
+  },
+  modalText: {
+    marginTop: 8,
+    color: "#cbd5e1",
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  modalInput: {
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: "#475569",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    color: "#fff",
+    backgroundColor: "#0f172a",
+  },
+  modalActions: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    gap: 10,
+    marginTop: 18,
+  },
+  modalSecondaryButton: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 8,
+    backgroundColor: "#334155",
+  },
+  modalPrimaryButton: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 8,
+    backgroundColor: "#3b82f6",
+  },
+  modalSecondaryText: {
+    color: "#e2e8f0",
+    fontWeight: "600",
+  },
+  modalPrimaryText: {
+    color: "#fff",
+    fontWeight: "700",
   },
 });

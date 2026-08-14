@@ -39,14 +39,23 @@ interface TestResult {
   engagementRate: number;
 }
 
-export default function ABTestingScreen({ route, navigation }: any) {
-  const { postId, siteId, post } = route.params || {};
+type ABTestingScreenProps = {
+  route: {
+    params?: {
+      postId?: number;
+      post?: { title?: string; content?: string };
+    };
+  };
+};
+
+export default function ABTestingScreen({ route }: ABTestingScreenProps) {
+  const { postId, post } = route.params || {};
   const [activeTab, setActiveTab] = useState<"generate" | "results">(
     "generate"
   );
   const [isGenerating, setIsGenerating] = useState(false);
   const [variations, setVariations] = useState<Variation[]>([]);
-  const [testResults, setTestResults] = useState<TestResult[]>([]);
+  const [testResults] = useState<TestResult[]>([]);
   const [variationCount, setVariationCount] = useState(3);
   const [selectedPlatforms, setSelectedPlatforms] = useState<AbPlatform[]>([
     "twitter",
@@ -72,8 +81,11 @@ export default function ABTestingScreen({ route, navigation }: any) {
 
       setVariations(response.variations);
       setActiveTab("results");
-    } catch (error: any) {
-      Alert.alert("Error", error.message || "Failed to generate variations");
+    } catch (error: unknown) {
+      Alert.alert(
+        "Error",
+        error instanceof Error ? error.message : "Failed to generate variations"
+      );
     } finally {
       setIsGenerating(false);
     }
@@ -121,10 +133,12 @@ export default function ABTestingScreen({ route, navigation }: any) {
                   ? `${publishedCount} variation(s) published and ${queuedCount} will retry when online.`
                   : "All variations published"
               );
-            } catch (error: any) {
+            } catch (error: unknown) {
               Alert.alert(
                 "Error",
-                error.message || "Failed to publish variations"
+                error instanceof Error
+                  ? error.message
+                  : "Failed to publish variations"
               );
             }
           },

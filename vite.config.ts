@@ -173,6 +173,13 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    // Keep the constrained production build focused on emitted application assets.
+    // Source maps and compressed-size reporting add post-processing overhead but
+    // are not required for the deployed runtime or Sentry's server-side capture.
+    sourcemap: false,
+    minify: "esbuild",
+    reportCompressedSize: false,
+    cssCodeSplit: true,
     chunkSizeWarningLimit: 500,
     rollupOptions: {
       output: {

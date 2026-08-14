@@ -28,6 +28,8 @@ export interface SyncQueue {
   lastError?: string;
 }
 
+export type StoredAsset = Record<string, unknown> & { savedAt: number };
+
 const DRAFTS_KEY = "@jekyll_forge_drafts";
 const SYNC_QUEUE_KEY = "@jekyll_forge_sync_queue";
 const ASSETS_KEY = "@jekyll_forge_assets";
@@ -154,7 +156,10 @@ export const offlineStorage = {
   },
 
   // Asset Management
-  async saveAsset(assetId: string, assetData: any): Promise<void> {
+  async saveAsset(
+    assetId: string,
+    assetData: Record<string, unknown>
+  ): Promise<void> {
     try {
       const assets = await this.getAssets();
       assets[assetId] = {
@@ -168,10 +173,10 @@ export const offlineStorage = {
     }
   },
 
-  async getAssets(): Promise<Record<string, any>> {
+  async getAssets(): Promise<Record<string, StoredAsset>> {
     try {
       const data = await AsyncStorage.getItem(ASSETS_KEY);
-      return data ? JSON.parse(data) : {};
+      return data ? (JSON.parse(data) as Record<string, StoredAsset>) : {};
     } catch (error) {
       console.error("Failed to get assets:", error);
       return {};
@@ -199,7 +204,7 @@ export const offlineStorage = {
   },
 
   // Settings Management
-  async saveSetting(key: string, value: any): Promise<void> {
+  async saveSetting<T>(key: string, value: T): Promise<void> {
     try {
       const settings = await this.getSettings();
       settings[key] = value;
@@ -210,20 +215,23 @@ export const offlineStorage = {
     }
   },
 
-  async getSetting(key: string, defaultValue?: any): Promise<any> {
+  async getSetting<T = unknown>(
+    key: string,
+    defaultValue?: T
+  ): Promise<T | undefined> {
     try {
       const settings = await this.getSettings();
-      return settings[key] ?? defaultValue;
+      return (settings[key] as T | undefined) ?? defaultValue;
     } catch (error) {
       console.error("Failed to get setting:", error);
       return defaultValue;
     }
   },
 
-  async getSettings(): Promise<Record<string, any>> {
+  async getSettings(): Promise<Record<string, unknown>> {
     try {
       const data = await AsyncStorage.getItem(SETTINGS_KEY);
-      return data ? JSON.parse(data) : {};
+      return data ? (JSON.parse(data) as Record<string, unknown>) : {};
     } catch (error) {
       console.error("Failed to get settings:", error);
       return {};
