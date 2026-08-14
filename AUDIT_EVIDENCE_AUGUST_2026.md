@@ -41,6 +41,8 @@ The snapshot-path review found that creation accepted a site ID and optional pos
 
 The continuing asset review found that upload accepted a site ID without checking caller ownership before decoding, optimizing, storing, and persisting the file. Asset upload now resolves the referenced site under the caller identity before any upload processing. The focused regression test proves an unowned site is rejected before storage or asset persistence. The full web gate then passed with 24 files, 146 tests, 7 intentional skips, zero lint errors, and clean TypeScript and Drizzle validation.
 
+The repurposing-path review found that generation and regeneration accepted caller-owned post IDs without confirming they belonged to the supplied site, while regeneration deleted the old content before validating the replacement context. Both flows now require the post-to-site relationship and regeneration verifies the existing record context before deletion. Focused tests prove cross-site generation is rejected and mismatched regeneration does not delete content. The full web gate then passed with 25 files, 148 tests, 7 intentional skips, zero lint errors, and clean TypeScript and Drizzle validation.
+
 Unauthenticated navigation to `/dashboard/1` did not expose dashboard content. It redirected to the configured Manus sign-in endpoint with the deployed callback URL. Completing OAuth and entering a user account would require account credentials and user confirmation, so the authenticated repository-picker and dashboard portions remain explicitly unverified in this independent browser pass.
 
 ## API Authorization and Contract Review

@@ -18,6 +18,16 @@ import {
 } from "../repurposingPrompts";
 import { TRPCError } from "@trpc/server";
 
+function requirePostInSite(
+  post: Awaited<ReturnType<typeof getPostById>>,
+  siteId: number
+) {
+  if (!post || post.siteId !== siteId) {
+    throw new TRPCError({ code: "NOT_FOUND", message: "Post not found" });
+  }
+  return post;
+}
+
 export const repurposingRouter = router({
   /**
    * Generate repurposed content for a post in a specific format
@@ -40,11 +50,11 @@ export const repurposingRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      // Verify user owns the post
-      const post = await getPostById(input.postId, ctx.user.id);
-      if (!post) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Post not found" });
-      }
+      // Verify the caller owns the post and it belongs to the requested site.
+      const post = requirePostInSite(
+        await getPostById(input.postId, ctx.user.id),
+        input.siteId
+      );
 
       // Check AI settings
       const aiSettings = await getAiSettings(ctx.user.id);
@@ -244,14 +254,24 @@ export const repurposingRouter = router({
         });
       }
 
-      // Delete the old one and generate new
-      await deleteRepurposedContent(input.id, ctx.user.id);
-
-      // Regenerate using the generate procedure logic
-      const post = await getPostById(input.postId, ctx.user.id);
-      if (!post) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Post not found" });
+      if (
+        existing.postId !== input.postId ||
+        existing.siteId !== input.siteId
+      ) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Repurposed content context does not match the requested post",
+        });
       }
+
+      const post = requirePostInSite(
+        await getPostById(input.postId, ctx.user.id),
+        input.siteId
+      );
+
+      // Delete only after all caller-owned references have been verified.
+      await deleteRepurposedContent(input.id, ctx.user.id);
 
       const aiSettings = await getAiSettings(ctx.user.id);
       if (aiSettings && !aiSettings.enabled) {
