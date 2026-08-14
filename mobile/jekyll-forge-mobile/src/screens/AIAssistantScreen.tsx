@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   FlatList,
   Alert,
+  Linking,
 } from "react-native";
 import { trpc } from "../utils/trpc";
 
@@ -97,6 +98,9 @@ export default function AIAssistantScreen({
   const [tone, setTone] = useState("professional");
 
   const aiMutation = trpc.ai.generate.useMutation();
+  const { data: providerSettings, isLoading: providerSettingsLoading } =
+    trpc.aiProviders.getSettings.useQuery();
+  const activeProvider = providerSettings?.find(provider => provider.enabled);
 
   const handleTaskSelect = (taskId: string) => {
     setSelectedTask(taskId);
@@ -105,6 +109,20 @@ export default function AIAssistantScreen({
   };
 
   const handleGenerate = async () => {
+    if (!activeProvider) {
+      Alert.alert(
+        "Configure a Free AI Provider",
+        "AI generation requires an approved user-owned provider key. Configure one in Jekyll Forge on the web; keys are never stored on this device.",
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Open Web Settings",
+            onPress: () => void Linking.openURL("https://jekyllforge.manus.space"),
+          },
+        ]
+      );
+      return;
+    }
     if (!selectedTask) {
       Alert.alert("Error", "Please select a task");
       return;
@@ -170,6 +188,37 @@ export default function AIAssistantScreen({
           <Text style={styles.title}>AI Assistant</Text>
           <Text style={styles.subtitle}>Generate and improve your content</Text>
         </View>
+
+        {providerSettingsLoading ? (
+          <View style={styles.providerStatusCard}>
+            <ActivityIndicator size="small" color="#60a5fa" />
+            <Text style={styles.providerStatusLoading}>Checking AI provider status…</Text>
+          </View>
+        ) : activeProvider ? (
+          <View style={[styles.providerStatusCard, styles.providerStatusReady]}>
+            <View style={styles.providerStatusText}>
+              <Text style={styles.providerStatusTitle}>
+                Free provider active: {activeProvider.label}
+              </Text>
+              <Text style={styles.providerStatusDetail}>
+                {activeProvider.usage.minuteRemaining ?? 0} requests left this minute · {activeProvider.usage.dailyRemaining ?? 0} today
+              </Text>
+            </View>
+          </View>
+        ) : (
+          <TouchableOpacity
+            style={[styles.providerStatusCard, styles.providerStatusMissing]}
+            onPress={() => void Linking.openURL("https://jekyllforge.manus.space")}
+          >
+            <View style={styles.providerStatusText}>
+              <Text style={styles.providerStatusTitle}>Set up a free AI provider to continue</Text>
+              <Text style={styles.providerStatusDetail}>
+                Configure an approved key on the web. The key is encrypted server-side and never stored on this device.
+              </Text>
+            </View>
+            <Text style={styles.providerLink}>Open web settings</Text>
+          </TouchableOpacity>
+        )}
 
         {!selectedTask ? (
           <>
@@ -247,9 +296,10 @@ export default function AIAssistantScreen({
                 style={[
                   styles.generateButton,
                   isLoading && styles.generateButtonDisabled,
+                  !activeProvider && styles.generateButtonDisabled,
                 ]}
                 onPress={handleGenerate}
-                disabled={isLoading}
+                disabled={isLoading || providerSettingsLoading}
               >
                 {isLoading ? (
                   <ActivityIndicator size="small" color="#fff" />
@@ -317,6 +367,47 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 14,
     color: "#9ca3af",
+  },
+  providerStatusCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 20,
+    borderWidth: 1,
+    gap: 10,
+  },
+  providerStatusReady: {
+    backgroundColor: "#064e3b",
+    borderColor: "#10b981",
+  },
+  providerStatusMissing: {
+    backgroundColor: "#422006",
+    borderColor: "#d97706",
+  },
+  providerStatusText: {
+    flex: 1,
+  },
+  providerStatusTitle: {
+    color: "#ffffff",
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  providerStatusDetail: {
+    color: "#d1d5db",
+    fontSize: 11,
+    lineHeight: 16,
+    marginTop: 3,
+  },
+  providerStatusLoading: {
+    color: "#d1d5db",
+    fontSize: 12,
+  },
+  providerLink: {
+    color: "#fbbf24",
+    fontSize: 11,
+    fontWeight: "700",
+    textAlign: "right",
   },
   sectionTitle: {
     fontSize: 16,

@@ -41,6 +41,9 @@ import {
   ContentVariation,
   AbTestResult,
   AbTestSummary,
+  userAiProviders,
+  InsertUserAiProvider,
+  UserAiProvider,
 } from "../drizzle/schema";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -588,6 +591,108 @@ export async function incrementAiUsage(
       totalOutputTokens: (current.totalOutputTokens ?? 0) + outputTokens,
     })
     .where(eq(aiSettings.userId, userId));
+}
+
+// ─── User-owned AI provider keys ─────────────────────────────────────────────
+export async function getUserAiProviders(
+  userId: number
+): Promise<UserAiProvider[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(userAiProviders)
+    .where(eq(userAiProviders.userId, userId))
+    .orderBy(asc(userAiProviders.provider));
+}
+
+export async function getUserAiProvider(
+  userId: number,
+  provider: UserAiProvider["provider"]
+): Promise<UserAiProvider | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db
+    .select()
+    .from(userAiProviders)
+    .where(
+      and(
+        eq(userAiProviders.userId, userId),
+        eq(userAiProviders.provider, provider)
+      )
+    )
+    .limit(1);
+  return result[0];
+}
+
+export async function upsertUserAiProvider(
+  data: InsertUserAiProvider
+): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+
+  const { userId, provider, ...updateValues } = data;
+  await db
+    .insert(userAiProviders)
+    .values(data)
+    .onDuplicateKeyUpdate({
+      set: { ...updateValues, updatedAt: new Date() },
+    });
+}
+
+export async function setUserAiProviderEnabled(
+  userId: number,
+  provider: UserAiProvider["provider"],
+  enabled: boolean
+): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db
+    .update(userAiProviders)
+    .set({ enabled, updatedAt: new Date() })
+    .where(
+      and(
+        eq(userAiProviders.userId, userId),
+        eq(userAiProviders.provider, provider)
+      )
+    );
+}
+
+export async function activateUserAiProvider(
+  userId: number,
+  provider: UserAiProvider["provider"]
+): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db
+    .update(userAiProviders)
+    .set({ enabled: false, updatedAt: new Date() })
+    .where(eq(userAiProviders.userId, userId));
+  await db
+    .update(userAiProviders)
+    .set({ enabled: true, updatedAt: new Date() })
+    .where(
+      and(
+        eq(userAiProviders.userId, userId),
+        eq(userAiProviders.provider, provider)
+      )
+    );
+}
+
+export async function deleteUserAiProvider(
+  userId: number,
+  provider: UserAiProvider["provider"]
+): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db
+    .delete(userAiProviders)
+    .where(
+      and(
+        eq(userAiProviders.userId, userId),
+        eq(userAiProviders.provider, provider)
+      )
+    );
 }
 
 // ─── Scheduled Posts ─────────────────────────────────────────────────────

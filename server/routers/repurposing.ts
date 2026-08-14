@@ -8,15 +8,14 @@ import {
   deleteRepurposedContent,
   getPostById,
   getAiSettings,
-  incrementAiUsage,
 } from "../db";
-import { invokeLLM } from "../_core/llm";
 import {
   getRepurposingPrompt,
   getFormatMetadata,
   RepurposingFormat,
 } from "../repurposingPrompts";
 import { TRPCError } from "@trpc/server";
+import { invokeUserOwnedFreeAi } from "../ai/freeProvider";
 
 function requirePostInSite(
   post: Awaited<ReturnType<typeof getPostById>>,
@@ -82,7 +81,9 @@ export const repurposingRouter = router({
         );
 
         // Call LLM
-        const response = await invokeLLM({
+        const response = await invokeUserOwnedFreeAi({
+          userId: ctx.user.id,
+          temperature: (aiSettings?.temperature ?? 70) / 100,
           messages: [
             {
               role: "system",
@@ -94,22 +95,7 @@ export const repurposingRouter = router({
           ],
         });
 
-        const generatedContent = response.choices[0]?.message?.content;
-        if (!generatedContent || typeof generatedContent !== "string") {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Failed to generate content",
-          });
-        }
-
-        // Track usage
-        if (response.usage) {
-          await incrementAiUsage(
-            ctx.user.id,
-            response.usage.prompt_tokens || 0,
-            response.usage.completion_tokens || 0
-          );
-        }
+        const generatedContent = response.text;
 
         // Get format-specific metadata
         const metadata = getFormatMetadata(
@@ -291,7 +277,9 @@ export const repurposingRouter = router({
 
       const userPrompt = getRepurposingPrompt(existing.format, postContent);
 
-      const response = await invokeLLM({
+      const response = await invokeUserOwnedFreeAi({
+        userId: ctx.user.id,
+        temperature: (aiSettings?.temperature ?? 70) / 100,
         messages: [
           {
             role: "system",
@@ -303,21 +291,7 @@ export const repurposingRouter = router({
         ],
       });
 
-      const generatedContent = response.choices[0]?.message?.content;
-      if (!generatedContent || typeof generatedContent !== "string") {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to regenerate content",
-        });
-      }
-
-      if (response.usage) {
-        await incrementAiUsage(
-          ctx.user.id,
-          response.usage.prompt_tokens || 0,
-          response.usage.completion_tokens || 0
-        );
-      }
+      const generatedContent = response.text;
 
       const metadata = getFormatMetadata(existing.format, generatedContent);
 

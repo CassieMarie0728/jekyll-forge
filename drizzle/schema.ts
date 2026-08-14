@@ -9,6 +9,7 @@ import {
   json,
   bigint,
   decimal,
+  uniqueIndex,
 } from "drizzle-orm/mysql-core";
 
 // ─── Users ──────────────────────────────────────────────────────────────────
@@ -198,6 +199,37 @@ export const aiSettings = mysqlTable("ai_settings", {
 
 export type AiSetting = typeof aiSettings.$inferSelect;
 export type InsertAiSetting = typeof aiSettings.$inferInsert;
+
+// ─── User-owned AI Provider Keys ────────────────────────────────────────────
+// Keys are encrypted by the server before persistence. They must never be
+// returned to either client application or stored in mobile device storage.
+export const userAiProviders = mysqlTable(
+  "user_ai_providers",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    userId: int("userId").notNull(),
+    provider: mysqlEnum("provider", [
+      "openrouter",
+      "gemini",
+      "groq",
+      "mistral",
+    ]).notNull(),
+    encryptedApiKey: text("encryptedApiKey").notNull(),
+    selectedModel: varchar("selectedModel", { length: 160 }).notNull(),
+    enabled: boolean("enabled").default(true).notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [
+    uniqueIndex("user_ai_providers_user_provider_unique").on(
+      table.userId,
+      table.provider
+    ),
+  ]
+);
+
+export type UserAiProvider = typeof userAiProviders.$inferSelect;
+export type InsertUserAiProvider = typeof userAiProviders.$inferInsert;
 
 // ─── Scheduled Posts ───────────────────────────────────────────────────────────
 export const scheduledPosts = mysqlTable("scheduled_posts", {

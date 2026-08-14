@@ -71,6 +71,13 @@
       "when": 1786527385005,
       "tag": "0009_huge_patriot",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1786698129267,
+      "tag": "0010_slow_nekra",
+      "breakpoints": true
     }
   ]
 }

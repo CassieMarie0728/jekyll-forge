@@ -18,6 +18,7 @@ import { repurposingRouter } from "./routers/repurposing";
 import { socialMediaRouter } from "./routers/socialMedia";
 import { abTestingRouter } from "./routers/abTesting";
 import { notificationsRouter } from "./routers/notifications";
+import { aiProvidersRouter } from "./routers/aiProviders";
 
 export const appRouter = router({
   system: systemRouter,
@@ -61,6 +62,7 @@ export const appRouter = router({
   posts: postsRouter,
   assets: assetsRouter,
   ai: aiRouter,
+  aiProviders: aiProvidersRouter,
   snapshots: snapshotsRouter,
   scheduler: schedulerRouter,
   blocks: blocksRouter,

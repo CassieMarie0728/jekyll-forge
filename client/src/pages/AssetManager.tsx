@@ -535,8 +535,6 @@ export default function AssetManager() {
                       onClick={() =>
                         generateAltText.mutate({
                           assetId: selectedAsset.id,
-                          imageUrl: selectedAsset.storageUrl || "",
-                          name: selectedAsset.name,
                         })
                       }
                       disabled={generateAltText.isPending}

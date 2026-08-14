@@ -11,7 +11,7 @@ import {
   findAssetByHash,
 } from "../db";
 import { storagePut } from "../storage";
-import { invokeLLM } from "../_core/llm";
+import { invokeUserOwnedFreeAi } from "../ai/freeProvider";
 import {
   optimizeImage,
   optimizeImageSet,
@@ -341,35 +341,27 @@ export const assetsRouter = router({
     .mutation(({ ctx, input }) => deleteAsset(input.id, ctx.user.id)),
 
   generateAltText: protectedProcedure
-    .input(
-      z.object({ assetId: z.number(), imageUrl: z.string(), name: z.string() })
-    )
+    .input(z.object({ assetId: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const response = await invokeLLM({
+      const asset = await getAssetById(input.assetId, ctx.user.id);
+      if (!asset) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Asset not found" });
+      }
+      const response = await invokeUserOwnedFreeAi({
+        userId: ctx.user.id,
         messages: [
           {
             role: "system",
             content:
-              "You are an accessibility expert. Generate concise, descriptive alt text for images used in blog posts. Return only the alt text, no quotes, no explanation. Maximum 125 characters.",
+              "You are an accessibility expert. Suggest concise alt text for a blog image using only its filename and path. Do not claim to have viewed the image. Return only the suggested alt text, no quotes, no explanation. Maximum 125 characters.",
           },
           {
             role: "user",
-            content: [
-              {
-                type: "text",
-                text: `Generate alt text for this image. The filename is: ${input.name}`,
-              },
-              {
-                type: "image_url",
-                image_url: { url: input.imageUrl, detail: "low" },
-              },
-            ],
+            content: `Suggest alt text for the filename "${asset.name}" at path "${asset.path}".`,
           },
         ],
       });
-      const rawContent = response.choices[0]?.message?.content;
-      const altText =
-        (typeof rawContent === "string" ? rawContent.trim() : "") || "";
+      const altText = response.text.trim();
       if (altText) {
         await updateAsset(input.assetId, ctx.user.id, { alt: altText });
       }

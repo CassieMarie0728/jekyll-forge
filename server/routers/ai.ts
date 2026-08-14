@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
-import { getAiSettings, upsertAiSettings, incrementAiUsage } from "../db";
-import { invokeLLM } from "../_core/llm";
+import { getAiSettings, upsertAiSettings } from "../db";
 import { TRPCError } from "@trpc/server";
+import { invokeUserOwnedFreeAi } from "../ai/freeProvider";
 
 const AI_TASK_PROMPTS: Record<string, string> = {
   title:
@@ -56,8 +56,6 @@ export const aiRouter = router({
     .input(
       z.object({
         enabled: z.boolean().optional(),
-        provider: z.string().optional(),
-        model: z.string().optional(),
         temperature: z.number().min(0).max(100).optional(),
         maxTokens: z.number().min(100).max(8000).optional(),
         systemPrompt: z.string().optional(),
@@ -118,32 +116,20 @@ export const aiRouter = router({
       if (input.userPrompt && input.task !== "custom")
         parts.push(`\n\nAdditional instructions: ${input.userPrompt}`);
 
-      const response = await invokeLLM({
+      const response = await invokeUserOwnedFreeAi({
+        userId: ctx.user.id,
+        temperature: (settings?.temperature ?? 70) / 100,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: parts.join("") },
         ],
       });
 
-      const rawText = response.choices[0]?.message?.content;
-      const text = typeof rawText === "string" ? rawText : "";
-      const usage = response.usage;
-
-      // Track usage
-      if (usage) {
-        await incrementAiUsage(
-          ctx.user.id,
-          usage.prompt_tokens || 0,
-          usage.completion_tokens || 0
-        );
-      }
-
       return {
-        text,
-        usage: {
-          inputTokens: usage?.prompt_tokens,
-          outputTokens: usage?.completion_tokens,
-        },
+        text: response.text,
+        usage: response.usage,
+        provider: response.provider,
+        model: response.model,
       };
     }),
 
