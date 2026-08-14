@@ -10,7 +10,8 @@ const mobileTrpcFactory = createTRPCReact<AppRouter>();
 export const trpc = mobileTrpcFactory;
 
 const getTrpcUrl = () => {
-  const configuredUrl = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
+  const configuredUrl =
+    process.env.EXPO_PUBLIC_API_URL || "https://jekyllforge.manus.space";
   return configuredUrl.endsWith("/api/trpc")
     ? configuredUrl
     : `${configuredUrl.replace(/\/$/, "")}/api/trpc`;

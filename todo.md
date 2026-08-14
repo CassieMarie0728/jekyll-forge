@@ -465,3 +465,5 @@
 - [x] Verify caller ownership of the referenced site before creating or upserting a post
 - [x] Replace the remaining unsupported "optimal times" scheduling claim with verified capability language
 - [x] Create a consolidated owner-run acceptance checklist for remaining OAuth, Android device, Play Console, and managed-build gates (`OWNER_RELEASE_ACCEPTANCE_CHECKLIST.md`)
+- [ ] Authenticate the owner with Expo and produce an Android development APK for real-device acceptance testing
+- [x] Configure the Android development APK with the deployed Jekyll Forge API endpoint instead of localhost

@@ -25,6 +25,7 @@
     "@trpc/react-query": "^11.18.0",
     "expo": "^50.0.0",
     "expo-camera": "^14.0.0",
+    "expo-dev-client": "~3.3.12",
     "expo-haptics": "~12.8.1",
     "expo-image-picker": "^14.0.0",
     "expo-notifications": "~0.27.8",
