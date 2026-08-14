@@ -47,6 +47,8 @@ The scheduler-path review found that scheduling validated the site but not the o
 
 The post-router review found that upsert accepted a site ID without proving the caller owned the referenced site. Upsert now resolves the site under the caller identity before it persists a post. Focused tests prove an unowned site is rejected and a caller-owned site is persisted with the correct user scope. The full web gate then passed with 26 files, 151 tests, 7 intentional skips, zero lint errors, and clean TypeScript and Drizzle validation.
 
+The final static protected-router review covered site management, reusable blocks, AI settings and usage, mobile notification token registration/revocation, GitHub integration, posts, assets, snapshots, scheduler, repurposing, social publishing, and A/B testing. The remaining routers either apply the caller identifier directly to data helpers or have focused ownership and redaction tests added during this audit. No additional static authorization or sensitive-data disclosure gap was identified. Real-account OAuth and repository-picker acceptance remains intentionally open because it requires owner-controlled external authentication.
+
 Unauthenticated navigation to `/dashboard/1` did not expose dashboard content. It redirected to the configured Manus sign-in endpoint with the deployed callback URL. Completing OAuth and entering a user account would require account credentials and user confirmation, so the authenticated repository-picker and dashboard portions remain explicitly unverified in this independent browser pass.
 
 ## API Authorization and Contract Review

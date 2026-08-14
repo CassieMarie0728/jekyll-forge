@@ -220,7 +220,7 @@
 - [x] Reproduce the complete web test, type-check, lint, build, and migration-validation baseline from a clean audit pass
 - [x] Verify public route navigation, CTA targets, semantic heading order, keyboard reachability, focus visibility, and reduced-motion behavior
 - [ ] Verify authenticated web flows through real OAuth, repository selection, dashboard access, and protected-route denial without authentication
-- [ ] Review every protected API procedure for authorization scope, ownership checks, validation, sensitive-data redaction, and platform-specific error handling
+- [x] Review every protected API procedure for authorization scope, ownership checks, validation, sensitive-data redaction, and platform-specific error handling
 - [x] Compile and inspect the Android app for type health, OAuth contract alignment, SecureStore usage, offline-queue producers, sync conflict handling, and push configuration
 - [x] Identify or remediate reproducible defects, add regression tests, and update the comprehensive audit report with evidence and release blockers
 - [x] Remove the production CSS-order warning by moving the Google Fonts request from stylesheet imports into the HTML document head
