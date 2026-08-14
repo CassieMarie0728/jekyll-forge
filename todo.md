@@ -458,3 +458,4 @@
 - [x] Enforce caller ownership for all A/B testing variation, result, and summary reads and mutations before exposing them through protected procedures
 - [x] Include Facebook and Instagram records in the user-scoped social analytics synchronization lookup
 - [x] Restrict asset re-optimization to a caller-owned asset record and its persisted storage URL before any remote fetch
+- [x] Verify caller ownership of snapshot site and optional post references before creation

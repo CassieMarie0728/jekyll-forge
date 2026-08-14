@@ -37,6 +37,8 @@ The social-path review additionally found that analytics synchronization searche
 
 The asset-path review found that re-optimization trusted a caller-supplied storage URL and fetched it before verifying the asset record. The endpoint now loads the caller-owned asset first and uses only its persisted storage URL and site ID; an unowned or missing asset returns before a network fetch. Focused regression coverage proves both the rejection-before-fetch behavior and persisted-URL use. The full web gate then passed with 23 files, 142 tests, 7 intentional skips, zero lint errors, and clean TypeScript and Drizzle validation.
 
+The snapshot-path review found that creation accepted a site ID and optional post ID without validating their ownership relationship. Snapshot creation now confirms the caller-owned site and, when supplied, a caller-owned post associated with that same site. The regression test covers an unowned site, a cross-site post, and a valid snapshot reference. The full web gate then passed with 24 files, 145 tests, 7 intentional skips, zero lint errors, and clean TypeScript and Drizzle validation.
+
 Unauthenticated navigation to `/dashboard/1` did not expose dashboard content. It redirected to the configured Manus sign-in endpoint with the deployed callback URL. Completing OAuth and entering a user account would require account credentials and user confirmation, so the authenticated repository-picker and dashboard portions remain explicitly unverified in this independent browser pass.
 
 ## API Authorization and Contract Review
