@@ -453,3 +453,4 @@
 - [x] Keep the scheduled-handler error-redaction regression test quiet while asserting that server-side diagnostics still run
 - [x] Verify landing metadata directly, including title, description, Open Graph, and Twitter card tags
 - [x] Verify Sign In, Sign Up, and Get Started CTA targets without completing external authentication, and validate reduced-motion behavior explicitly
+- [x] Redact raw GitHub upstream error bodies from protected API responses while preserving status-specific user guidance

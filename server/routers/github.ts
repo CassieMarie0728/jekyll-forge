@@ -6,6 +6,37 @@ import { GITHUB_PAGES_SUPPORTED_PLUGINS } from "../../shared/types";
 
 const GITHUB_API = "https://api.github.com";
 
+export function githubApiErrorForStatus(status: number) {
+  if (status === 401) {
+    return new TRPCError({
+      code: "UNAUTHORIZED",
+      message:
+        "GitHub authorization failed. Reconnect your GitHub account and try again.",
+    });
+  }
+
+  if (status === 403) {
+    return new TRPCError({
+      code: "FORBIDDEN",
+      message:
+        "GitHub denied this request. Check the connected account permissions and repository access.",
+    });
+  }
+
+  if (status === 404) {
+    return new TRPCError({
+      code: "NOT_FOUND",
+      message:
+        "The requested GitHub resource was not found or is no longer available.",
+    });
+  }
+
+  return new TRPCError({
+    code: "INTERNAL_SERVER_ERROR",
+    message: "GitHub could not complete this request. Please try again.",
+  });
+}
+
 async function ghFetch(token: string, path: string, options: RequestInit = {}) {
   const res = await fetch(`${GITHUB_API}${path}`, {
     ...options,
@@ -18,18 +49,7 @@ async function ghFetch(token: string, path: string, options: RequestInit = {}) {
     },
   });
   if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new TRPCError({
-      code:
-        res.status === 401
-          ? "UNAUTHORIZED"
-          : res.status === 403
-            ? "FORBIDDEN"
-            : res.status === 404
-              ? "NOT_FOUND"
-              : "INTERNAL_SERVER_ERROR",
-      message: body.message || `GitHub API error: ${res.status}`,
-    });
+    throw githubApiErrorForStatus(res.status);
   }
   return res.json();
 }

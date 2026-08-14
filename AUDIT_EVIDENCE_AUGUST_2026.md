@@ -25,6 +25,8 @@ The public copy was refined after this inspection to remove unsupported exclusiv
 
 Direct metadata inspection on 14 August 2026 confirmed the deployed document has a specific title and description plus `og:title`, `og:description`, `og:type`, `og:url`, `twitter:card`, `twitter:title`, and `twitter:description` values. The non-interactive authentication helper tests independently verify that Sign In and Sign Up produce an `/app-auth` URL with the current-origin callback, encoded state, application identifier, and the correct `signIn` or `signUp` intent; no external identity-provider interaction was started. The deployed stylesheet exposes a `prefers-reduced-motion: reduce` media rule that reduces animation and transition durations, limits animation iteration, and changes scrolling to `auto`.
 
+The shared GitHub client was also hardened after the protected-procedure inventory found that it surfaced a raw upstream response message. It now maps 401, 403, 404, and unexpected GitHub responses to generic, status-appropriate tRPC messages without exposing the upstream body. The complete web gate then passed with 20 files, 137 tests, and 7 intentional skips; lint retained its established 229 warnings with zero errors, TypeScript passed, and Drizzle reported no metadata drift.
+
 Unauthenticated navigation to `/dashboard/1` did not expose dashboard content. It redirected to the configured Manus sign-in endpoint with the deployed callback URL. Completing OAuth and entering a user account would require account credentials and user confirmation, so the authenticated repository-picker and dashboard portions remain explicitly unverified in this independent browser pass.
 
 ## API Authorization and Contract Review
