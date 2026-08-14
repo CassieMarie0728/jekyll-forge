@@ -39,10 +39,19 @@ type EditorDraft = {
   updatedAt: string;
 };
 
+type EditorScreenProps = {
+  route?: {
+    params?: {
+      aiResult?: string;
+      task?: string;
+    };
+  };
+};
+
 const DRAFT_STORAGE_KEY = "currentDraft";
 const ACTIVE_SITE_STORAGE_KEY = "activeSiteId";
 
-export default function EditorScreen() {
+export default function EditorScreen({ route }: EditorScreenProps) {
   const insets = useSafeAreaInsets();
   const [mode, setMode] = useState<EditorMode>("visual");
   const [draft, setDraft] = useState<EditorDraft | null>(null);
@@ -121,6 +130,13 @@ export default function EditorScreen() {
       if (selectedSite) setActiveSiteId(selectedSite.id);
     })();
   }, [activeSiteId, sitesQuery.data]);
+
+  useEffect(() => {
+    const aiResult = route?.params?.aiResult;
+    if (!aiResult) return;
+    setContent(aiResult);
+    setUnsavedChanges(true);
+  }, [route?.params?.aiResult]);
 
   useEffect(() => {
     if (!unsavedChanges) return;

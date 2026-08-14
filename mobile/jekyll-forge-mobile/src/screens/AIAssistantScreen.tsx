@@ -68,7 +68,29 @@ const SERVER_TASKS: Record<string, string> = {
   "generate-tags": "tags",
 };
 
-export default function AIAssistantScreen({ route, navigation }: any) {
+type AIAssistantScreenProps = {
+  route: {
+    params?: {
+      siteId?: number;
+      postId?: number;
+      currentContent?: string;
+    };
+  };
+  navigation: {
+    navigate: (
+      routeName: "AppStack",
+      params: {
+        screen: "EditorTab";
+        params: { aiResult: string; task?: string };
+      }
+    ) => void;
+  };
+};
+
+export default function AIAssistantScreen({
+  route,
+  navigation,
+}: AIAssistantScreenProps) {
   const { siteId, postId, currentContent } = route.params || {};
   const [selectedTask, setSelectedTask] = useState<string | null>(null);
   const [prompt, setPrompt] = useState("");
@@ -100,8 +122,11 @@ export default function AIAssistantScreen({ route, navigation }: any) {
       });
 
       setResult(response.text);
-    } catch (error: any) {
-      Alert.alert("Error", error.message || "Failed to generate content");
+    } catch (error: unknown) {
+      Alert.alert(
+        "Error",
+        error instanceof Error ? error.message : "Failed to generate content"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -113,9 +138,12 @@ export default function AIAssistantScreen({ route, navigation }: any) {
       return;
     }
 
-    navigation.navigate("Editor", {
-      aiResult: result,
-      task: selectedTask,
+    navigation.navigate("AppStack", {
+      screen: "EditorTab",
+      params: {
+        aiResult: result,
+        task: selectedTask || undefined,
+      },
     });
   };
 
