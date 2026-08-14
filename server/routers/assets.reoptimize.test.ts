@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   getAssetsBySiteId: vi.fn(),
   getAssetById: vi.fn(),
+  getSiteById: vi.fn(),
   createAsset: vi.fn(),
   updateAsset: vi.fn(),
   deleteAsset: vi.fn(),
@@ -18,6 +19,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("../db", () => ({
   getAssetsBySiteId: mocks.getAssetsBySiteId,
   getAssetById: mocks.getAssetById,
+  getSiteById: mocks.getSiteById,
   createAsset: mocks.createAsset,
   updateAsset: mocks.updateAsset,
   deleteAsset: mocks.deleteAsset,
@@ -55,6 +57,25 @@ describe("asset re-optimization ownership", () => {
 
     expect(mocks.getAssetById).toHaveBeenCalledWith(42, 7);
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects an unowned upload site before processing upload data", async () => {
+    mocks.getSiteById.mockResolvedValueOnce(undefined);
+
+    await expect(
+      createCaller().upload({
+        siteId: 9,
+        name: "image.png",
+        path: "assets/image.png",
+        base64Content: Buffer.from("image").toString("base64"),
+        mimeType: "image/png",
+        size: 5,
+      })
+    ).rejects.toThrow("Site not found");
+
+    expect(mocks.getSiteById).toHaveBeenCalledWith(9, 7);
+    expect(mocks.storagePut).not.toHaveBeenCalled();
+    expect(mocks.createAsset).not.toHaveBeenCalled();
   });
 
   it("fetches only the caller-owned persisted storage URL", async () => {

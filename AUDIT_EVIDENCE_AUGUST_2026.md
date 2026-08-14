@@ -39,6 +39,8 @@ The asset-path review found that re-optimization trusted a caller-supplied stora
 
 The snapshot-path review found that creation accepted a site ID and optional post ID without validating their ownership relationship. Snapshot creation now confirms the caller-owned site and, when supplied, a caller-owned post associated with that same site. The regression test covers an unowned site, a cross-site post, and a valid snapshot reference. The full web gate then passed with 24 files, 145 tests, 7 intentional skips, zero lint errors, and clean TypeScript and Drizzle validation.
 
+The continuing asset review found that upload accepted a site ID without checking caller ownership before decoding, optimizing, storing, and persisting the file. Asset upload now resolves the referenced site under the caller identity before any upload processing. The focused regression test proves an unowned site is rejected before storage or asset persistence. The full web gate then passed with 24 files, 146 tests, 7 intentional skips, zero lint errors, and clean TypeScript and Drizzle validation.
+
 Unauthenticated navigation to `/dashboard/1` did not expose dashboard content. It redirected to the configured Manus sign-in endpoint with the deployed callback URL. Completing OAuth and entering a user account would require account credentials and user confirmation, so the authenticated repository-picker and dashboard portions remain explicitly unverified in this independent browser pass.
 
 ## API Authorization and Contract Review

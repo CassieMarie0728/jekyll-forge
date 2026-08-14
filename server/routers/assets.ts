@@ -4,6 +4,7 @@ import { TRPCError } from "@trpc/server";
 import {
   getAssetsBySiteId,
   getAssetById,
+  getSiteById,
   createAsset,
   updateAsset,
   deleteAsset,
@@ -48,7 +49,11 @@ export const assetsRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      // Decode base64
+      const site = await getSiteById(input.siteId, ctx.user.id);
+      if (!site) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Site not found" });
+      }
+
       const rawBuffer = Buffer.from(input.base64Content, "base64");
 
       // Hash original for duplicate detection
