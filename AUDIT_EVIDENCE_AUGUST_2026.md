@@ -27,6 +27,10 @@ Direct metadata inspection on 14 August 2026 confirmed the deployed document has
 
 The shared GitHub client was also hardened after the protected-procedure inventory found that it surfaced a raw upstream response message. It now maps 401, 403, 404, and unexpected GitHub responses to generic, status-appropriate tRPC messages without exposing the upstream body. The complete web gate then passed with 20 files, 137 tests, and 7 intentional skips; lint retained its established 229 warnings with zero errors, TypeScript passed, and Drizzle reported no metadata drift.
 
+On 14 August 2026, the current deployed landing page hydrated successfully after the latest checkpoint. Its public controls, workflow target, FAQ disclosures, and corrected Android availability language were present. The new accountable hero, social, analytics, and Android-offline copy also appeared in the live response. No public link was activated and no external authentication session was initiated during this QA pass.
+
+The live QA pass also identified and removed the remaining unsupported instant-result and optimization wording from the workflow section. The public copy now describes the supported GitHub connection flow, platform-specific content formatting, and user-chosen scheduling time without promising immediate connection, optimal timing, or performance impact. The focused landing regression test and TypeScript check passed after the revision.
+
 Unauthenticated navigation to `/dashboard/1` did not expose dashboard content. It redirected to the configured Manus sign-in endpoint with the deployed callback URL. Completing OAuth and entering a user account would require account credentials and user confirmation, so the authenticated repository-picker and dashboard portions remain explicitly unverified in this independent browser pass.
 
 ## API Authorization and Contract Review

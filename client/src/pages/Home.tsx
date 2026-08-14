@@ -222,8 +222,7 @@ export default function Home() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-5xl md:text-7xl lg:text-8xl font-display font-bold tracking-tight mb-8 leading-[1.1]"
           >
-            The ultimate{" "}
-            <span className="forge-text-gradient">content engine</span>
+            A <span className="forge-text-gradient">content engine</span>
             <br className="hidden md:block" /> for Jekyll blogs.
           </motion.h1>
 
@@ -420,7 +419,7 @@ export default function Home() {
               {
                 n: "01",
                 title: "Connect GitHub",
-                desc: "Paste a Personal Access Token. Jekyll Forge connects to your repos instantly.",
+                desc: "Use the supported GitHub connection flow, then select a repository for your workspace.",
               },
               {
                 n: "02",
@@ -435,12 +434,12 @@ export default function Home() {
               {
                 n: "04",
                 title: "Repurpose for social media",
-                desc: "Automatically adapt content for Twitter, LinkedIn, Facebook, Instagram with platform-specific optimization.",
+                desc: "Adapt content for Twitter, LinkedIn, Facebook, and Instagram using platform-specific formatting.",
               },
               {
                 n: "05",
                 title: "Schedule & publish",
-                desc: "Schedule posts for optimal times with automatic retry logic, rate limit handling, and comprehensive error recovery.",
+                desc: "Schedule posts for a chosen time with retry logic, rate-limit handling, and visible recovery details.",
               },
               {
                 n: "06",
