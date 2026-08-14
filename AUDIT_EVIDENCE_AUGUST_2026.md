@@ -33,6 +33,8 @@ The live QA pass also identified and removed the remaining unsupported instant-r
 
 The continuing protected-procedure review identified a high-severity A/B testing ownership gap: its procedures accepted a post ID while querying or mutating variation, result, and summary records through helpers that only filtered by post or row ID. The remediation now checks the caller-owned post before every A/B operation, adds `userId` to A/B helper predicates, and scopes variation-status updates by post, user, and variation index. The added ownership regression test rejects an unowned post and proves owned reads receive the caller ID. The full web gate passed afterward with 21 files, 139 tests, 7 intentional skips, zero lint errors, and clean TypeScript and Drizzle validation.
 
+The social-path review additionally found that analytics synchronization searched only Twitter and LinkedIn records despite supporting Facebook and Instagram. A centralized supported-platform list now queries all four platforms using the caller ID before locating the requested record. Focused regression coverage proves the complete user-scoped platform set is queried. The full web gate then passed with 22 files, 140 tests, 7 intentional skips, zero lint errors, and clean TypeScript and Drizzle validation.
+
 Unauthenticated navigation to `/dashboard/1` did not expose dashboard content. It redirected to the configured Manus sign-in endpoint with the deployed callback URL. Completing OAuth and entering a user account would require account credentials and user confirmation, so the authenticated repository-picker and dashboard portions remain explicitly unverified in this independent browser pass.
 
 ## API Authorization and Contract Review

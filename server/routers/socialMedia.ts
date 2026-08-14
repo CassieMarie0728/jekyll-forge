@@ -28,6 +28,26 @@ import {
 import { toPublicSocialMediaAccount } from "../socialMediaAccountView";
 import { TRPCError } from "@trpc/server";
 
+export const SOCIAL_ANALYTICS_PLATFORMS = [
+  "twitter",
+  "linkedin",
+  "facebook",
+  "instagram",
+] as const;
+
+export async function getUserAnalyticsForSupportedPlatforms<T>(
+  userId: number,
+  getByPlatform: (
+    userId: number,
+    platform: (typeof SOCIAL_ANALYTICS_PLATFORMS)[number]
+  ) => Promise<T[]>
+) {
+  const analyticsByPlatform = await Promise.all(
+    SOCIAL_ANALYTICS_PLATFORMS.map(platform => getByPlatform(userId, platform))
+  );
+  return analyticsByPlatform.flat();
+}
+
 export const socialMediaRouter = router({
   /**
    * Connect a social media account (OAuth callback handler)
@@ -227,18 +247,11 @@ export const socialMediaRouter = router({
     .input(z.object({ analyticsId: z.number() }))
     .mutation(async ({ ctx, input }) => {
       try {
-        // Get all analytics and find by ID
-        const twitterAnalytics = await getContentAnalyticsByPlatform(
+        const userAnalytics = await getUserAnalyticsForSupportedPlatforms(
           ctx.user.id,
-          "twitter"
+          getContentAnalyticsByPlatform
         );
-        const linkedinAnalytics = await getContentAnalyticsByPlatform(
-          ctx.user.id,
-          "linkedin"
-        );
-        const analytics = [...twitterAnalytics, ...linkedinAnalytics].find(
-          a => a.id === input.analyticsId
-        );
+        const analytics = userAnalytics.find(a => a.id === input.analyticsId);
 
         if (!analytics || !analytics.externalPostId) {
           throw new TRPCError({

@@ -456,3 +456,4 @@
 - [x] Redact raw GitHub upstream error bodies from protected API responses while preserving status-specific user guidance
 - [x] Remove remaining unverified instant-result and optimization claims from the public workflow copy
 - [x] Enforce caller ownership for all A/B testing variation, result, and summary reads and mutations before exposing them through protected procedures
+- [x] Include Facebook and Instagram records in the user-scoped social analytics synchronization lookup
