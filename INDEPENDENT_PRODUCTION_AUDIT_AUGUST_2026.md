@@ -9,9 +9,9 @@
 
 The web platform is in a substantially stronger state following this independent pass. Public navigation, the protected-route boundary, metadata and reduced-motion behavior, authorization checks, social-token redaction, scheduler ownership controls, migration parity, and the production build were independently examined. The web test suite now completes deterministically with **130 passing tests and 7 intentional skips**, and TypeScript, production build, and Drizzle migration validation all pass.
 
-The Android companion is **not release-ready**. The native sign-in contract has now been remediated in source: it starts server-backed OAuth, receives a short-lived one-time deep-link ticket, exchanges that ticket through tRPC, and stores the resulting session in SecureStore. The mobile client compiles every referenced procedure against the shared `AppRouter` type contract, and its scheduling, social, AI, A/B testing, post-status, and repurposing screens use verified server procedures. The editor now commits drafts and published posts through authenticated GitHub and post mutations, while failure paths preserve a local draft and enqueue typed retry payloads. A real-device acceptance run through the external identity provider and network transition is still required. The owner has supplied a real Expo project ID and Firebase Android configuration for `com.cassandracrossno.jekyllforge`; remaining distribution blockers are the approved Android artwork and future Google Play credentials.
+The Android companion is **not release-ready**. The native sign-in contract has now been remediated in source: it starts server-backed OAuth, receives a short-lived one-time deep-link ticket, exchanges that ticket through tRPC, and stores the resulting session in SecureStore. The mobile client compiles every referenced procedure against the shared `AppRouter` type contract, and its scheduling, social, AI, A/B testing, post-status, and repurposing screens use verified server procedures. The editor now commits drafts and published posts through authenticated GitHub and post mutations, while failure paths preserve a local draft and enqueue typed retry payloads. A real-device acceptance run through the external identity provider and network transition is still required. The owner has supplied the Expo project ID, Firebase Android configuration, and approved branded release artwork for `com.cassandracrossno.jekyllforge`; the remaining distribution blocker is future Google Play enrollment and credentials.
 
-> **Release conclusion:** The web application is suitable for continued deployed use subject to normal authenticated-flow testing with a real account. The Android app should remain in internal development until real-device OAuth and offline recovery acceptance, Android branding, and Play release inputs are completed.
+> **Release conclusion:** The web application is suitable for continued deployed use subject to normal authenticated-flow testing with a real account. The Android app should remain in internal development until real-device OAuth and offline recovery acceptance, plus the Play release input, are completed.
 
 | Area | Assessment | Release decision |
 |---|---|---|
@@ -19,7 +19,7 @@ The Android companion is **not release-ready**. The native sign-in contract has 
 | Public landing experience | Public controls, workflow target, metadata, and motion safeguards inspected | Deployable |
 | API and database | User-scoped access reviewed; scheduler authorization gap remediated; schema checks pass | Deployable |
 | Android companion | Compiles, tests, uses the shared server contract, and persists editor/social failures for authenticated retry; device acceptance remains | **Do not release** |
-| Android distribution | Placeholder/missing project assets and credentials | **Externally blocked** |
+| Android distribution | Branded asset configuration is installed and validated; Play enrollment and credentials remain unavailable | **Externally blocked** |
 
 ## Validation Evidence
 
@@ -33,7 +33,7 @@ The Android companion is **not release-ready**. The native sign-in contract has 
 | Mobile TypeScript | **Pass** | `pnpm exec tsc --noEmit` in `mobile/jekyll-forge-mobile` |
 | Mobile Jest | **Pass** | 6 files and 18 tests passed |
 | Mobile lint | **Pass with 38 warnings, 0 errors** | Local ESLint flat config now resolves correctly; safe screen-level route typing and dead-code cleanup reduced the baseline by 22 warnings during this remediation pass |
-| Expo Doctor | **15/16 checks passed** | SDK dependency alignment and required peers are resolved; only missing branded image files prevent a clean schema check |
+| Resolved Expo configuration | **Pass** | `pnpm exec expo config --json --type public` resolves the Expo configuration with all four Android asset paths present |
 | Expo/Firebase identity | **Pass** | Resolved Expo config, EAS project ID, update URL, and Firebase package all match `com.cassandracrossno.jekyllforge` |
 | Deployed public landing | **Pass with scope limit** | Landing loaded; public controls and workflow anchor inspected |
 | Protected web route without session | **Pass** | `/dashboard/1` redirected to configured sign-in; dashboard content was not exposed |
@@ -74,7 +74,7 @@ The Android companion is **not release-ready**. The native sign-in contract has 
 | Priority | Finding | Evidence | Required owner input |
 |---|---|---|---|
 | Resolved | Expo project identity is configured. | `app.json` now contains EAS project ID `1921924b-7b89-4e88-92f5-0df9717315e9` and its matching Expo Updates URL. | None. |
-| P0 | Referenced Android assets do not exist. | Expo Doctor confirms `assets/icon.png`, `splash.png`, and `adaptive-icon.png` are still unavailable; the notification asset is also pending. | Approved branded asset set. |
+| Resolved | Referenced Android assets did not exist. | Owner-supplied artwork now provides the 512×512 app icon, 1024×1024 adaptive foreground, 96×96 monochrome notification icon, and a checkpoint-safe 2048×2048 optimized splash derivative (504 KB). | None. |
 | Resolved | Firebase Android configuration is present and package-aligned. | Supplied `google-services.json` is installed with package name `com.cassandracrossno.jekyllforge`. | None for Firebase configuration. |
 | P1 | Google Play submission credentials are unavailable. | Owner is deferring Play Console enrollment and service-account creation. | Create the Play Console account when ready, link its Cloud project, and upload the service-account key securely. |
 
@@ -91,12 +91,12 @@ The Android companion is **not release-ready**. The native sign-in contract has 
 
 The authentication boundary consistently uses `protectedProcedure`, and reviewed direct record helpers apply a user-ID predicate. Connected social account query responses continue to pass through a public projection that excludes access and refresh tokens. The new scheduler checks close the direct-object-reference gap found during review. Migration validation remains clean; no destructive schema action was required.
 
-The audit did not fabricate third-party account credentials, Firebase files, publishing credentials, test user data, testimonials, release assets, or results from authenticated external systems. These omissions are intentional and remain visible as explicit blockers.
+The audit did not fabricate third-party account credentials, publishing credentials, test user data, testimonials, or results from authenticated external systems. The owner supplied Firebase configuration and release artwork; the remaining omissions are intentional and remain visible as explicit blockers.
 
 ## Recommended Completion Order
 
 1. Run the mobile OAuth/deep-link session and offline recovery paths on a real Android device or emulator against the deployed service.
-2. Add the approved Android branding, then create Google Play credentials when enrollment is available.
+2. Create Google Play credentials when enrollment is available.
 3. Execute a consented, authenticated end-to-end web acceptance run using a real GitHub-connected account.
 4. Reduce mobile lint warnings and high-cost optional web bundles before a broader public/mobile launch.
 

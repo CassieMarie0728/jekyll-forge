@@ -209,11 +209,12 @@
 - [ ] Replace placeholder Expo/EAS identifiers and complete Android build, Play submission, and environment-variable configuration
 - [x] Apply the supplied Expo project ID and Firebase Android configuration for `com.cassandracrossno.jekyllforge`, then validate the resolved Expo configuration
 - [x] Resolve Expo Doctor's missing peer dependencies and SDK-version alignment
-- [ ] Add the user-supplied branded assets to clear Expo config validation
+- [x] Add the user-supplied branded assets to clear Expo config validation
+- [x] Create and validate a checkpoint-safe optimized derivative of the supplied Android splash artwork while retaining the original upload unchanged
 - [x] Reconcile the Android authentication flow with the web OAuth contract and secure token-storage model
 - [x] Align mobile token persistence across SecureStore, AsyncStorage, login, logout, and tRPC request headers
 - [x] Add protected Android device-token registration and revocation backed by a durable database table
-- [ ] Configure a real Expo project ID, branded Android assets, Firebase configuration, and Google Play submission credentials
+- [ ] Complete Google Play submission credentials; Expo project ID, branded Android assets, and Firebase configuration are now in place
 
 ## Independent Production-Readiness Audit — August 2026
 - [x] Reproduce the complete web test, type-check, lint, build, and migration-validation baseline from a clean audit pass
