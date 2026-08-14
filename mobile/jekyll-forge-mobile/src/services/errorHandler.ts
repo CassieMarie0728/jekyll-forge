@@ -1,4 +1,5 @@
 import { Alert } from "react-native";
+import type { AlertButton } from "react-native";
 import { haptics } from "../utils/haptics";
 
 // Error types for categorization
@@ -18,6 +19,21 @@ export interface AppError {
   code?: string;
   retryable: boolean;
   originalError?: Error;
+}
+
+type TrpcLikeError = {
+  data?: { code?: string };
+  message?: string;
+};
+
+function isTrpcLikeError(error: unknown): error is TrpcLikeError {
+  return Boolean(
+    error &&
+      typeof error === "object" &&
+      "data" in error &&
+      (!("message" in error) ||
+        typeof (error as { message?: unknown }).message === "string")
+  );
 }
 
 function normalizeError(error: unknown): Error {
@@ -62,8 +78,8 @@ export function parseError(error: unknown): AppError {
   }
 
   // tRPC errors
-  if (error && typeof error === "object" && "data" in error) {
-    const trpcError = error as any;
+  if (isTrpcLikeError(error)) {
+    const trpcError = error;
     const code = trpcError.data?.code;
 
     switch (code) {
@@ -191,7 +207,7 @@ export async function showErrorAlert(
   // Trigger haptic feedback for error
   await haptics.error();
 
-  const buttons: any[] = [];
+  const buttons: AlertButton[] = [];
 
   if (error.retryable && onRetry) {
     buttons.push({
