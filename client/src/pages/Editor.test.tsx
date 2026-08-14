@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import {
   parseMarkdownFrontMatter,
   readingTime,
@@ -56,7 +56,9 @@ vi.mock("@/components/FrontMatterEditor", () => ({
 vi.mock("@/components/MarkdownPreview", () => ({
   default: () => <div>Preview</div>,
 }));
-vi.mock("@/components/AIAssistant", () => ({ default: () => null }));
+vi.mock("@/components/AIAssistant", () => ({
+  default: () => <div>AI Assistant loaded</div>,
+}));
 vi.mock("@/components/PublishDialog", () => ({ default: () => null }));
 vi.mock("@/components/SnapshotManager", () => ({ default: () => null }));
 vi.mock("@/components/FileBrowser", () => ({
@@ -103,5 +105,17 @@ describe("editor markdown utilities", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("Front matter")).toBeInTheDocument();
     expect(screen.getByText("Preview")).toBeInTheDocument();
+  });
+
+  it("loads the AI assistant only after the editor AI control is opened", async () => {
+    render(<Editor />);
+
+    expect(screen.queryByText("AI Assistant loaded")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "AI" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("AI Assistant loaded")).toBeInTheDocument();
+    });
   });
 });

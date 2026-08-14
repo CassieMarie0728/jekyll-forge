@@ -440,7 +440,7 @@
 - [x] Add public SEO/social metadata, restore pinch zoom, and add a global prefers-reduced-motion safeguard
 
 - [x] Lazy-load authenticated feature routes and verify the production main chunk drops below 1 MB
-- [ ] Further split or defer the remaining heavy Editor and diagram tooling chunks
+- [x] Further split or defer the remaining heavy Editor and diagram tooling chunks
 
 - [x] Replace the broken Watch Demo CTA, which currently scrolls to a missing `demo-section`, with a truthful workflow destination or a real demo asset
 - [x] Complete shared typed Android screen-to-server API contract alignment and regression validation

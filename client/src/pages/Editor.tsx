@@ -1,4 +1,11 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, {
+  lazy,
+  Suspense,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
 import { useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -82,18 +89,20 @@ import {
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
 import { formatDistanceToNow, format } from "date-fns";
 import FrontMatterEditor from "@/components/FrontMatterEditor";
 import MarkdownPreview from "@/components/MarkdownPreview";
-import AIAssistant from "@/components/AIAssistant";
 import PublishDialog from "@/components/PublishDialog";
 import SnapshotManager from "@/components/SnapshotManager";
 import FileBrowser from "@/components/FileBrowser";
 import { RepurposingModal } from "@/components/RepurposingModal";
 import { Link } from "wouter";
+
+const AIAssistant = lazy(() => import("@/components/AIAssistant"));
 
 type EditorMode = "visual" | "markdown" | "split";
 
@@ -689,14 +698,30 @@ export default function Editor() {
       {/* AI Assistant Sheet - Responsive width */}
       <Sheet open={showAI} onOpenChange={setShowAI}>
         <SheetContent side="right" className="w-full sm:w-[420px] p-0">
-          <AIAssistant
-            markdown={markdown}
-            frontMatter={frontMatter}
-            siteId={Number(siteId)}
-            onInsert={handleAIInsert}
-            onFrontMatterUpdate={handleFrontMatterChange}
-            onCreateSnapshot={handleCreateSnapshot}
-          />
+          <SheetHeader className="sr-only">
+            <SheetTitle>AI writing assistant</SheetTitle>
+            <SheetDescription>
+              Generate and apply writing assistance for the current post.
+            </SheetDescription>
+          </SheetHeader>
+          {showAI && (
+            <Suspense
+              fallback={
+                <div className="p-6 text-sm text-muted-foreground">
+                  Loading AI assistant…
+                </div>
+              }
+            >
+              <AIAssistant
+                markdown={markdown}
+                frontMatter={frontMatter}
+                siteId={Number(siteId)}
+                onInsert={handleAIInsert}
+                onFrontMatterUpdate={handleFrontMatterChange}
+                onCreateSnapshot={handleCreateSnapshot}
+              />
+            </Suspense>
+          )}
         </SheetContent>
       </Sheet>
 
