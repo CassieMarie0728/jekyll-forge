@@ -12,6 +12,7 @@ import {
   FlatList,
 } from "react-native";
 import { trpc } from "../utils/trpc";
+import { enqueueSocialPublish } from "../services/offlineQueueProducers";
 
 interface PublishTarget {
   platform: "twitter" | "linkedin" | "facebook" | "instagram";
@@ -55,6 +56,8 @@ export default function SocialPublishScreen({ route }: any) {
 
     setLoading(true);
     try {
+      let publishedCount = 0;
+      let queuedCount = 0;
       for (const platform of selected) {
         const account = connectedAccountsQuery.data?.find(
           item => item.platform === platform.platform && item.isConnected
@@ -62,12 +65,28 @@ export default function SocialPublishScreen({ route }: any) {
         if (!account) {
           throw new Error(`Connect a ${platform.name} account before publishing.`);
         }
-        await publishMutation.mutateAsync({
-          repurposedContentId,
-          accountId: account.id,
-        });
+        try {
+          await publishMutation.mutateAsync({
+            repurposedContentId,
+            accountId: account.id,
+          });
+          publishedCount += 1;
+        } catch (error) {
+          console.warn(`Queueing ${platform.name} publication for retry:`, error);
+          await enqueueSocialPublish({
+            kind: "social-content",
+            repurposedContentId,
+            accountId: account.id,
+          });
+          queuedCount += 1;
+        }
       }
-      Alert.alert("Success", "Post published to selected platforms");
+      Alert.alert(
+        queuedCount > 0 ? "Publication queued" : "Success",
+        queuedCount > 0
+          ? `${publishedCount} publication(s) completed and ${queuedCount} will retry when online.`
+          : "Post published to selected platforms"
+      );
     } catch (error) {
       Alert.alert("Error", "Failed to publish post");
       console.error("Publish error:", error);

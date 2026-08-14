@@ -23,7 +23,7 @@ export type MobilePostUpsertInput = {
 
 export type MobilePostUpdateInput = Omit<
   MobilePostUpsertInput,
-  "siteId" | "path"
+  "siteId" | "path" | "scheduledAt"
 > & {
   id: number;
   scheduledAt?: Date | null;

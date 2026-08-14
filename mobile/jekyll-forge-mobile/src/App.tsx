@@ -8,6 +8,13 @@ import { ToastProvider } from "./components/Toast";
 import { haptics } from "./utils/haptics";
 import { syncService } from "./services/syncService";
 import { pushNotificationService } from "./services/pushNotifications";
+import {
+  isPostDeleteInput,
+  isPostUpdateInput,
+  isPostUpsertInput,
+  isRepositoryPublishQueueData,
+  isSocialPublishQueueData,
+} from "./services/offlineQueueContracts";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -23,20 +30,60 @@ function AppContent() {
   const trpcClient = getTrpcClient();
 
   syncService.configureProcessor(async item => {
-    const client = trpcClient as any;
     switch (item.action) {
       case "create":
-        await client.posts.upsert.mutate(item.data);
+        if (!isPostUpsertInput(item.data)) {
+          throw new Error("Offline create payload is invalid.");
+        }
+        await trpcClient.posts.upsert.mutate(item.data);
         return;
       case "update":
-        await client.posts.update.mutate(item.data);
+        if (!isPostUpdateInput(item.data)) {
+          throw new Error("Offline update payload is invalid.");
+        }
+        await trpcClient.posts.update.mutate(item.data);
         return;
-      case "publish":
-        throw new Error(
-          "Offline post publishing is not configured until the mobile GitHub publish contract is available."
-        );
+      case "publish": {
+        if (isRepositoryPublishQueueData(item.data)) {
+          const commit = await trpcClient.github.commitFile.mutate(item.data.commit);
+          const sha =
+            commit &&
+            typeof commit === "object" &&
+            "content" in commit &&
+            commit.content &&
+            typeof commit.content === "object" &&
+            "sha" in commit.content &&
+            typeof commit.content.sha === "string"
+              ? commit.content.sha
+              : item.data.post.sha;
+          await trpcClient.posts.upsert.mutate({ ...item.data.post, sha });
+          if (item.data.priorDraft?.sha) {
+            await trpcClient.github.deleteFile.mutate({
+              owner: item.data.commit.owner,
+              repo: item.data.commit.repo,
+              path: item.data.priorDraft.path,
+              branch: item.data.commit.branch,
+              sha: item.data.priorDraft.sha,
+              message: `Remove draft after publishing ${item.data.post.title || "post"}`,
+            });
+            await trpcClient.posts.delete.mutate({ id: item.data.priorDraft.postId });
+          }
+          return;
+        }
+        if (isSocialPublishQueueData(item.data)) {
+          await trpcClient.socialMedia.publishContent.mutate({
+            repurposedContentId: item.data.repurposedContentId,
+            accountId: item.data.accountId,
+          });
+          return;
+        }
+        throw new Error("Offline publish payload is invalid.");
+      }
       case "delete":
-        await client.posts.delete.mutate(item.data);
+        if (!isPostDeleteInput(item.data)) {
+          throw new Error("Offline delete payload is invalid.");
+        }
+        await trpcClient.posts.delete.mutate(item.data);
         return;
       default:
         throw new Error(`Unsupported offline action: ${String(item.action)}`);

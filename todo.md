@@ -239,12 +239,12 @@
 - [x] Accept validated mobile bearer session tokens in server authentication while retaining existing cookie authentication
 - [x] Verify the Android deep-link registration matches `jekyllforge://auth-callback` and add end-to-end auth-store persistence coverage
 - [x] Route Android tRPC headers through SecureStore instead of the stale AsyncStorage token location
-- [ ] Integrate offline queue producers into mobile mutation screens and retain failed operations for recovery rather than deleting them after retries
+- [ ] Extend offline queue producers to the remaining mobile mutation flows beyond editor, social publication, and post-status updates; add end-to-end replay coverage for every supported queue action
 - [ ] Complete the remaining Android release inputs: branded assets and Play submission credentials (package, Expo ID, and Firebase are configured)
 - [x] Align Android post hooks and screen mutations with the server's actual `posts.get`, `posts.upsert`, `posts.update`, and `posts.delete` contract
 - [x] Replace the temporary `any` mobile tRPC adapter with a shared `AppRouter` type contract and compile every mobile procedure use against it
 - [x] Align Android tRPC packages with the server's tRPC 11 contract before enabling compile-time shared router types
-- [ ] Replace the Android editor's simulated publish success path with an authenticated server mutation and offline-safe persistence behavior
+- [x] Replace the Android editor's simulated publish success path with an authenticated server mutation and offline-safe persistence behavior
 
 ## Deployment Notes
 - **Cron jobs activate after deployment**: The scheduler infrastructure is fully implemented, but heartbeat cron jobs only activate once the site is published to production (Manus platform requirement)
@@ -373,7 +373,7 @@
 - [x] Add social media analytics screen (SocialAnalyticsScreen)
 - [x] Create SocialAccountManager component
 - [x] Implement custom hooks for social operations
-- [ ] Implement an authenticated, server-backed mobile publishing workflow (current editor publish path is simulated)
+- [x] Implement an authenticated, server-backed mobile publishing workflow (current editor publish path is simulated)
 - [x] Add AI assistant to mobile editor (AIAssistantScreen with 6 task types)
 - [x] Implement repurposing engine UI for mobile (RepurposingScreen with 8 formats)
 - [x] Implement A/B testing UI for mobile (ABTestingScreen with variation generation)
@@ -429,7 +429,8 @@
 - [x] Improve Features Grid and Descriptions (Redesigned into 3-column layout with hover effects and icons)
 - [ ] Full QA Testing and Link Verification
 - [ ] Final Polish and Deployment Readiness
-- [ ] Wire mobile screens and mutations into the offline queue processor; currently no screen calls `queueAction`, so the queue is infrastructure-only
+- [x] Wire mobile screens and mutations into the offline queue processor; typed repository publishing, social publishing, and post-status producers now queue retryable failures
+- [x] Add regression tests that prove the editor, social-publishing, and post-status offline producers enqueue their typed payloads; replay success/failure is covered at the queue processor level
 - [x] Add a mobile auth/session regression test covering SecureStore token, persisted user, restart restore, and logout cleanup
 
 - [x] Add a protected server-side post-delete procedure with ownership checks before enabling mobile offline delete actions

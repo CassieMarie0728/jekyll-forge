@@ -11,6 +11,7 @@ import {
   Switch,
 } from "react-native";
 import { trpc } from "../utils/trpc";
+import { enqueuePostStatusUpdate } from "../services/offlineQueueProducers";
 
 interface PublishOptions {
   title: string;
@@ -51,7 +52,7 @@ export default function PublishScreen({ route, navigation }: any) {
                 throw new Error("Save the post before changing its publication status.");
               }
 
-              await updatePostMutation.mutateAsync({
+              const updateInput = {
                 id: postId,
                 title: post.title,
                 markdown: post.content,
@@ -62,7 +63,19 @@ export default function PublishScreen({ route, navigation }: any) {
                     ? "scheduled"
                     : "published",
                 scheduledAt: scheduledDate ? new Date(scheduledDate) : null,
-              });
+              } as const;
+
+              try {
+                await updatePostMutation.mutateAsync(updateInput);
+              } catch (error) {
+                await enqueuePostStatusUpdate(updateInput);
+                Alert.alert(
+                  "Update queued",
+                  "Your post status will retry when the connection is restored."
+                );
+                navigation.goBack();
+                return;
+              }
 
               if (isDraft) {
                 Alert.alert("Success", "Post saved as draft");
