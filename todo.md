@@ -463,3 +463,4 @@
 - [x] Validate that repurposing generation and regeneration posts belong to the caller-owned referenced site
 - [x] Validate that an optional scheduled post belongs to the caller-owned scheduled site before creating a schedule
 - [x] Verify caller ownership of the referenced site before creating or upserting a post
+- [x] Replace the remaining unsupported "optimal times" scheduling claim with verified capability language

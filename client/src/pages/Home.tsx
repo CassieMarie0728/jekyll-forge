@@ -98,7 +98,7 @@ const FEATURES = [
   {
     icon: Clock,
     title: "Scheduled Publishing",
-    desc: "Schedule posts for optimal times with automatic retry logic, rate limit handling, and comprehensive error recovery.",
+    desc: "Schedule posts for future publication with automatic retry logic, rate-limit handling, and error recovery.",
   },
 ];
 
