@@ -205,8 +205,9 @@
 - [x] Audit protected API procedures for ownership enforcement, input validation, sensitive token exposure, and social-platform error handling
 - [x] Prevent OAuth access and refresh tokens from being returned by connected-account API queries
 - [x] Verify database migrations match the Drizzle schema and identify non-destructive migration gaps (documented in MIGRATION_AUDIT.md)
-- [ ] Verify Android offline queues, synchronization conflict behavior, notification configuration, and release packaging prerequisites
-- [ ] Replace placeholder Expo/EAS identifiers and complete Android build, Play submission, and environment-variable configuration
+- [x] Verify Android offline queues, synchronization conflict behavior, notification configuration, and release packaging prerequisites
+- [x] Resolve Android push-token registration from the configured Expo project ID and prevent Firebase configuration from being misused as a Play submission credential
+- [ ] Complete Google Play submission configuration with the owner's real Play service-account credential and restore a correct EAS internal-track submit profile; Expo/EAS identifiers and development build are complete
 - [x] Apply the supplied Expo project ID and Firebase Android configuration for `com.cassandracrossno.jekyllforge`, then validate the resolved Expo configuration
 - [x] Resolve Expo Doctor's missing peer dependencies and SDK-version alignment
 - [x] Add the user-supplied branded assets to clear Expo config validation

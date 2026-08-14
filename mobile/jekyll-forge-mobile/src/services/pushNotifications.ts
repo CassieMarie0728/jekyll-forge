@@ -1,5 +1,6 @@
 import * as Notifications from "expo-notifications";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getExpoProjectId } from "./expoProjectId";
 
 const PUSH_TOKEN_KEY = "@jekyll_forge_push_token";
 const NOTIFICATION_PREFS_KEY = "@jekyll_forge_notification_prefs";
@@ -80,7 +81,7 @@ class PushNotificationService {
 
   private async registerForPushNotifications(): Promise<void> {
     try {
-      const projectId = process.env.EXPO_PUBLIC_EAS_PROJECT_ID;
+      const projectId = getExpoProjectId();
       if (!projectId) {
         console.warn(
           "Push notifications unavailable until EXPO_PUBLIC_EAS_PROJECT_ID is configured"

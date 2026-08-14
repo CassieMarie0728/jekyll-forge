@@ -25,7 +25,8 @@
         "WRITE_EXTERNAL_STORAGE",
         "INTERNET",
         "VIBRATE",
-        "RECEIVE_BOOT_COMPLETED"
+        "RECEIVE_BOOT_COMPLETED",
+        "POST_NOTIFICATIONS"
       ],
       "googleServicesFile": "./google-services.json"
     },
