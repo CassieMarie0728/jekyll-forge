@@ -43,6 +43,8 @@ The continuing asset review found that upload accepted a site ID without checkin
 
 The repurposing-path review found that generation and regeneration accepted caller-owned post IDs without confirming they belonged to the supplied site, while regeneration deleted the old content before validating the replacement context. Both flows now require the post-to-site relationship and regeneration verifies the existing record context before deletion. Focused tests prove cross-site generation is rejected and mismatched regeneration does not delete content. The full web gate then passed with 25 files, 148 tests, 7 intentional skips, zero lint errors, and clean TypeScript and Drizzle validation.
 
+The scheduler-path review found that scheduling validated the site but not the optional post-to-site relationship. Scheduling now resolves an optional post under the caller identity and requires it to belong to the validated site before it creates a schedule row or heartbeat job. The scheduler regression suite proves a cross-site post is rejected before schedule creation. The full web gate then passed with 25 files, 149 tests, 7 intentional skips, zero lint errors, and clean TypeScript and Drizzle validation.
+
 Unauthenticated navigation to `/dashboard/1` did not expose dashboard content. It redirected to the configured Manus sign-in endpoint with the deployed callback URL. Completing OAuth and entering a user account would require account credentials and user confirmation, so the authenticated repository-picker and dashboard portions remain explicitly unverified in this independent browser pass.
 
 ## API Authorization and Contract Review

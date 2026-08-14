@@ -4,6 +4,7 @@ import type { TrpcContext } from "../_core/context";
 const dbMocks = vi.hoisted(() => ({
   createScheduledPost: vi.fn(),
   getSiteById: vi.fn(),
+  getPostById: vi.fn(),
   getScheduledPostsBySite: vi.fn(),
   getScheduledPostById: vi.fn(),
   updateScheduledPost: vi.fn(),
@@ -81,6 +82,24 @@ describe("scheduler ownership safeguards", () => {
         scheduledAt: new Date(Date.now() + 60_000),
       })
     ).rejects.toThrow("Site not found");
+    expect(dbMocks.createScheduledPost).not.toHaveBeenCalled();
+  });
+
+  it("rejects scheduling a caller-owned post against a different site", async () => {
+    dbMocks.getSiteById.mockResolvedValue({ id: 9, userId: 7 });
+    dbMocks.getPostById.mockResolvedValue({ id: 15, userId: 7, siteId: 10 });
+    const caller = schedulerRouter.createCaller(createContext());
+
+    await expect(
+      caller.schedule({
+        siteId: 9,
+        postId: 15,
+        draftPath: "_drafts/a.md",
+        targetPath: "_posts/2026-08-12-a.md",
+        scheduledAt: new Date(Date.now() + 60_000),
+      })
+    ).rejects.toThrow("Post not found");
+    expect(dbMocks.getPostById).toHaveBeenCalledWith(15, 7);
     expect(dbMocks.createScheduledPost).not.toHaveBeenCalled();
   });
 

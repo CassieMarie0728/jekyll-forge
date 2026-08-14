@@ -461,3 +461,4 @@
 - [x] Verify caller ownership of snapshot site and optional post references before creation
 - [x] Verify caller ownership of the referenced site before processing an asset upload
 - [x] Validate that repurposing generation and regeneration posts belong to the caller-owned referenced site
+- [x] Validate that an optional scheduled post belongs to the caller-owned scheduled site before creating a schedule

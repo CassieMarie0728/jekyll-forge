@@ -10,6 +10,7 @@ import {
 import {
   createScheduledPost,
   getSiteById,
+  getPostById,
   getScheduledPostsBySite,
   getScheduledPostById,
   updateScheduledPost,
@@ -62,6 +63,13 @@ export const schedulerRouter = router({
       const site = await getSiteById(input.siteId, ctx.user.id);
       if (!site) {
         throw new Error("Site not found");
+      }
+
+      if (input.postId !== undefined) {
+        const post = await getPostById(input.postId, ctx.user.id);
+        if (!post || post.siteId !== site.id) {
+          throw new Error("Post not found");
+        }
       }
 
       if (input.scheduledAt.getTime() <= Date.now()) {
