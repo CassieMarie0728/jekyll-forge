@@ -7,32 +7,32 @@
 
 ## Executive Assessment
 
-The web platform is in a substantially stronger state following this independent pass. Public navigation, the protected-route boundary, metadata and reduced-motion behavior, authorization checks, social-token redaction, scheduler ownership controls, migration parity, and the production build were independently examined. The web test suite now completes deterministically with **120 passing tests and 7 intentional skips**, and TypeScript, production build, and Drizzle migration validation all pass.
+The web platform is in a substantially stronger state following this independent pass. Public navigation, the protected-route boundary, metadata and reduced-motion behavior, authorization checks, social-token redaction, scheduler ownership controls, migration parity, and the production build were independently examined. The web test suite now completes deterministically with **130 passing tests and 7 intentional skips**, and TypeScript, production build, and Drizzle migration validation all pass.
 
-The Android companion is **not release-ready**. The native sign-in contract has now been remediated in source: it starts server-backed OAuth, receives a short-lived one-time deep-link ticket, exchanges that ticket through tRPC, and stores the resulting session in SecureStore. The implementation is covered by server and store-level tests, but it still requires a real-device acceptance run through the external identity provider. Several screens retain simulated or mismatched mutation behavior, so full feature parity and real offline-first operation are not yet present. The owner has now supplied a real Expo project ID and Firebase Android configuration for `com.cassandracrossno.jekyllforge`; remaining distribution blockers are the approved Android artwork and future Google Play credentials.
+The Android companion is **not release-ready**. The native sign-in contract has now been remediated in source: it starts server-backed OAuth, receives a short-lived one-time deep-link ticket, exchanges that ticket through tRPC, and stores the resulting session in SecureStore. The mobile client now compiles every referenced procedure against the shared `AppRouter` type contract, and its scheduling, social, AI, A/B testing, post-status, and repurposing screens use verified server procedures. A real-device acceptance run through the external identity provider is still required; the editor publishing path and offline queue producers also remain incomplete. The owner has supplied a real Expo project ID and Firebase Android configuration for `com.cassandracrossno.jekyllforge`; remaining distribution blockers are the approved Android artwork and future Google Play credentials.
 
-> **Release conclusion:** The web application is suitable for continued deployed use subject to normal authenticated-flow testing with a real account. The Android app should remain in internal development until the blocking mobile authentication, API-contract, producer, and release-configuration items are completed.
+> **Release conclusion:** The web application is suitable for continued deployed use subject to normal authenticated-flow testing with a real account. The Android app should remain in internal development until real-device OAuth, editor publication, offline producers, and the external release inputs are completed.
 
 | Area | Assessment | Release decision |
 |---|---|---|
 | Web application and server | Verified source and build health; remaining risks are bounded and tracked | Deployable with routine monitoring |
 | Public landing experience | Public controls, workflow target, metadata, and motion safeguards inspected | Deployable |
 | API and database | User-scoped access reviewed; scheduler authorization gap remediated; schema checks pass | Deployable |
-| Android companion | Compiles and tests, but auth and mutation parity are incomplete | **Do not release** |
+| Android companion | Compiles, tests, and uses the shared server contract, but real-device OAuth, editor publication, and offline producers are incomplete | **Do not release** |
 | Android distribution | Placeholder/missing project assets and credentials | **Externally blocked** |
 
 ## Validation Evidence
 
 | Verification | Result | Evidence |
 |---|---:|---|
-| Web automated suite | **17 files passed; 128 tests passed; 7 skipped** | Final `pnpm test` after mobile OAuth remediation |
+| Web automated suite | **17 files passed; 130 tests passed; 7 skipped** | Final `pnpm test` after typed mobile contract and scheduler-reschedule remediation |
 | Web type safety | **Pass** | `pnpm check` (`tsc --noEmit`) |
 | Web lint | **Pass with 229 warnings, 0 errors** | Root ESLint was aligned to ESLint 9 / TypeScript-ESLint 8, automatic formatting fixes were applied, and mobile owns its separate lint configuration |
 | Production web/server build | **Pass** | `pnpm build`; Google-Fonts CSS-order warning removed |
 | Migration consistency | **Pass** | `pnpm exec drizzle-kit check` reported “Everything's fine” |
 | Mobile TypeScript | **Pass** | `pnpm exec tsc --noEmit` in `mobile/jekyll-forge-mobile` |
 | Mobile Jest | **Pass** | 2 files and 3 tests passed |
-| Mobile lint | **Pass with 60 warnings, 0 errors** | Local ESLint flat config now resolves correctly |
+| Mobile lint | **Pass with 56 warnings, 0 errors** | Local ESLint flat config now resolves correctly |
 | Expo Doctor | **15/16 checks passed** | SDK dependency alignment and required peers are resolved; only missing branded image files prevent a clean schema check |
 | Expo/Firebase identity | **Pass** | Resolved Expo config, EAS project ID, update URL, and Firebase package all match `com.cassandracrossno.jekyllforge` |
 | Deployed public landing | **Pass with scope limit** | Landing loaded; public controls and workflow anchor inspected |
@@ -47,6 +47,7 @@ The Android companion is **not release-ready**. The native sign-in contract has 
 | High | Android request headers used stale AsyncStorage token lookup after credentials moved to SecureStore. | Android tRPC client initialization in `App.tsx` now reads `authToken` from SecureStore. | Mobile TypeScript and auth tests pass. |
 | High | Android login requested nonexistent server endpoints and expected a JSON token from a browser-only callback. | Added mobile OAuth start/callback routes, durable hashed single-use mobile tickets, a protected tRPC ticket exchange, and bearer-session extraction. Session tokens are never placed in deep-link URLs. | Eight focused mobile OAuth/auth tests cover URL construction, callback state binding, ticket issuance, replay denial, bearer extraction, and ticket exchange. |
 | High | App-level and screen-level tRPC clients normalized API URLs differently. | Reused a normalized API URL factory across the provider and login exchange. | Android TypeScript and Jest pass. |
+| High | Android screens referred to unsupported tRPC procedure names and untyped payloads. | Replaced the temporary adapter with the shared type-only `AppRouter` contract and aligned AI, post status, repurposing, scheduler, social analytics/publishing, and A/B testing calls. Added the missing ownership-protected `scheduler.reschedule` mutation. | Android TypeScript passes; focused scheduler suite passes 5/5. |
 | Medium | Offline `publish` work was dispatched to social publishing despite being a different domain action. | The processor now retains that work as an explicit unsupported failure until a server-backed GitHub publishing contract exists. | Android sync regression tests pass. |
 | High | Android offline failures were removed after retry exhaustion, risking silent loss of user changes. | Queue items now transition to retained `failed` state with a retry count and error text. | New `syncService.test.ts` verifies retention of a terminally failed operation. |
 | Medium | Android lint script used an obsolete `--ext` flag and inherited incompatible root configuration. | Added a local mobile flat ESLint configuration and corrected the lint command. | Lint now completes with zero errors. |
@@ -63,8 +64,7 @@ The Android companion is **not release-ready**. The native sign-in contract has 
 | Priority | Finding | Evidence | Required next action |
 |---|---|---|---|
 | P1 | **A real-device mobile sign-in acceptance run is still required.** The exported Expo scheme is `jekyllforge`, and code-level callback/ticket tests pass, but no user-controlled Android/identity-provider run was performed. | `app.json`; mobile auth regression suite | Run sign-in on an Android device or emulator against the deployed app before release. |
-| P0 | **Mobile screen contracts remain inconsistent.** The reusable post-hook adapter now uses `posts.get`, `posts.upsert`, `posts.update`, and `posts.delete`, but legacy screens still contain unsupported draft/publish mutation names and the temporary `any` tRPC adapter. | `mobile/.../src/hooks/usePosts.ts`; `PublishScreen.tsx`; `server/routers/posts.ts` | Replace the transitional adapter with generated shared types and align every screen mutation before enabling publication. |
-| P0 | **Editor publication remains simulated.** The Android editor displays success without issuing a protected server mutation. | `mobile/.../src/screens/EditorScreen.tsx` | Implement a real save/publish workflow after the contract and OAuth work, with clear online/offline outcomes. |
+| P0 | **Editor publication remains simulated.** The Android editor displays success without issuing a protected server mutation. The separate post-status screen now uses `posts.update`, but this does not replace the editor action. | `mobile/.../src/screens/EditorScreen.tsx` | Implement a real save/publish workflow after the contract and OAuth work, with clear online/offline outcomes. |
 | P1 | **Offline producer coverage is absent.** NetInfo, storage, and a processor exist, but no screen invokes `queueAction`. | `mobile/.../src/services/syncService.ts`; source search | Wire queue producers into post create/update/delete and social publishing screens; add conflict and replay tests. |
 | P1 | **Mobile type/lint debt remains.** Lint completes but reports 60 warnings, chiefly `any` boundaries and unused values. | Final mobile lint run | Remove legacy unused code, type storage and tRPC edges, then raise relevant warnings to errors. |
 
@@ -94,8 +94,8 @@ The audit did not fabricate third-party account credentials, Firebase files, pub
 
 ## Recommended Completion Order
 
-1. Establish the mobile OAuth/deep-link session contract and replace the temporary mobile `any` tRPC boundary with generated shared types.
-2. Make the mobile editor and post hooks invoke the aligned API contract, then add concrete offline queue producers and conflict/recovery UX.
+1. Run the mobile OAuth/deep-link session on a real Android device or emulator against the deployed service.
+2. Make the mobile editor issue the protected save/publish mutation, then add concrete offline queue producers and conflict/recovery UX.
 3. Add the approved Android branding, then create Google Play credentials when enrollment is available.
 4. Execute a consented, authenticated end-to-end web acceptance run using a real GitHub-connected account.
 5. Reduce mobile lint warnings and high-cost optional web bundles before a broader public/mobile launch.

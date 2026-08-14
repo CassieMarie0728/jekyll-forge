@@ -13,14 +13,6 @@ import {
   useDisconnectAccount,
 } from "../hooks/useSocialMedia";
 
-interface Account {
-  id: string;
-  platform: "twitter" | "linkedin" | "facebook" | "instagram";
-  username: string;
-  profileImage?: string;
-  connectedAt: string;
-}
-
 interface Props {
   onAccountConnected?: () => void;
   onAccountDisconnected?: () => void;
@@ -46,9 +38,9 @@ export default function SocialAccountManager({
 }: Props) {
   const { data: accounts, isLoading, refetch } = useConnectedAccounts();
   const disconnectMutation = useDisconnectAccount();
-  const [disconnecting, setDisconnecting] = useState<string | null>(null);
+  const [disconnecting, setDisconnecting] = useState<number | null>(null);
 
-  const handleDisconnect = (accountId: string, platform: string) => {
+  const handleDisconnect = (accountId: number, platform: string) => {
     Alert.alert(
       "Disconnect Account",
       `Are you sure you want to disconnect your ${platformNames[platform]} account?`,
@@ -59,7 +51,7 @@ export default function SocialAccountManager({
           onPress: async () => {
             setDisconnecting(accountId);
             try {
-              await disconnectMutation.mutateAsync({ accountId });
+              await disconnectMutation.mutateAsync({ id: accountId });
               refetch();
               onAccountDisconnected?.();
             } catch (error) {
@@ -74,19 +66,21 @@ export default function SocialAccountManager({
     );
   };
 
-  const renderAccountCard = (account: Account) => (
+  const renderAccountCard = (account: NonNullable<typeof accounts>[number]) => (
     <View key={account.id} style={styles.accountCard}>
       <View style={styles.accountInfo}>
         <Text style={styles.accountIcon}>
           {platformIcons[account.platform]}
         </Text>
         <View style={styles.accountDetails}>
-          <Text style={styles.accountUsername}>{account.username}</Text>
+          <Text style={styles.accountUsername}>
+            {account.displayName || account.username || account.accountId}
+          </Text>
           <Text style={styles.accountPlatform}>
             {platformNames[account.platform]}
           </Text>
           <Text style={styles.accountDate}>
-            Connected {new Date(account.connectedAt).toLocaleDateString()}
+            Connected {new Date(account.createdAt).toLocaleDateString()}
           </Text>
         </View>
       </View>
@@ -129,7 +123,7 @@ export default function SocialAccountManager({
       <FlatList
         data={accounts}
         renderItem={({ item }) => renderAccountCard(item)}
-        keyExtractor={item => item.id}
+        keyExtractor={item => String(item.id)}
         scrollEnabled={false}
       />
     </View>

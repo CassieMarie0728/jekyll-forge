@@ -155,6 +155,90 @@ export const schedulerRouter = router({
     }),
 
   /**
+   * Move a caller-owned pending scheduled post to a future time.
+   * Replaces its Heartbeat job when the platform scheduler is available.
+   */
+  reschedule: protectedProcedure
+    .input(
+      z.object({
+        id: z.number(),
+        scheduledAt: z.date(),
+        timezone: z.string().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const row = await getScheduledPostById(input.id, ctx.user.id);
+      if (!row) {
+        throw new Error("Scheduled post not found");
+      }
+      if (row.status !== "pending") {
+        throw new Error("Only pending scheduled posts can be rescheduled");
+      }
+      if (input.scheduledAt.getTime() <= Date.now()) {
+        throw new Error("Scheduled publish time must be in the future");
+      }
+
+      const timezone = input.timezone ?? row.timezone ?? "UTC";
+      const sessionToken =
+        parseCookie(ctx.req.headers.cookie ?? "")[COOKIE_NAME] ?? "";
+
+      if (row.scheduleCronTaskUid) {
+        try {
+          await deleteHeartbeatJob(row.scheduleCronTaskUid, sessionToken);
+        } catch (err) {
+          console.warn(
+            "[Scheduler] Could not delete existing heartbeat job while rescheduling:",
+            err instanceof Error ? err.message : err
+          );
+        }
+      }
+
+      try {
+        const filename = row.targetPath.split("/").pop() || row.targetPath;
+        const job = await createHeartbeatJob(
+          {
+            name: `jekyll-publish-${row.id}`,
+            cron: dateToCron(input.scheduledAt),
+            path: "/api/scheduled/publish-post",
+            payload: { scheduledPostId: row.id },
+            description: `Scheduled publish: ${filename} at ${input.scheduledAt.toISOString()}`,
+          },
+          sessionToken
+        );
+        await updateScheduledPost(row.id, {
+          scheduledAt: input.scheduledAt,
+          timezone,
+          status: "pending",
+          errorMessage: null,
+          scheduleCronTaskUid: job.taskUid,
+        });
+        return {
+          success: true,
+          taskUid: job.taskUid,
+          nextExecutionAt: job.nextExecutionAt,
+        };
+      } catch (err) {
+        console.warn(
+          "[Scheduler] Could not create heartbeat job while rescheduling:",
+          err instanceof Error ? err.message : err
+        );
+        await updateScheduledPost(row.id, {
+          scheduledAt: input.scheduledAt,
+          timezone,
+          status: "pending",
+          errorMessage: null,
+          scheduleCronTaskUid: null,
+        });
+        return {
+          success: true,
+          taskUid: null,
+          warning:
+            "Heartbeat job not created — deploy the site first to activate scheduling.",
+        };
+      }
+    }),
+
+  /**
    * Cancel all scheduled posts for a site.
    */
   cancelAll: protectedProcedure

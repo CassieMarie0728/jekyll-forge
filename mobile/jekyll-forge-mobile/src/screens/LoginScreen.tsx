@@ -49,7 +49,12 @@ export default function LoginScreen() {
             code,
           });
           await setToken(data.token);
-          await setUser(data.user);
+          await setUser({
+            id: String(data.user.id),
+            openId: data.user.openId,
+            name: data.user.name ?? "",
+            email: data.user.email ?? "",
+          });
         }
       }
     } catch (error) {

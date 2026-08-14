@@ -1,7 +1,10 @@
 import { trpc } from "../utils/trpc";
 
-export function useAssets(siteId: string) {
-  return trpc.assets.list.useQuery({ siteId });
+export function useAssets(siteId: number | null | undefined) {
+  return trpc.assets.list.useQuery(
+    { siteId: siteId ?? 0 },
+    { enabled: typeof siteId === "number" && siteId > 0 }
+  );
 }
 
 export function useUploadAsset() {
@@ -12,6 +15,6 @@ export function useDeleteAsset() {
   return trpc.assets.delete.useMutation();
 }
 
-export function useOptimizeAsset() {
-  return trpc.assets.optimize.useMutation();
+export function useReoptimizeAsset() {
+  return trpc.assets.reoptimize.useMutation();
 }

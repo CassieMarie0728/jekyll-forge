@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -13,28 +13,51 @@ import {
 import { trpc } from "../utils/trpc";
 
 interface ScheduledPost {
-  id: string;
+  id: number;
   title: string;
   content: string;
   scheduledDate: string;
   platforms: string[];
-  status: "scheduled" | "published" | "cancelled";
+  status: "scheduled" | "published" | "cancelled" | "failed";
   createdAt: string;
 }
 
 export default function ScheduledPostsScreen({ route, navigation }: any) {
   const { siteId } = route.params || {};
-  const [scheduledPosts, setScheduledPosts] = useState<ScheduledPost[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<
-    "all" | "scheduled" | "published" | "cancelled"
+    "all" | "scheduled" | "published" | "cancelled" | "failed"
   >("all");
+  const normalizedSiteId = Number(siteId);
 
-  const getScheduledPostsMutation = trpc.posts.getScheduled.useQuery({
-    siteId,
-  });
-  const cancelScheduleMutation = trpc.posts.cancelSchedule.useMutation();
-  const reschedulePostMutation = trpc.posts.reschedule.useMutation();
+  const scheduledPostsQuery = trpc.scheduler.list.useQuery(
+    { siteId: normalizedSiteId },
+    { enabled: Number.isInteger(normalizedSiteId) && normalizedSiteId > 0 }
+  );
+  const cancelScheduleMutation = trpc.scheduler.cancel.useMutation();
+  const reschedulePostMutation = trpc.scheduler.reschedule.useMutation();
+
+  const scheduledPosts = useMemo<ScheduledPost[]>(
+    () =>
+      (scheduledPostsQuery.data || []).map(job => ({
+        id: job.id,
+        title:
+          job.targetPath.split("/").pop()?.replace(/\.md$/, "") ||
+          "Scheduled post",
+        content: job.commitMessage || job.draftPath,
+        scheduledDate: job.scheduledAt.toISOString(),
+        platforms: [],
+        status:
+          job.status === "published"
+            ? "published"
+            : job.status === "cancelled"
+              ? "cancelled"
+              : job.status === "failed"
+                ? "failed"
+                : "scheduled",
+        createdAt: job.createdAt.toISOString(),
+      })),
+    [scheduledPostsQuery.data]
+  );
 
   const handleCancelSchedule = (post: ScheduledPost) => {
     Alert.alert("Cancel Schedule", `Cancel scheduled post "${post.title}"?`, [
@@ -43,12 +66,8 @@ export default function ScheduledPostsScreen({ route, navigation }: any) {
         text: "Cancel",
         onPress: async () => {
           try {
-            await cancelScheduleMutation.mutateAsync({ postId: post.id });
-            setScheduledPosts(prev =>
-              prev.map(p =>
-                p.id === post.id ? { ...p, status: "cancelled" } : p
-              )
-            );
+            await cancelScheduleMutation.mutateAsync({ id: post.id });
+            await scheduledPostsQuery.refetch();
             Alert.alert("Success", "Schedule cancelled");
           } catch (error: any) {
             Alert.alert("Error", error.message || "Failed to cancel schedule");
@@ -71,15 +90,16 @@ export default function ScheduledPostsScreen({ route, navigation }: any) {
             if (!newDate) return;
 
             try {
+              const scheduledAt = new Date(newDate);
+              if (Number.isNaN(scheduledAt.getTime())) {
+                Alert.alert("Error", "Enter a valid future date and time.");
+                return;
+              }
               await reschedulePostMutation.mutateAsync({
-                postId: post.id,
-                newDate,
+                id: post.id,
+                scheduledAt,
               });
-              setScheduledPosts(prev =>
-                prev.map(p =>
-                  p.id === post.id ? { ...p, scheduledDate: newDate } : p
-                )
-              );
+              await scheduledPostsQuery.refetch();
               Alert.alert("Success", "Post rescheduled");
             } catch (error: any) {
               Alert.alert("Error", error.message || "Failed to reschedule");
@@ -196,7 +216,7 @@ export default function ScheduledPostsScreen({ route, navigation }: any) {
         showsHorizontalScrollIndicator={false}
         style={styles.filtersContainer}
       >
-        {(["all", "scheduled", "published", "cancelled"] as const).map(
+        {(["all", "scheduled", "published", "cancelled", "failed"] as const).map(
           filter => (
             <TouchableOpacity
               key={filter}
@@ -221,7 +241,7 @@ export default function ScheduledPostsScreen({ route, navigation }: any) {
 
       {/* Posts List */}
       <ScrollView style={styles.content}>
-        {isLoading ? (
+        {scheduledPostsQuery.isLoading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#3b82f6" />
           </View>
@@ -245,7 +265,7 @@ export default function ScheduledPostsScreen({ route, navigation }: any) {
           <FlatList
             data={filteredPosts}
             renderItem={({ item }) => renderPostCard(item)}
-            keyExtractor={item => item.id}
+            keyExtractor={item => String(item.id)}
             scrollEnabled={false}
             style={styles.postsList}
           />

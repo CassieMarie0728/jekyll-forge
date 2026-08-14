@@ -13,14 +13,21 @@ import {
 import { trpc } from "../utils/trpc";
 
 interface Variation {
-  id: string;
-  index: number;
+  variationIndex: number;
   tone: string;
   angle: string;
-  title: string;
-  preview: string;
-  status: string;
+  headline: string;
+  content: string;
 }
+
+const AB_PLATFORMS = [
+  "twitter",
+  "linkedin",
+  "facebook",
+  "instagram",
+] as const;
+
+type AbPlatform = (typeof AB_PLATFORMS)[number];
 
 interface TestResult {
   variationIndex: number;
@@ -40,7 +47,7 @@ export default function ABTestingScreen({ route, navigation }: any) {
   const [variations, setVariations] = useState<Variation[]>([]);
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [variationCount, setVariationCount] = useState(3);
-  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([
+  const [selectedPlatforms, setSelectedPlatforms] = useState<AbPlatform[]>([
     "twitter",
     "linkedin",
   ]);
@@ -49,13 +56,17 @@ export default function ABTestingScreen({ route, navigation }: any) {
   const publishMutation = trpc.abTesting.publishVariation.useMutation();
 
   const handleGenerateVariations = async () => {
+    if (typeof postId !== "number") {
+      Alert.alert("Error", "Save the post before generating variations.");
+      return;
+    }
     setIsGenerating(true);
     try {
       const response = await generateMutation.mutateAsync({
         postId,
         count: variationCount,
         content: post?.content || "",
-        title: post?.title || "",
+        headline: post?.title || "",
       });
 
       setVariations(response.variations);
@@ -72,6 +83,10 @@ export default function ABTestingScreen({ route, navigation }: any) {
       Alert.alert("Error", "No variations to publish");
       return;
     }
+    if (typeof postId !== "number" || selectedPlatforms.length === 0) {
+      Alert.alert("Error", "Select at least one platform and save the post first.");
+      return;
+    }
 
     Alert.alert(
       "Publish Variations",
@@ -85,7 +100,7 @@ export default function ABTestingScreen({ route, navigation }: any) {
               for (const variation of variations) {
                 await publishMutation.mutateAsync({
                   postId,
-                  variationIndex: variation.index,
+                  variationIndex: variation.variationIndex,
                   platforms: selectedPlatforms,
                 });
               }
@@ -103,7 +118,7 @@ export default function ABTestingScreen({ route, navigation }: any) {
   };
 
   const renderVariationCard = (variation: Variation) => (
-    <View key={variation.id} style={styles.variationCard}>
+    <View key={variation.variationIndex} style={styles.variationCard}>
       <View style={styles.variationHeader}>
         <View style={styles.variationBadges}>
           <View style={styles.badge}>
@@ -114,13 +129,13 @@ export default function ABTestingScreen({ route, navigation }: any) {
           </View>
         </View>
         <Text style={styles.variationIndex}>
-          Variation {variation.index + 1}
+          Variation {variation.variationIndex}
         </Text>
       </View>
 
-      <Text style={styles.variationTitle}>{variation.title}</Text>
+      <Text style={styles.variationTitle}>{variation.headline}</Text>
       <Text style={styles.variationPreview} numberOfLines={3}>
-        {variation.preview}
+        {variation.content}
       </Text>
 
       <View style={styles.variationActions}>
@@ -262,7 +277,7 @@ export default function ABTestingScreen({ route, navigation }: any) {
             <View style={styles.optionSection}>
               <Text style={styles.optionLabel}>Publish Platforms</Text>
               <View style={styles.platformButtons}>
-                {["twitter", "linkedin", "facebook", "instagram"].map(
+                {AB_PLATFORMS.map(
                   platform => (
                     <TouchableOpacity
                       key={platform}
@@ -271,7 +286,7 @@ export default function ABTestingScreen({ route, navigation }: any) {
                         selectedPlatforms.includes(platform) &&
                           styles.platformButtonActive,
                       ]}
-                      onPress={() => {
+                  onPress={() => {
                         setSelectedPlatforms(prev =>
                           prev.includes(platform)
                             ? prev.filter(p => p !== platform)
@@ -341,7 +356,7 @@ export default function ABTestingScreen({ route, navigation }: any) {
             <FlatList
               data={variations}
               renderItem={({ item }) => renderVariationCard(item)}
-              keyExtractor={item => item.id}
+              keyExtractor={item => String(item.variationIndex)}
               scrollEnabled={false}
               style={styles.variationsList}
             />

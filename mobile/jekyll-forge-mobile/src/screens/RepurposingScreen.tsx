@@ -33,12 +33,16 @@ const REPURPOSING_FORMATS = [
   { format: "email", title: "Email Campaign", icon: "✉️" },
   { format: "podcast", title: "Podcast Outline", icon: "🎙️" },
   { format: "slides", title: "Slide Deck", icon: "📊" },
-];
+] as const;
+
+type RepurposingFormat = (typeof REPURPOSING_FORMATS)[number]["format"];
 
 export default function RepurposingScreen({ route, navigation }: any) {
   const { postId, siteId, post } = route.params || {};
   const [isGenerating, setIsGenerating] = useState(false);
-  const [selectedFormats, setSelectedFormats] = useState<string[]>([]);
+  const [selectedFormats, setSelectedFormats] = useState<RepurposingFormat[]>(
+    []
+  );
   const [repurposedContent, setRepurposedContent] = useState<
     RepurposedContent[]
   >([]);
@@ -46,9 +50,9 @@ export default function RepurposingScreen({ route, navigation }: any) {
     "generate"
   );
 
-  const generateMutation = trpc.repurposing.generateVariations.useMutation();
+  const generateMutation = trpc.repurposing.generate.useMutation();
 
-  const handleFormatToggle = (format: string) => {
+  const handleFormatToggle = (format: RepurposingFormat) => {
     setSelectedFormats(prev =>
       prev.includes(format) ? prev.filter(f => f !== format) : [...prev, format]
     );
@@ -60,17 +64,35 @@ export default function RepurposingScreen({ route, navigation }: any) {
       return;
     }
 
+    if (typeof postId !== "number" || typeof siteId !== "number") {
+      Alert.alert("Error", "Save the post before generating repurposed content.");
+      return;
+    }
+
     setIsGenerating(true);
     try {
       const results = await Promise.all(
         selectedFormats.map(async format => {
           const response = await generateMutation.mutateAsync({
             postId,
+            siteId,
             format,
-            content: post?.content || "",
-            title: post?.title || "",
           });
-          return response;
+          const formatDetails = REPURPOSING_FORMATS.find(
+            item => item.format === response.format
+          );
+          return {
+            format: response.format,
+            title: formatDetails?.title || response.format,
+            icon: formatDetails?.icon || "✦",
+            content: response.content,
+            metadata: {
+              characterCount: response.content.length,
+              wordCount: response.content.trim()
+                ? response.content.trim().split(/\s+/).length
+                : 0,
+            },
+          };
         })
       );
 
@@ -99,7 +121,7 @@ export default function RepurposingScreen({ route, navigation }: any) {
     ]);
   };
 
-  const renderFormatCard = (item: (typeof REPURPOSING_FORMATS)[0]) => (
+  const renderFormatCard = (item: (typeof REPURPOSING_FORMATS)[number]) => (
     <TouchableOpacity
       key={item.format}
       style={[

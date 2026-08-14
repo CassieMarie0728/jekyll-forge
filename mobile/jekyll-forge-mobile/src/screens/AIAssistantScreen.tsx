@@ -59,6 +59,15 @@ const AI_TASKS: AITask[] = [
   },
 ];
 
+const SERVER_TASKS: Record<string, string> = {
+  "generate-title": "title",
+  "generate-outline": "outline",
+  "generate-draft": "draft",
+  rewrite: "rewrite",
+  "generate-meta": "seo",
+  "generate-tags": "tags",
+};
+
 export default function AIAssistantScreen({ route, navigation }: any) {
   const { siteId, postId, currentContent } = route.params || {};
   const [selectedTask, setSelectedTask] = useState<string | null>(null);
@@ -67,7 +76,7 @@ export default function AIAssistantScreen({ route, navigation }: any) {
   const [result, setResult] = useState<string>("");
   const [tone, setTone] = useState("professional");
 
-  const aiMutation = trpc.ai.generateContent.useMutation();
+  const aiMutation = trpc.ai.generate.useMutation();
 
   const handleTaskSelect = (taskId: string) => {
     setSelectedTask(taskId);
@@ -84,14 +93,13 @@ export default function AIAssistantScreen({ route, navigation }: any) {
     setIsLoading(true);
     try {
       const response = await aiMutation.mutateAsync({
-        task: selectedTask,
-        content: currentContent || "",
-        prompt: prompt || "Generate content for this post",
+        task: SERVER_TASKS[selectedTask] || selectedTask,
+        userPrompt: prompt || undefined,
+        postMarkdown: currentContent || undefined,
         tone,
-        siteId,
       });
 
-      setResult(response.result);
+      setResult(response.text);
     } catch (error: any) {
       Alert.alert("Error", error.message || "Failed to generate content");
     } finally {

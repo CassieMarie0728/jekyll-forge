@@ -83,4 +83,36 @@ describe("scheduler ownership safeguards", () => {
     ).rejects.toThrow("Site not found");
     expect(dbMocks.createScheduledPost).not.toHaveBeenCalled();
   });
+
+  it("rejects rescheduling a scheduled post that is not owned by the caller", async () => {
+    dbMocks.getScheduledPostById.mockResolvedValue(undefined);
+    const caller = schedulerRouter.createCaller(createContext());
+
+    await expect(
+      caller.reschedule({
+        id: 42,
+        scheduledAt: new Date(Date.now() + 60_000),
+      })
+    ).rejects.toThrow("Scheduled post not found");
+    expect(dbMocks.getScheduledPostById).toHaveBeenCalledWith(42, 7);
+    expect(dbMocks.updateScheduledPost).not.toHaveBeenCalled();
+  });
+
+  it("rejects rescheduling to a time in the past", async () => {
+    dbMocks.getScheduledPostById.mockResolvedValue({
+      id: 42,
+      userId: 7,
+      status: "pending",
+      timezone: "UTC",
+    });
+    const caller = schedulerRouter.createCaller(createContext());
+
+    await expect(
+      caller.reschedule({
+        id: 42,
+        scheduledAt: new Date(Date.now() - 60_000),
+      })
+    ).rejects.toThrow("Scheduled publish time must be in the future");
+    expect(dbMocks.updateScheduledPost).not.toHaveBeenCalled();
+  });
 });

@@ -210,7 +210,7 @@
 - [x] Apply the supplied Expo project ID and Firebase Android configuration for `com.cassandracrossno.jekyllforge`, then validate the resolved Expo configuration
 - [x] Resolve Expo Doctor's missing peer dependencies and SDK-version alignment
 - [ ] Add the user-supplied branded assets to clear Expo config validation
-- [ ] Reconcile the Android authentication flow with the web OAuth contract and secure token-storage model
+- [x] Reconcile the Android authentication flow with the web OAuth contract and secure token-storage model
 - [x] Align mobile token persistence across SecureStore, AsyncStorage, login, logout, and tRPC request headers
 - [x] Add protected Android device-token registration and revocation backed by a durable database table
 - [ ] Configure a real Expo project ID, branded Android assets, Firebase configuration, and Google Play submission credentials
@@ -234,14 +234,16 @@
 - [x] Enforce scheduled-post ownership in scheduler recovery mutations and validate site ownership before creating a scheduled post
 - [x] Dispatch social publishing and analytics metrics through platform-specific typed service methods instead of `any` casts and the Twitter-only metric path
 - [x] Repair the Android lint script for the installed ESLint flat-config command-line interface and verify mobile linting
-- [ ] Replace the Android login flow's nonexistent `/api/oauth/authorize` and token-JSON callback assumptions with a supported mobile OAuth contract
+- [x] Replace the Android login flow's nonexistent `/api/oauth/authorize` and token-JSON callback assumptions with a supported mobile OAuth contract
 - [x] Add one-time mobile OAuth exchange tickets and a trusted deep-link callback without exposing session tokens in redirect URLs
 - [x] Accept validated mobile bearer session tokens in server authentication while retaining existing cookie authentication
-- [ ] Verify the Android deep-link registration matches `jekyllforge://auth-callback` and add end-to-end auth-store persistence coverage
+- [x] Verify the Android deep-link registration matches `jekyllforge://auth-callback` and add end-to-end auth-store persistence coverage
 - [x] Route Android tRPC headers through SecureStore instead of the stale AsyncStorage token location
 - [ ] Integrate offline queue producers into mobile mutation screens and retain failed operations for recovery rather than deleting them after retries
 - [ ] Complete the remaining Android release inputs: branded assets and Play submission credentials (package, Expo ID, and Firebase are configured)
-- [ ] Align Android post hooks and screen mutations with the server's actual `posts.get`, `posts.upsert`, `posts.update`, and `posts.delete` contract
+- [x] Align Android post hooks and screen mutations with the server's actual `posts.get`, `posts.upsert`, `posts.update`, and `posts.delete` contract
+- [x] Replace the temporary `any` mobile tRPC adapter with a shared `AppRouter` type contract and compile every mobile procedure use against it
+- [x] Align Android tRPC packages with the server's tRPC 11 contract before enabling compile-time shared router types
 - [ ] Replace the Android editor's simulated publish success path with an authenticated server mutation and offline-safe persistence behavior
 
 ## Deployment Notes
@@ -362,7 +364,7 @@
 - [x] Set up React Native project with Expo
 - [x] Configure tRPC client for mobile
 - [x] Set up React Navigation for mobile navigation
-- [ ] Implement a supported OAuth authentication flow for mobile
+- [x] Implement a supported OAuth authentication flow for mobile
 - [x] Build mobile dashboard with statistics
 - [x] Implement three-mode editor (visual, markdown, preview) for mobile
 - [x] Build asset manager with camera/gallery upload
@@ -438,3 +440,5 @@
 - [ ] Further split or defer the remaining heavy Editor and diagram tooling chunks
 
 - [x] Replace the broken Watch Demo CTA, which currently scrolls to a missing `demo-section`, with a truthful workflow destination or a real demo asset
+- [x] Complete shared typed Android screen-to-server API contract alignment and regression validation
+- [x] Add an ownership-protected scheduler reschedule procedure needed by the Android scheduled-posts screen

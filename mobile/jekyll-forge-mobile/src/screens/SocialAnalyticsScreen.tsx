@@ -35,52 +35,50 @@ interface Post {
 }
 
 export default function SocialAnalyticsScreen({ route }: any) {
-  const { siteId } = route.params || {};
   const [selectedPlatform, setSelectedPlatform] = useState<string>("all");
 
   const { data: analyticsData, isLoading } =
-    trpc.socialMedia.getAnalytics.useQuery({ siteId }, { enabled: !!siteId });
+    trpc.socialMedia.getAnalyticsSummary.useQuery();
+
+  const getPlatformMetrics = (
+    platform: PlatformMetrics["platform"]
+  ) => {
+    const metrics = analyticsData?.byPlatform[platform];
+    const impressions = metrics?.impressions || 0;
+    const engagements = metrics?.engagements || 0;
+    return {
+      impressions,
+      engagements,
+      clicks: metrics?.clicks || 0,
+      shares: 0,
+      engagementRate: impressions > 0 ? (engagements / impressions) * 100 : 0,
+    };
+  };
 
   const platformMetrics: PlatformMetrics[] = [
     {
       platform: "twitter",
       icon: "𝕏",
       name: "Twitter/X",
-      impressions: analyticsData?.twitter?.impressions || 0,
-      engagements: analyticsData?.twitter?.engagements || 0,
-      clicks: analyticsData?.twitter?.clicks || 0,
-      shares: analyticsData?.twitter?.shares || 0,
-      engagementRate: analyticsData?.twitter?.engagementRate || 0,
+      ...getPlatformMetrics("twitter"),
     },
     {
       platform: "linkedin",
       icon: "💼",
       name: "LinkedIn",
-      impressions: analyticsData?.linkedin?.impressions || 0,
-      engagements: analyticsData?.linkedin?.engagements || 0,
-      clicks: analyticsData?.linkedin?.clicks || 0,
-      shares: analyticsData?.linkedin?.shares || 0,
-      engagementRate: analyticsData?.linkedin?.engagementRate || 0,
+      ...getPlatformMetrics("linkedin"),
     },
     {
       platform: "facebook",
       icon: "👍",
       name: "Facebook",
-      impressions: analyticsData?.facebook?.impressions || 0,
-      engagements: analyticsData?.facebook?.engagements || 0,
-      clicks: analyticsData?.facebook?.clicks || 0,
-      shares: analyticsData?.facebook?.shares || 0,
-      engagementRate: analyticsData?.facebook?.engagementRate || 0,
+      ...getPlatformMetrics("facebook"),
     },
     {
       platform: "instagram",
       icon: "📸",
       name: "Instagram",
-      impressions: analyticsData?.instagram?.impressions || 0,
-      engagements: analyticsData?.instagram?.engagements || 0,
-      clicks: analyticsData?.instagram?.clicks || 0,
-      shares: analyticsData?.instagram?.shares || 0,
-      engagementRate: analyticsData?.instagram?.engagementRate || 0,
+      ...getPlatformMetrics("instagram"),
     },
   ];
 

@@ -4,12 +4,15 @@ export function useSites() {
   return trpc.sites.list.useQuery();
 }
 
-export function useSite(siteId: string) {
-  return trpc.sites.getById.useQuery({ id: siteId });
+export function useSite(siteId: number | null | undefined) {
+  return trpc.sites.get.useQuery(
+    { id: siteId ?? 0 },
+    { enabled: typeof siteId === "number" && siteId > 0 }
+  );
 }
 
 export function useCreateSite() {
-  return trpc.sites.create.useMutation();
+  return trpc.sites.upsert.useMutation();
 }
 
 export function useUpdateSite() {
@@ -18,8 +21,4 @@ export function useUpdateSite() {
 
 export function useDeleteSite() {
   return trpc.sites.delete.useMutation();
-}
-
-export function usePublishSite() {
-  return trpc.sites.publish.useMutation();
 }

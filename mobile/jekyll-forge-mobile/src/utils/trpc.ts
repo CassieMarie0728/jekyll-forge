@@ -2,10 +2,12 @@ import { createTRPCReact } from "@trpc/react-query";
 import { httpBatchLink } from "@trpc/client";
 import superjson from "superjson";
 import * as SecureStore from "expo-secure-store";
-// Keep the mobile package independent from Node-only server sources. This adapter
-// is the temporary boundary until a generated shared API contract is published.
-const mobileTrpcFactory: any = createTRPCReact<any>();
-export const trpc: any = mobileTrpcFactory;
+import type { AppRouter } from "../../../../shared/mobileApi";
+
+// `import type` is erased from the native bundle, keeping server-only runtime
+// dependencies out of Android while enforcing the same tRPC contract at compile time.
+const mobileTrpcFactory = createTRPCReact<AppRouter>();
+export const trpc = mobileTrpcFactory;
 
 const getTrpcUrl = () => {
   const configuredUrl = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
@@ -19,6 +21,7 @@ export const getTrpcClient = (token?: string) => {
     links: [
       httpBatchLink({
         url: getTrpcUrl(),
+        transformer: superjson,
         async headers() {
           const authToken =
             token || (await SecureStore.getItemAsync("authToken"));
@@ -28,6 +31,5 @@ export const getTrpcClient = (token?: string) => {
         },
       }),
     ],
-    transformer: superjson,
   });
 };

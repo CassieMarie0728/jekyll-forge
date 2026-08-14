@@ -13,14 +13,6 @@ import {
 } from "react-native";
 import { trpc } from "../utils/trpc";
 
-interface ConnectedAccount {
-  id: string;
-  platform: "twitter" | "linkedin" | "facebook" | "instagram";
-  username: string;
-  connected: boolean;
-  icon: string;
-}
-
 interface PublishTarget {
   platform: "twitter" | "linkedin" | "facebook" | "instagram";
   selected: boolean;
@@ -29,7 +21,7 @@ interface PublishTarget {
 }
 
 export default function SocialPublishScreen({ route }: any) {
-  const { postId, title, content } = route.params || {};
+  const { postId, repurposedContentId = postId, title, content } = route.params || {};
   const [selectedPlatforms, setSelectedPlatforms] = useState<PublishTarget[]>([
     { platform: "twitter", selected: false, icon: "𝕏", name: "Twitter/X" },
     { platform: "linkedin", selected: false, icon: "💼", name: "LinkedIn" },
@@ -38,6 +30,7 @@ export default function SocialPublishScreen({ route }: any) {
   ]);
 
   const [loading, setLoading] = useState(false);
+  const connectedAccountsQuery = trpc.socialMedia.getAccounts.useQuery();
   const publishMutation = trpc.socialMedia.publishContent.useMutation();
 
   const handlePlatformToggle = (platform: string) => {
@@ -55,13 +48,23 @@ export default function SocialPublishScreen({ route }: any) {
       Alert.alert("Error", "Please select at least one platform");
       return;
     }
+    if (typeof repurposedContentId !== "number") {
+      Alert.alert("Error", "Generate repurposed content before publishing it.");
+      return;
+    }
 
     setLoading(true);
     try {
       for (const platform of selected) {
+        const account = connectedAccountsQuery.data?.find(
+          item => item.platform === platform.platform && item.isConnected
+        );
+        if (!account) {
+          throw new Error(`Connect a ${platform.name} account before publishing.`);
+        }
         await publishMutation.mutateAsync({
-          repurposedContentId: postId,
-          platform: platform.platform,
+          repurposedContentId,
+          accountId: account.id,
         });
       }
       Alert.alert("Success", "Post published to selected platforms");

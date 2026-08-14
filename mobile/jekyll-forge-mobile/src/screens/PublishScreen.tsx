@@ -29,8 +29,7 @@ export default function PublishScreen({ route, navigation }: any) {
   const [commitMessage, setCommitMessage] = useState("Update post");
   const [scheduledDate, setScheduledDate] = useState<string | null>(null);
 
-  const publishMutation = trpc.posts.publish.useMutation();
-  const saveDraftMutation = trpc.posts.saveDraft.useMutation();
+  const updatePostMutation = trpc.posts.update.useMutation();
 
   const handlePublish = async () => {
     if (!post?.title?.trim()) {
@@ -48,26 +47,32 @@ export default function PublishScreen({ route, navigation }: any) {
           onPress: async () => {
             setIsLoading(true);
             try {
+              if (typeof postId !== "number") {
+                throw new Error("Save the post before changing its publication status.");
+              }
+
+              await updatePostMutation.mutateAsync({
+                id: postId,
+                title: post.title,
+                markdown: post.content,
+                frontMatter: post.frontMatter,
+                status: isDraft
+                  ? "draft"
+                  : scheduledDate
+                    ? "scheduled"
+                    : "published",
+                scheduledAt: scheduledDate ? new Date(scheduledDate) : null,
+              });
+
               if (isDraft) {
-                await saveDraftMutation.mutateAsync({
-                  postId,
-                  siteId,
-                  content: post.content,
-                  title: post.title,
-                  frontMatter: post.frontMatter,
-                });
                 Alert.alert("Success", "Post saved as draft");
               } else {
-                await publishMutation.mutateAsync({
-                  postId,
-                  siteId,
-                  content: post.content,
-                  title: post.title,
-                  frontMatter: post.frontMatter,
-                  commitMessage,
-                  scheduledDate,
-                });
-                Alert.alert("Success", "Post published successfully");
+                Alert.alert(
+                  "Success",
+                  scheduledDate
+                    ? "Post scheduled successfully"
+                    : "Post published successfully"
+                );
               }
               navigation.goBack();
             } catch (error: any) {
