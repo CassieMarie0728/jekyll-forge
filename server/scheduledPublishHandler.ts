@@ -231,11 +231,10 @@ export async function scheduledPublishHandler(req: Request, res: Response) {
       /* ignore notification failure */
     }
 
-    // Return 500 with structured error for platform Investigate flow
+    // Preserve detailed diagnostics in trusted server logs and owner notifications.
+    // Do not return upstream messages or stack traces to an HTTP caller.
     return res.status(500).json({
-      error: errorMsg,
-      stack: err instanceof Error ? err.stack : undefined,
-      context: { url: req.url, taskUid: "unknown" },
+      error: "Scheduled publishing failed",
       timestamp: startedAt,
     });
   }

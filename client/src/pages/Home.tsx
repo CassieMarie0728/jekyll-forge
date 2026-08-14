@@ -43,7 +43,7 @@ const FEATURES = [
   {
     icon: Github,
     title: "GitHub-Native",
-    desc: "Connect your repo, browse files, commit directly via GitHub API. No local setup required.",
+    desc: "Connect a supported repository, browse files, and commit directly through the GitHub API.",
   },
   {
     icon: FileText,
@@ -88,7 +88,7 @@ const FEATURES = [
   {
     icon: Share2,
     title: "Social Media Repurposing",
-    desc: "Automatically adapt content for Twitter, LinkedIn, Facebook, Instagram. Schedule posts and track engagement across platforms.",
+    desc: "Adapt content for connected Twitter, LinkedIn, Facebook, and Instagram accounts, then review available publishing and engagement data.",
   },
   {
     icon: BarChart3,
@@ -234,8 +234,9 @@ export default function Home() {
             className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed"
           >
             Write visually, repurpose for social media with AI, and publish from
-            anywhere with our native mobile app. The only CMS that turns your
-            GitHub repo into a full-scale media operation.
+            anywhere with the companion app currently in release validation.
+            Keep your GitHub repository at the center of a coordinated
+            publishing workflow.
           </motion.p>
 
           <motion.div
@@ -284,7 +285,8 @@ export default function Home() {
               required to explore
             </div>
             <div className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-primary" /> Connects in seconds
+              <Check className="w-4 h-4 text-primary" /> Connect a supported
+              repository
             </div>
             <div className="flex items-center gap-2">
               <Check className="w-4 h-4 text-primary" /> Keep your source
@@ -378,7 +380,7 @@ export default function Home() {
               Powerful Capabilities
             </Badge>
             <h2 className="text-4xl font-display font-bold mb-4 tracking-tight">
-              Everything you need to run a world-class blog
+              A focused publishing workspace for Jekyll blogs
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
               Visual enough for writers. Powerful enough for developers.
@@ -532,9 +534,9 @@ export default function Home() {
               </div>
               <p className="text-muted-foreground mb-6 leading-relaxed">
                 Amplify your reach by repurposing and scheduling content across
-                Twitter, LinkedIn, Facebook, and Instagram. Jekyll Forge
-                intelligently adapts your posts for each platform, ensuring
-                maximum impact.
+                Twitter, LinkedIn, Facebook, and Instagram. Jekyll Forge adapts
+                post formats for each connected platform and keeps the
+                publishing workflow visible in one workspace.
               </p>
               <div className="text-sm font-mono bg-muted p-4 rounded-lg text-muted-foreground border border-border">
                 <div className="flex items-center gap-2 mb-1">
@@ -568,9 +570,9 @@ export default function Home() {
                 <h3 className="text-2xl font-semibold">Analytics</h3>
               </div>
               <p className="text-muted-foreground mb-6 leading-relaxed">
-                Gain deep insights into your content performance. Track
-                impressions, engagement, and click-through rates across all your
-                social platforms directly from your Jekyll Forge dashboard.
+                Review the impressions, engagement, and click-through data
+                available from your connected social platforms in the Jekyll
+                Forge dashboard.
               </p>
               <div className="text-sm font-mono bg-muted p-4 rounded-lg text-muted-foreground border border-border">
                 <div className="flex flex-wrap justify-center gap-2 mb-1">
@@ -777,7 +779,9 @@ export default function Home() {
               </li>
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-primary flex-shrink-0" />
-                <span>Offline queue and sync integration in progress</span>
+                <span>
+                  Offline queue and sync recovery pending real-device acceptance
+                </span>
               </li>
             </ul>
           </div>
@@ -832,8 +836,8 @@ export default function Home() {
             Ready to forge your Jekyll site?
           </h2>
           <p className="text-muted-foreground mb-8">
-            Connect your GitHub account and start managing your Jekyll blog from
-            the browser or mobile app.
+            Connect your GitHub account and manage your Jekyll blog from the web
+            workspace while Android release validation continues.
           </p>
           <Button
             size="lg"

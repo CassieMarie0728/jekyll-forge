@@ -199,7 +199,7 @@
 - [x] Re-enable the editor component regression test with CSS-heavy child modules mocked as needed in the normal Vitest suite
 - [x] Extract editor markdown parsing and serialization into a CSS-free module with regression coverage
 - [ ] Conduct route-by-route automated checks for landing-to-auth-to-repository-picker and authenticated dashboard flows
-- [ ] Audit and harden landing-page metadata, semantic hierarchy, keyboard behavior, accessible labels, and reduced-motion behavior
+- [x] Audit and harden landing-page metadata, semantic hierarchy, keyboard behavior, accessible labels, and reduced-motion behavior
 - [x] Remove fictional testimonials and unsupported “trusted by,” pricing, Play Store, and security claims from the landing page
 - [x] Audit frontend bundle boundaries, dead routes, unimplemented CTAs, and error/loading/empty states across all web screens
 - [x] Audit protected API procedures for ownership enforcement, input validation, sensitive token exposure, and social-platform error handling
@@ -218,7 +218,7 @@
 
 ## Independent Production-Readiness Audit — August 2026
 - [x] Reproduce the complete web test, type-check, lint, build, and migration-validation baseline from a clean audit pass
-- [ ] Verify public route navigation, CTA targets, semantic heading order, keyboard reachability, focus visibility, and reduced-motion behavior
+- [x] Verify public route navigation, CTA targets, semantic heading order, keyboard reachability, focus visibility, and reduced-motion behavior
 - [ ] Verify authenticated web flows through real OAuth, repository selection, dashboard access, and protected-route denial without authentication
 - [ ] Review every protected API procedure for authorization scope, ownership checks, validation, sensitive-data redaction, and platform-specific error handling
 - [x] Compile and inspect the Android app for type health, OAuth contract alignment, SecureStore usage, offline-queue producers, sync conflict handling, and push configuration
@@ -448,3 +448,8 @@
 - [x] Reduce Android lint warnings by removing safe unused code and replacing screen-level `any` boundaries with explicit navigation and route parameter types
 - [ ] Stabilize the resource-constrained production Vite build, which is externally terminated with SIGTERM during chunk rendering despite passing lint, tests, and TypeScript checks
 - [x] Document the managed-sandbox Vite build limitation and defer deeper editor/diagram chunk refactoring to a separate controlled optimization pass
+- [x] Refine remaining landing-page marketing and Android-status copy so it matches the verified release state without unsupported exclusivity or performance claims
+- [x] Remove internal error and stack disclosure from the scheduled publishing endpoint while retaining structured server-side diagnostics
+- [x] Keep the scheduled-handler error-redaction regression test quiet while asserting that server-side diagnostics still run
+- [x] Verify landing metadata directly, including title, description, Open Graph, and Twitter card tags
+- [x] Verify Sign In, Sign Up, and Get Started CTA targets without completing external authentication, and validate reduced-motion behavior explicitly

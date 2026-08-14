@@ -7,7 +7,7 @@
 
 ## Executive Assessment
 
-The web platform is in a substantially stronger state following this independent pass. Public navigation, the protected-route boundary, metadata and reduced-motion behavior, authorization checks, social-token redaction, scheduler ownership controls, and migration parity were independently examined. The web test suite now completes deterministically with **130 passing tests and 7 intentional skips**, and TypeScript and Drizzle migration validation pass. A managed-sandbox production build now reaches all 6,597 transformed modules but receives an external `SIGTERM` during Vite chunk rendering; the already deployed application remains available, and the owner-approved disposition is to preserve current runtime behavior and defer a deeper editor/diagram bundle refactor to a separately controlled optimization pass.
+The web platform is in a substantially stronger state following this independent pass. Public navigation, the protected-route boundary, metadata and reduced-motion behavior, authorization checks, social-token redaction, scheduler ownership controls, error-response redaction, and migration parity were independently examined. The web test suite now completes deterministically with **133 passing tests and 7 intentional skips**, and TypeScript and Drizzle migration validation pass. A managed-sandbox production build now reaches all 6,597 transformed modules but receives an external `SIGTERM` during Vite chunk rendering; the already deployed application remains available, and the owner-approved disposition is to preserve current runtime behavior and defer a deeper editor/diagram bundle refactor to a separately controlled optimization pass.
 
 The Android companion is **not release-ready**. The native sign-in contract has now been remediated in source: it starts server-backed OAuth, receives a short-lived one-time deep-link ticket, exchanges that ticket through tRPC, and stores the resulting session in SecureStore. The mobile client compiles every referenced procedure against the shared `AppRouter` type contract, and its scheduling, social, AI, A/B testing, post-status, and repurposing screens use verified server procedures. The editor now commits drafts and published posts through authenticated GitHub and post mutations, while failure paths preserve a local draft and enqueue typed retry payloads. A real-device acceptance run through the external identity provider and network transition is still required. The owner has supplied the Expo project ID, Firebase Android configuration, and approved branded release artwork for `com.cassandracrossno.jekyllforge`; the remaining distribution blocker is future Google Play enrollment and credentials.
 
@@ -25,7 +25,7 @@ The Android companion is **not release-ready**. The native sign-in contract has 
 
 | Verification | Result | Evidence |
 |---|---:|---|
-| Web automated suite | **17 files passed; 130 tests passed; 7 skipped** | Final `pnpm test` after typed mobile contract and scheduler-reschedule remediation |
+| Web automated suite | **19 files passed; 133 tests passed; 7 skipped** | Final `pnpm test` after direct authentication-CTA target coverage and landing acceptance validation |
 | Web type safety | **Pass** | `pnpm check` (`tsc --noEmit`) |
 | Web lint | **Pass with 229 warnings, 0 errors** | Root ESLint was aligned to ESLint 9 / TypeScript-ESLint 8, automatic formatting fixes were applied, and mobile owns its separate lint configuration |
 | Production web/server build | **Managed-environment constraint** | Three isolated `pnpm build` attempts reached 6,597 transformed modules and then received external `SIGTERM` (exit 143) during Vite chunk rendering; explicit source-map/minifier/reporting settings and a detached process did not change the termination. The deployed site remains available. |
@@ -59,6 +59,7 @@ The Android companion is **not release-ready**. The native sign-in contract has 
 | Medium | Workflow card presented a nonfunctional play affordance. | Replaced it with noninteractive workflow artwork; the separate hero CTA retains the truthful “See Workflow” destination. | Landing test and browser inspection pass. |
 | Low | Production CSS emitted a Google-Fonts import-order warning. | Moved font loading to document-head links and removed stylesheet import. | Clean production build after the change. |
 | Low | A/B tests depended on live LLM latency and intermittently timed out. | Converted the unit-test dependency to a deterministic LLM mock. | A/B suite completes in approximately 1.6 seconds; complete suite passes. |
+| Medium | The scheduled publishing endpoint returned unexpected upstream error messages and stack traces in its HTTP 500 response. | Retained detailed server-side diagnostics and owner notifications, while returning only a generic failure message and timestamp to the caller. | `server/scheduledPublishHandler.test.ts` proves an injected internal URL and stack/context details are absent from the response while diagnostic logging still occurs. |
 
 ## Remaining Findings and Release Blockers
 
