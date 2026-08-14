@@ -51,6 +51,8 @@ The final static protected-router review covered site management, reusable block
 
 The public workflow copy was rechecked for unsupported performance language. The scheduled-publishing feature now states the verified ability to schedule future publication with retry, rate-limit handling, and error recovery; it no longer claims that the system selects optimal publishing times. The focused Home regression test and TypeScript check pass.
 
+The hero review confirmed that the landing page already provides an enhanced visual treatment and accountable messaging for the Jekyll workspace, GitHub-centered publishing workflow, connected social tools, and Android release-validation status. This public-site enhancement is complete. Remaining QA and release items that require a real OAuth identity, a repository, a physical Android device, or Google Play Console credentials remain explicitly open rather than being represented as completed.
+
 Unauthenticated navigation to `/dashboard/1` did not expose dashboard content. It redirected to the configured Manus sign-in endpoint with the deployed callback URL. Completing OAuth and entering a user account would require account credentials and user confirmation, so the authenticated repository-picker and dashboard portions remain explicitly unverified in this independent browser pass.
 
 ## API Authorization and Contract Review
