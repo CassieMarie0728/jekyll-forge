@@ -13,22 +13,29 @@ import {
 import { trpc } from "../utils/trpc";
 import { enqueuePostStatusUpdate } from "../services/offlineQueueProducers";
 
-interface PublishOptions {
-  title: string;
-  content: string;
-  tags: string[];
-  categories: string[];
-  isDraft: boolean;
-  scheduledDate?: string;
-  commitMessage: string;
-}
+type PublishablePost = {
+  title?: string;
+  content?: string;
+  frontMatter?: Record<string, unknown>;
+};
 
-export default function PublishScreen({ route, navigation }: any) {
-  const { postId, siteId, post } = route.params || {};
+type PublishScreenProps = {
+  route: {
+    params?: {
+      postId?: number;
+      siteId?: number;
+      post?: PublishablePost;
+    };
+  };
+  navigation: { goBack: () => void };
+};
+
+export default function PublishScreen({ route, navigation }: PublishScreenProps) {
+  const { postId, post } = route.params || {};
   const [isLoading, setIsLoading] = useState(false);
   const [isDraft, setIsDraft] = useState(true);
-  const [commitMessage, setCommitMessage] = useState("Update post");
-  const [scheduledDate, setScheduledDate] = useState<string | null>(null);
+  const commitMessage = "Update post";
+  const scheduledDate: string | null = null;
 
   const updatePostMutation = trpc.posts.update.useMutation();
 
@@ -88,8 +95,11 @@ export default function PublishScreen({ route, navigation }: any) {
                 );
               }
               navigation.goBack();
-            } catch (error: any) {
-              Alert.alert("Error", error.message || "Failed to publish post");
+            } catch (error: unknown) {
+              Alert.alert(
+                "Error",
+                error instanceof Error ? error.message : "Failed to publish post"
+              );
             } finally {
               setIsLoading(false);
             }

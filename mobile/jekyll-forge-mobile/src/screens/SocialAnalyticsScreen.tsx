@@ -6,7 +6,6 @@ import {
   SafeAreaView,
   ScrollView,
   TouchableOpacity,
-  FlatList,
   ActivityIndicator,
 } from "react-native";
 import { trpc } from "../utils/trpc";
@@ -22,19 +21,7 @@ interface PlatformMetrics {
   engagementRate: number;
 }
 
-interface Post {
-  id: string;
-  title: string;
-  platform: string;
-  status: string;
-  metrics: {
-    impressions: number;
-    engagements: number;
-    clicks: number;
-  };
-}
-
-export default function SocialAnalyticsScreen({ route }: any) {
+export default function SocialAnalyticsScreen() {
   const [selectedPlatform, setSelectedPlatform] = useState<string>("all");
 
   const { data: analyticsData, isLoading } =

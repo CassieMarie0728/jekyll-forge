@@ -443,3 +443,4 @@
 - [x] Replace the broken Watch Demo CTA, which currently scrolls to a missing `demo-section`, with a truthful workflow destination or a real demo asset
 - [x] Complete shared typed Android screen-to-server API contract alignment and regression validation
 - [x] Add an ownership-protected scheduler reschedule procedure needed by the Android scheduled-posts screen
+- [ ] Reduce Android lint warnings by removing safe unused code and replacing screen-level `any` boundaries with explicit navigation and route parameter types

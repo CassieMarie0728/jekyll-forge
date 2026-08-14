@@ -21,7 +21,18 @@ interface PublishTarget {
   name: string;
 }
 
-export default function SocialPublishScreen({ route }: any) {
+type SocialPublishScreenProps = {
+  route: {
+    params?: {
+      postId?: number;
+      repurposedContentId?: number;
+      title?: string;
+      content?: string;
+    };
+  };
+};
+
+export default function SocialPublishScreen({ route }: SocialPublishScreenProps) {
   const { postId, repurposedContentId = postId, title, content } = route.params || {};
   const [selectedPlatforms, setSelectedPlatforms] = useState<PublishTarget[]>([
     { platform: "twitter", selected: false, icon: "𝕏", name: "Twitter/X" },

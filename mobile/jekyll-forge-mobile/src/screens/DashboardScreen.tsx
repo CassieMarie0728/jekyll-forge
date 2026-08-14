@@ -19,16 +19,7 @@ interface Post {
   updatedAt: string;
 }
 
-interface Site {
-  id: string;
-  name: string;
-  url: string;
-  posts: number;
-  drafts: number;
-}
-
 export default function DashboardScreen() {
-  const [sites, setSites] = useState<Site[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -44,12 +35,6 @@ export default function DashboardScreen() {
   const loadDashboard = async () => {
     try {
       setLoading(true);
-      // Load sites from cache
-      const sitesData = await AsyncStorage.getItem("sites");
-      if (sitesData) {
-        setSites(JSON.parse(sitesData));
-      }
-
       // Load posts from cache
       const postsData = await AsyncStorage.getItem("posts");
       if (postsData) {
