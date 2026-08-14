@@ -14,3 +14,7 @@ This record tracks non-destructive route checks for the deployed Jekyll Forge we
 ## Next Acceptance Step
 
 The normal browser successfully completed the owner sign-in path after a Cloudflare challenge prevented the remote-browser handoff. The remaining authentication gates are a first-time account sign-up test and any cross-user authorization scenario that would require a separate controlled account. No repository writes, publishing actions, provider key submissions, or account changes were used in this verification.
+
+## Automated Recheck Limitation
+
+On August 14, 2026, a fresh sandbox-browser navigation to the deployed repository picker again redirected to the Manus application sign-in boundary. The sandbox browser does not retain the owner's direct normal-browser session, so it cannot complete the requested fully automated authenticated route chain without encountering the same external Cloudflare/session boundary. The successful owner-assisted repository picker, dashboard, and AI Settings evidence remains valid; the separate tracker item for a fully automated authenticated chain remains open until a supported non-interactive test account or session mechanism is available.

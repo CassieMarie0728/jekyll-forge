@@ -447,7 +447,7 @@
 - [x] Add an ownership-protected scheduler reschedule procedure needed by the Android scheduled-posts screen
 - [x] Replace the Android-incompatible scheduled-post `Alert.prompt` reschedule input with a native modal dialog and typed route contract
 - [x] Reduce Android lint warnings by removing safe unused code and replacing screen-level `any` boundaries with explicit navigation and route parameter types
-- [ ] Stabilize the resource-constrained production Vite build, which is externally terminated with SIGTERM during chunk rendering despite passing lint, tests, and TypeScript checks
+- [x] Stabilize the resource-constrained production Vite build; a clean post-deferral managed build now completes successfully, while the optional diagram-vendor chunk remains a separate performance opportunity
 - [x] Document the managed-sandbox Vite build limitation and defer deeper editor/diagram chunk refactoring to a separate controlled optimization pass
 - [x] Refine remaining landing-page marketing and Android-status copy so it matches the verified release state without unsupported exclusivity or performance claims
 - [x] Remove internal error and stack disclosure from the scheduled publishing endpoint while retaining structured server-side diagnostics

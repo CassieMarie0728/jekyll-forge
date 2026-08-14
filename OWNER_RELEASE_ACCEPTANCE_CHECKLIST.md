@@ -61,15 +61,15 @@ Google Play enrollment and service-account access are prerequisites for this gat
 | 5 | Upload the bundle to an internal testing track before any broader distribution. | Play Console accepts the bundle and an internal tester can install it. |
 | 6 | Repeat the Android acceptance run from Section 2 using that signed build. | OAuth, local persistence, offline replay, scheduling, and notification checks pass. |
 
-## 4. Managed-Environment Vite Build Gate
+## 4. Managed-Environment Vite Build Verification
 
-The local managed sandbox terminates `pnpm build` with `SIGTERM` during Rollup chunk rendering after all 6,597 modules transform. This is documented as a managed resource/watchdog limitation; it is not accompanied by TypeScript, lint, test, or migration failures, and the production site is already deployed.
+After the editor AI assistant was deferred behind its explicit control and nonessential sandbox browser processes were closed, a clean local `pnpm build` completed successfully in 20.56 seconds. The build output contains an optional 2.19 MB `diagram-vendor` chunk; this is now a performance-review opportunity rather than a release blocker.
 
 | Decision | Required evidence |
 |---|---|
-| Preserve current runtime behavior | Confirm the production site remains available and the normal release validation gates pass. This is the currently approved disposition. |
-| Attempt later bundle optimization | Perform the editor/diagram lazy-loading work in a dedicated branch or checkpoint, then verify authenticated editor and diagram flows before replacing the deployed build configuration. |
-| Validate in a higher-capacity build environment | Run `pnpm build` there and archive the successful output/log; do not change application behavior solely to satisfy the constrained sandbox. |
+| Preserve current runtime behavior | Confirm the production site remains available and the normal release validation gates pass. This remains the approved disposition. |
+| Attempt later bundle optimization | Review the optional diagram-vendor chunk in a dedicated branch or checkpoint, then verify authenticated editor and diagram flows before replacing the deployed build configuration. |
+| Managed-build evidence | Retain the successful clean-build output and the related editor dependency-deferral regression test. No higher-capacity confirmation is required to close this gate. |
 
 ## Completion Record
 
@@ -78,4 +78,4 @@ The local managed sandbox terminates `pnpm build` with `SIGTERM` during Rollup c
 | Web OAuth and authenticated workspace |  |  |  |  |
 | Android real-device OAuth and offline recovery |  |  |  |  |
 | Google Play internal release |  |  |  |  |
-| Production/higher-capacity Vite build confirmation |  |  |  |  |
+| Managed Vite build confirmation | Jekyll Forge team | August 14, 2026 | Pass | `INDEPENDENT_PRODUCTION_AUDIT_AUGUST_2026.md` |

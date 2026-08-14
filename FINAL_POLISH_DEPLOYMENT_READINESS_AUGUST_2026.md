@@ -8,8 +8,8 @@ Keyboard navigation was also checked on the deployed landing page. The first Tab
 
 ## Outcome
 
-No reproducible public-interface, accessibility, or navigation defect was identified during this pass. The deployment remains live, and the completed web validation baseline is retained: TypeScript passes; lint has zero errors; and the full web test suite has 29 passing files, 158 passing tests, and 7 intentional skips.
+No reproducible public-interface, accessibility, or navigation defect was identified during this pass. The deployment remains live, and the completed web validation baseline is retained: TypeScript passes; lint has zero errors; the full web test suite has 29 passing files, 159 passing tests, and 7 intentional skips; and the managed-environment production build completes successfully.
 
 ## Remaining External Gates
 
-This completion does not override owner-controlled prerequisites: Google Play Console enrollment and service-account credentials, signed Android release submission, physical-device OAuth/offline/push acceptance, the browser-handoff Cloudflare limitation, optional deeper editor/diagram chunk optimization, and a higher-capacity confirmation of the managed-sandbox Vite build.
+This completion does not override owner-controlled prerequisites: Google Play Console enrollment and service-account credentials, signed Android release submission, physical-device OAuth/offline/push acceptance, the browser-handoff Cloudflare limitation, and optional deeper editor/diagram chunk optimization. The managed-environment production build has since completed successfully.

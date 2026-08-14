@@ -14,4 +14,4 @@ The editor regression suite verifies that the assistant is absent before the con
 
 ## Boundary
 
-This is a source-level loading improvement. The sandbox-only production-build termination during chunk rendering remains separately documented and cannot be treated as a failed application build or a verified bundle-size measurement.
+This source-level loading improvement preceded a successful clean managed-environment production build. The emitted `diagram-vendor` chunk remains a separately measurable optimization opportunity, but it does not block the application build.
