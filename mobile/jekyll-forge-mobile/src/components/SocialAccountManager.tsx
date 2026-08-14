@@ -12,6 +12,7 @@ import {
   useConnectedAccounts,
   useDisconnectAccount,
 } from "../hooks/useSocialMedia";
+import { enqueueSocialDisconnect } from "../services/offlineQueueProducers";
 
 interface Props {
   onAccountConnected?: () => void;
@@ -55,7 +56,11 @@ export default function SocialAccountManager({
               refetch();
               onAccountDisconnected?.();
             } catch (error) {
-              Alert.alert("Error", "Failed to disconnect account");
+              await enqueueSocialDisconnect({ id: accountId });
+              Alert.alert(
+                "Disconnect queued",
+                "The account will be disconnected when the connection is restored."
+              );
             } finally {
               setDisconnecting(null);
             }

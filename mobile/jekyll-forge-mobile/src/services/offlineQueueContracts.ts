@@ -63,6 +63,22 @@ export type SchedulerRescheduleQueueData = {
   scheduledAt: string;
 };
 
+export type MobileSocialPlatform =
+  | "twitter"
+  | "linkedin"
+  | "facebook"
+  | "instagram";
+
+export type SocialDisconnectQueueData = {
+  id: number;
+};
+
+export type AbVariationPublishQueueData = {
+  postId: number;
+  variationIndex: number;
+  platforms: MobileSocialPlatform[];
+};
+
 export function isRepositoryPublishQueueData(
   value: unknown
 ): value is RepositoryPublishQueueData {
@@ -106,5 +122,39 @@ export function isSchedulerRescheduleQueueData(
     typeof payload.id === "number" &&
     typeof payload.scheduledAt === "string" &&
     !Number.isNaN(new Date(payload.scheduledAt).getTime())
+  );
+}
+
+export function isSocialDisconnectQueueData(
+  value: unknown
+): value is SocialDisconnectQueueData {
+  return isPostDeleteInput(value);
+}
+
+export function isAbVariationPublishQueueData(
+  value: unknown
+): value is AbVariationPublishQueueData {
+  if (!value || typeof value !== "object") return false;
+  const payload = value as {
+    postId?: unknown;
+    variationIndex?: unknown;
+    platforms?: unknown;
+  };
+  const supportedPlatforms: MobileSocialPlatform[] = [
+    "twitter",
+    "linkedin",
+    "facebook",
+    "instagram",
+  ];
+  return (
+    typeof payload.postId === "number" &&
+    typeof payload.variationIndex === "number" &&
+    Array.isArray(payload.platforms) &&
+    payload.platforms.length > 0 &&
+    payload.platforms.every(
+      platform =>
+        typeof platform === "string" &&
+        supportedPlatforms.includes(platform as MobileSocialPlatform)
+    )
   );
 }

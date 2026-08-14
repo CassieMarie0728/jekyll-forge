@@ -6,8 +6,10 @@ import { syncService } from "./syncService";
 import {
   enqueuePostStatusUpdate,
   enqueueRepositoryPublish,
+  enqueueAbVariationPublish,
   enqueueSchedulerCancel,
   enqueueSchedulerReschedule,
+  enqueueSocialDisconnect,
   enqueueSocialPublish,
 } from "./offlineQueueProducers";
 
@@ -65,6 +67,29 @@ describe("offline queue producers", () => {
       2,
       "scheduler-reschedule",
       { id: 14, scheduledAt: "2026-09-01T12:00:00.000Z" }
+    );
+  });
+
+  it("queues social disconnection and each A/B variation publication with typed actions", async () => {
+    const variationPayload = {
+      postId: 6,
+      variationIndex: 2,
+      platforms: ["twitter", "linkedin"] as const,
+    };
+    await enqueueSocialDisconnect({ id: 9 });
+    await enqueueAbVariationPublish({
+      ...variationPayload,
+      platforms: [...variationPayload.platforms],
+    });
+    expect(syncService.queueAction).toHaveBeenNthCalledWith(
+      1,
+      "social-disconnect",
+      { id: 9 }
+    );
+    expect(syncService.queueAction).toHaveBeenNthCalledWith(
+      2,
+      "ab-publish-variation",
+      { ...variationPayload, platforms: [...variationPayload.platforms] }
     );
   });
 });

@@ -134,7 +134,9 @@ class SyncService {
       | "delete"
       | "publish"
       | "scheduler-cancel"
-      | "scheduler-reschedule",
+      | "scheduler-reschedule"
+      | "social-disconnect"
+      | "ab-publish-variation",
     data: unknown
   ) {
     const item = {

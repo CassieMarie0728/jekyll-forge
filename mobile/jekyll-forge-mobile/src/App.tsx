@@ -9,12 +9,14 @@ import { haptics } from "./utils/haptics";
 import { syncService } from "./services/syncService";
 import { pushNotificationService } from "./services/pushNotifications";
 import {
+  isAbVariationPublishQueueData,
   isPostDeleteInput,
   isPostUpdateInput,
   isPostUpsertInput,
   isRepositoryPublishQueueData,
   isSchedulerCancelQueueData,
   isSchedulerRescheduleQueueData,
+  isSocialDisconnectQueueData,
   isSocialPublishQueueData,
 } from "./services/offlineQueueContracts";
 
@@ -101,6 +103,18 @@ function AppContent() {
           id: item.data.id,
           scheduledAt: new Date(item.data.scheduledAt),
         });
+        return;
+      case "social-disconnect":
+        if (!isSocialDisconnectQueueData(item.data)) {
+          throw new Error("Offline social disconnect payload is invalid.");
+        }
+        await trpcClient.socialMedia.disconnectAccount.mutate(item.data);
+        return;
+      case "ab-publish-variation":
+        if (!isAbVariationPublishQueueData(item.data)) {
+          throw new Error("Offline A/B publication payload is invalid.");
+        }
+        await trpcClient.abTesting.publishVariation.mutate(item.data);
         return;
       default:
         throw new Error(`Unsupported offline action: ${String(item.action)}`);

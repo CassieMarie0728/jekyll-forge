@@ -18,7 +18,9 @@ export interface SyncQueue {
     | "delete"
     | "publish"
     | "scheduler-cancel"
-    | "scheduler-reschedule";
+    | "scheduler-reschedule"
+    | "social-disconnect"
+    | "ab-publish-variation";
   data: unknown;
   timestamp: number;
   retries: number;

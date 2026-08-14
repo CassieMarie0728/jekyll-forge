@@ -1,6 +1,8 @@
 import type { MobilePostUpdateInput } from "../hooks/usePosts";
 import type {
+  AbVariationPublishQueueData,
   RepositoryPublishQueueData,
+  SocialDisconnectQueueData,
   SocialPublishQueueData,
 } from "./offlineQueueContracts";
 import { syncService } from "./syncService";
@@ -26,4 +28,12 @@ export function enqueueSchedulerReschedule(id: number, scheduledAt: Date) {
     id,
     scheduledAt: scheduledAt.toISOString(),
   });
+}
+
+export function enqueueSocialDisconnect(payload: SocialDisconnectQueueData) {
+  return syncService.queueAction("social-disconnect", payload);
+}
+
+export function enqueueAbVariationPublish(payload: AbVariationPublishQueueData) {
+  return syncService.queueAction("ab-publish-variation", payload);
 }

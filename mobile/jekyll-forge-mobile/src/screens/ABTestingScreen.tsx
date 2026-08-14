@@ -11,6 +11,7 @@ import {
   Alert,
 } from "react-native";
 import { trpc } from "../utils/trpc";
+import { enqueueAbVariationPublish } from "../services/offlineQueueProducers";
 
 interface Variation {
   variationIndex: number;
@@ -97,14 +98,29 @@ export default function ABTestingScreen({ route, navigation }: any) {
           text: "Publish",
           onPress: async () => {
             try {
+              let publishedCount = 0;
+              let queuedCount = 0;
               for (const variation of variations) {
-                await publishMutation.mutateAsync({
+                const payload = {
                   postId,
                   variationIndex: variation.variationIndex,
                   platforms: selectedPlatforms,
-                });
+                };
+                try {
+                  await publishMutation.mutateAsync(payload);
+                  publishedCount += 1;
+                } catch (error) {
+                  console.warn("Queueing A/B variation for retry:", error);
+                  await enqueueAbVariationPublish(payload);
+                  queuedCount += 1;
+                }
               }
-              Alert.alert("Success", "All variations published");
+              Alert.alert(
+                queuedCount > 0 ? "Variations queued" : "Success",
+                queuedCount > 0
+                  ? `${publishedCount} variation(s) published and ${queuedCount} will retry when online.`
+                  : "All variations published"
+              );
             } catch (error: any) {
               Alert.alert(
                 "Error",
