@@ -397,6 +397,9 @@
 - [x] Implement push notifications (pushNotifications.ts with local notification management)
 - [x] Testing and optimization (TypeScript configuration fixed, JSX support added)
 - [ ] Produce a signed Android release after real Expo, Firebase, asset, and Play credentials are configured
+- [ ] Complete owner-run Android development APK acceptance for sign-in, offline recovery, and notification permission behavior
+- [ ] Launch a reachable Metro development server and connect the installed Android development client for device acceptance
+- [ ] Fix the Android development-client Metro entrypoint that currently resolves a nonexistent App module
 
 
 ## Implementation Tasks - Next Phase
