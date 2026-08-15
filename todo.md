@@ -399,7 +399,8 @@
 - [ ] Produce a signed Android release after real Expo, Firebase, asset, and Play credentials are configured
 - [ ] Complete owner-run Android development APK acceptance for sign-in, offline recovery, and notification permission behavior
 - [ ] Launch a reachable Metro development server and connect the installed Android development client for device acceptance
-- [ ] Fix the Android development-client Metro entrypoint that currently resolves a nonexistent App module
+- [x] Fix the Android development-client Metro entrypoint that currently resolves a nonexistent App module
+- [x] Fix the Android sign-in network request failure observed after the development client successfully launches
 
 
 ## Implementation Tasks - Next Phase

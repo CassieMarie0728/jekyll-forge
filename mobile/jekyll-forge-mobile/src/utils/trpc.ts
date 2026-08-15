@@ -3,19 +3,14 @@ import { httpBatchLink } from "@trpc/client";
 import superjson from "superjson";
 import * as SecureStore from "expo-secure-store";
 import type { AppRouter } from "../../../../shared/mobileApi";
+import { getMobileTrpcUrl } from "./apiBaseUrl";
 
 // `import type` is erased from the native bundle, keeping server-only runtime
 // dependencies out of Android while enforcing the same tRPC contract at compile time.
 const mobileTrpcFactory = createTRPCReact<AppRouter>();
 export const trpc = mobileTrpcFactory;
 
-const getTrpcUrl = () => {
-  const configuredUrl =
-    process.env.EXPO_PUBLIC_API_URL || "https://jekyllforge.manus.space";
-  return configuredUrl.endsWith("/api/trpc")
-    ? configuredUrl
-    : `${configuredUrl.replace(/\/$/, "")}/api/trpc`;
-};
+const getTrpcUrl = () => getMobileTrpcUrl(process.env.EXPO_PUBLIC_API_URL);
 
 export const getTrpcClient = (token?: string) => {
   return trpc.createClient({

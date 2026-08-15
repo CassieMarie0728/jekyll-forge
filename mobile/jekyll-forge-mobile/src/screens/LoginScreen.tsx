@@ -10,6 +10,7 @@ import {
 import * as WebBrowser from "expo-web-browser";
 import { useAuthStore } from "../stores/authStore";
 import { getTrpcClient } from "../utils/trpc";
+import { getMobileApiBaseUrl } from "../utils/apiBaseUrl";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -20,8 +21,7 @@ export default function LoginScreen() {
   const handleLogin = async () => {
     setLoading(true);
     try {
-      const configuredUrl = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
-      const apiUrl = configuredUrl.replace(/\/api\/trpc\/?$/, "").replace(/\/$/, "");
+      const apiUrl = getMobileApiBaseUrl(process.env.EXPO_PUBLIC_API_URL);
       const redirectUrl = "jekyllforge://auth-callback";
 
       const startResponse = await fetch(`${apiUrl}/api/oauth/mobile/start`);
