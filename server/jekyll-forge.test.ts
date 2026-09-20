@@ -148,7 +148,7 @@ describe("generateJekyllFilename", () => {
     const safeSlug = slug || "untitled";
     if (folder === "_drafts") return `_drafts/${safeSlug}.md`;
     const d = date ? new Date(date) : new Date();
-    const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const dateStr = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
     return `_posts/${dateStr}-${safeSlug}.md`;
   }
 

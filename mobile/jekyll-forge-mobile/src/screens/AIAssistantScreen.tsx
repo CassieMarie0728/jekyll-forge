@@ -1,3 +1,4 @@
+import { getMobileApiBaseUrl } from "../utils/apiBaseUrl";
 import React, { useState } from "react";
 import {
   View,
@@ -117,7 +118,10 @@ export default function AIAssistantScreen({
           { text: "Cancel", style: "cancel" },
           {
             text: "Open Web Settings",
-            onPress: () => void Linking.openURL("https://jekyllforge.manus.space"),
+            onPress: () =>
+              void Linking.openURL(
+                getMobileApiBaseUrl(process.env.EXPO_PUBLIC_API_URL)
+              ),
           },
         ]
       );
@@ -192,7 +196,9 @@ export default function AIAssistantScreen({
         {providerSettingsLoading ? (
           <View style={styles.providerStatusCard}>
             <ActivityIndicator size="small" color="#60a5fa" />
-            <Text style={styles.providerStatusLoading}>Checking AI provider status…</Text>
+            <Text style={styles.providerStatusLoading}>
+              Checking AI provider status…
+            </Text>
           </View>
         ) : activeProvider ? (
           <View style={[styles.providerStatusCard, styles.providerStatusReady]}>
@@ -201,19 +207,27 @@ export default function AIAssistantScreen({
                 Free provider active: {activeProvider.label}
               </Text>
               <Text style={styles.providerStatusDetail}>
-                {activeProvider.usage.minuteRemaining ?? 0} requests left this minute · {activeProvider.usage.dailyRemaining ?? 0} today
+                {activeProvider.usage.minuteRemaining ?? 0} requests left this
+                minute · {activeProvider.usage.dailyRemaining ?? 0} today
               </Text>
             </View>
           </View>
         ) : (
           <TouchableOpacity
             style={[styles.providerStatusCard, styles.providerStatusMissing]}
-            onPress={() => void Linking.openURL("https://jekyllforge.manus.space")}
+            onPress={() =>
+              void Linking.openURL(
+                getMobileApiBaseUrl(process.env.EXPO_PUBLIC_API_URL)
+              )
+            }
           >
             <View style={styles.providerStatusText}>
-              <Text style={styles.providerStatusTitle}>Set up a free AI provider to continue</Text>
+              <Text style={styles.providerStatusTitle}>
+                Set up a free AI provider to continue
+              </Text>
               <Text style={styles.providerStatusDetail}>
-                Configure an approved key on the web. The key is encrypted server-side and never stored on this device.
+                Configure an approved key on the web. The key is encrypted
+                server-side and never stored on this device.
               </Text>
             </View>
             <Text style={styles.providerLink}>Open web settings</Text>

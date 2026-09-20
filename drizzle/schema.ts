@@ -1,48 +1,63 @@
 import {
-  int,
-  mysqlEnum,
-  mysqlTable,
+  integer,
+  sqliteTable,
   text,
-  timestamp,
-  varchar,
-  boolean,
-  json,
-  bigint,
-  decimal,
   uniqueIndex,
-} from "drizzle-orm/mysql-core";
+  index,
+} from "drizzle-orm/sqlite-core";
+import { sql } from "drizzle-orm";
 
 // ─── Users ──────────────────────────────────────────────────────────────────
-export const users = mysqlTable("users", {
-  id: int("id").autoincrement().primaryKey(),
-  openId: varchar("openId", { length: 64 }).notNull().unique(),
+export const users = sqliteTable("users", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  openId: text("openId").notNull().unique(),
   name: text("name"),
-  email: varchar("email", { length: 320 }),
-  loginMethod: varchar("loginMethod", { length: 64 }),
-  role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
+  email: text("email"),
+  loginMethod: text("loginMethod"),
+  role: text("role", { enum: ["user", "admin"] })
+    .default("user")
+    .notNull(),
   // GitHub OAuth
   githubToken: text("githubToken"),
-  githubLogin: varchar("githubLogin", { length: 128 }),
+  githubLogin: text("githubLogin"),
   githubAvatarUrl: text("githubAvatarUrl"),
-  githubId: varchar("githubId", { length: 64 }),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-  lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
+  githubId: text("githubId"),
+  createdAt: integer("createdAt", { mode: "timestamp" })
+    .default(sql`(unixepoch())`)
+    .notNull(),
+  updatedAt: integer("updatedAt", { mode: "timestamp" })
+    .default(sql`(unixepoch())`)
+    .$onUpdate(() => new Date())
+    .notNull(),
+  lastSignedIn: integer("lastSignedIn", { mode: "timestamp" })
+    .default(sql`(unixepoch())`)
+    .notNull(),
 });
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
 // ─── Mobile device tokens ────────────────────────────────────────────────────
-export const mobileDeviceTokens = mysqlTable("mobile_device_tokens", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  token: varchar("token", { length: 512 }).notNull().unique(),
-  platform: mysqlEnum("platform", ["android"]).default("android").notNull(),
-  enabled: boolean("enabled").default(true).notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+export const mobileDeviceTokens = sqliteTable(
+  "mobile_device_tokens",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: integer("userId").notNull(),
+    token: text("token").notNull().unique(),
+    platform: text("platform", { enum: ["android"] })
+      .default("android")
+      .notNull(),
+    enabled: integer("enabled", { mode: "boolean" }).default(true).notNull(),
+    createdAt: integer("createdAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+    updatedAt: integer("updatedAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  table => [index("mobile_device_tokens_user").on(table.userId)]
+);
 
 export type MobileDeviceToken = typeof mobileDeviceTokens.$inferSelect;
 export type InsertMobileDeviceToken = typeof mobileDeviceTokens.$inferInsert;
@@ -50,152 +65,216 @@ export type InsertMobileDeviceToken = typeof mobileDeviceTokens.$inferInsert;
 // ─── Mobile OAuth authorization tickets ─────────────────────────────────────
 // A short-lived, one-time code is redirected into the Android app after the
 // browser OAuth callback. The app exchanges it for a session token over tRPC.
-export const mobileAuthCodes = mysqlTable("mobile_auth_codes", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  codeHash: varchar("codeHash", { length: 64 }).notNull().unique(),
-  expiresAt: timestamp("expiresAt").notNull(),
-  usedAt: timestamp("usedAt"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
+export const mobileAuthCodes = sqliteTable(
+  "mobile_auth_codes",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: integer("userId").notNull(),
+    codeHash: text("codeHash").notNull().unique(),
+    expiresAt: integer("expiresAt", { mode: "timestamp" }).notNull(),
+    usedAt: integer("usedAt", { mode: "timestamp" }),
+    createdAt: integer("createdAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+  },
+  table => [
+    index("mobile_auth_codes_user").on(table.userId),
+    index("mobile_auth_codes_expiry").on(table.expiresAt),
+  ]
+);
 
 export type MobileAuthCode = typeof mobileAuthCodes.$inferSelect;
 
 // ─── Sites (GitHub Repositories) ────────────────────────────────────────────
-export const sites = mysqlTable("sites", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  owner: varchar("owner", { length: 128 }).notNull(),
-  repo: varchar("repo", { length: 256 }).notNull(),
-  defaultBranch: varchar("defaultBranch", { length: 128 }).default("main"),
-  selectedBranch: varchar("selectedBranch", { length: 128 }).default("main"),
-  rootPath: varchar("rootPath", { length: 256 }).default("/"),
-  isJekyll: boolean("isJekyll").default(false),
-  isFavorite: boolean("isFavorite").default(false),
-  timezone: varchar("timezone", { length: 64 }).default("UTC"),
-  defaultLayout: varchar("defaultLayout", { length: 128 }).default("post"),
-  defaultAssetPath: varchar("defaultAssetPath", { length: 256 }).default(
-    "/assets/images"
-  ),
-  aiVoiceProfile: varchar("aiVoiceProfile", { length: 64 }).default("default"),
-  settings: json("settings").$type<Record<string, unknown>>(),
-  lastAccessedAt: timestamp("lastAccessedAt").defaultNow(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+export const sites = sqliteTable(
+  "sites",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: integer("userId").notNull(),
+    owner: text("owner").notNull(),
+    repo: text("repo").notNull(),
+    defaultBranch: text("defaultBranch").default("main"),
+    selectedBranch: text("selectedBranch").default("main"),
+    rootPath: text("rootPath").default("/"),
+    isJekyll: integer("isJekyll", { mode: "boolean" }).default(false),
+    isFavorite: integer("isFavorite", { mode: "boolean" }).default(false),
+    timezone: text("timezone").default("UTC"),
+    defaultLayout: text("defaultLayout").default("post"),
+    defaultAssetPath: text("defaultAssetPath").default("/assets/images"),
+    aiVoiceProfile: text("aiVoiceProfile").default("default"),
+    settings: text("settings", { mode: "json" }).$type<
+      Record<string, unknown>
+    >(),
+    lastAccessedAt: integer("lastAccessedAt", { mode: "timestamp" }).default(
+      sql`(unixepoch())`
+    ),
+    createdAt: integer("createdAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+    updatedAt: integer("updatedAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  table => [index("sites_user").on(table.userId)]
+);
 
 export type Site = typeof sites.$inferSelect;
 export type InsertSite = typeof sites.$inferInsert;
 
 // ─── Posts (local drafts / metadata cache) ───────────────────────────────────
-export const posts = mysqlTable("posts", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  siteId: int("siteId").notNull(),
-  path: varchar("path", { length: 512 }).notNull(),
-  filename: varchar("filename", { length: 256 }),
-  slug: varchar("slug", { length: 256 }),
-  title: text("title"),
-  status: mysqlEnum("status", [
-    "draft",
-    "published",
-    "modified",
-    "new",
-    "scheduled",
-    "archived",
-  ]).default("new"),
-  frontMatter: json("frontMatter").$type<Record<string, unknown>>(),
-  markdown: text("markdown"),
-  sha: varchar("sha", { length: 64 }),
-  scheduledAt: timestamp("scheduledAt"),
-  publishedAt: timestamp("publishedAt"),
-  lastAutosaveAt: timestamp("lastAutosaveAt"),
-  autosaveContent: text("autosaveContent"),
-  autosaveFrontMatter: json("autosaveFrontMatter").$type<
-    Record<string, unknown>
-  >(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+export const posts = sqliteTable(
+  "posts",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: integer("userId").notNull(),
+    siteId: integer("siteId").notNull(),
+    path: text("path").notNull(),
+    filename: text("filename"),
+    slug: text("slug"),
+    title: text("title"),
+    status: text("status", {
+      enum: ["draft", "published", "modified", "new", "scheduled", "archived"],
+    }).default("new"),
+    frontMatter: text("frontMatter", { mode: "json" }).$type<
+      Record<string, unknown>
+    >(),
+    markdown: text("markdown"),
+    sha: text("sha"),
+    scheduledAt: integer("scheduledAt", { mode: "timestamp" }),
+    publishedAt: integer("publishedAt", { mode: "timestamp" }),
+    lastAutosaveAt: integer("lastAutosaveAt", { mode: "timestamp" }),
+    autosaveContent: text("autosaveContent"),
+    autosaveFrontMatter: text("autosaveFrontMatter", { mode: "json" }).$type<
+      Record<string, unknown>
+    >(),
+    createdAt: integer("createdAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+    updatedAt: integer("updatedAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  table => [
+    index("posts_user").on(table.userId),
+    index("posts_site_user").on(table.siteId, table.userId),
+  ]
+);
 
 export type Post = typeof posts.$inferSelect;
 export type InsertPost = typeof posts.$inferInsert;
 
 // ─── Revision Snapshots ───────────────────────────────────────────────────────
-export const snapshots = mysqlTable("snapshots", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  siteId: int("siteId").notNull(),
-  postId: int("postId"),
-  postPath: varchar("postPath", { length: 512 }),
-  label: varchar("label", { length: 256 }).notNull(),
-  reason: mysqlEnum("reason", [
-    "manual",
-    "autosave",
-    "before-ai",
-    "before-publish",
-    "before-theme",
-    "before-plugin",
-  ]).default("manual"),
-  markdown: text("markdown"),
-  frontMatter: json("frontMatter").$type<Record<string, unknown>>(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
+export const snapshots = sqliteTable(
+  "snapshots",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: integer("userId").notNull(),
+    siteId: integer("siteId").notNull(),
+    postId: integer("postId"),
+    postPath: text("postPath"),
+    label: text("label").notNull(),
+    reason: text("reason", {
+      enum: [
+        "manual",
+        "autosave",
+        "before-ai",
+        "before-publish",
+        "before-theme",
+        "before-plugin",
+      ],
+    }).default("manual"),
+    markdown: text("markdown"),
+    frontMatter: text("frontMatter", { mode: "json" }).$type<
+      Record<string, unknown>
+    >(),
+    createdAt: integer("createdAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+  },
+  table => [
+    index("snapshots_user").on(table.userId),
+    index("snapshots_site_user").on(table.siteId, table.userId),
+  ]
+);
 
 export type Snapshot = typeof snapshots.$inferSelect;
 export type InsertSnapshot = typeof snapshots.$inferInsert;
 
 // ─── Assets ───────────────────────────────────────────────────────────────────
-export const assets = mysqlTable("assets", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  siteId: int("siteId").notNull(),
-  name: varchar("name", { length: 256 }).notNull(),
-  path: varchar("path", { length: 512 }).notNull(),
-  storageKey: varchar("storageKey", { length: 512 }),
-  storageUrl: text("storageUrl"),
-  mimeType: varchar("mimeType", { length: 128 }),
-  size: bigint("size", { mode: "number" }),
-  width: int("width"),
-  height: int("height"),
-  alt: text("alt"),
-  sha: varchar("sha", { length: 64 }),
-  hash: varchar("hash", { length: 64 }),
-  optimized: boolean("optimized").default(false),
-  /** JSON: { thumbnail?: string, medium?: string, large?: string } — S3 URLs for responsive variants */
-  variants: json("variants").$type<{
-    thumbnail?: string;
-    medium?: string;
-    large?: string;
-  }>(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+export const assets = sqliteTable(
+  "assets",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: integer("userId").notNull(),
+    siteId: integer("siteId").notNull(),
+    name: text("name").notNull(),
+    path: text("path").notNull(),
+    storageKey: text("storageKey"),
+    branch: text("branch"),
+    storageUrl: text("storageUrl"),
+    mimeType: text("mimeType"),
+    size: integer("size"),
+    width: integer("width"),
+    height: integer("height"),
+    alt: text("alt"),
+    sha: text("sha"),
+    hash: text("hash"),
+    optimized: integer("optimized", { mode: "boolean" }).default(false),
+    /** JSON: { thumbnail?: string, medium?: string, large?: string } — S3 URLs for responsive variants */
+    variants: text("variants", { mode: "json" }).$type<{
+      thumbnail?: string;
+      medium?: string;
+      large?: string;
+    }>(),
+    createdAt: integer("createdAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+    updatedAt: integer("updatedAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  table => [
+    index("assets_user").on(table.userId),
+    index("assets_site_user").on(table.siteId, table.userId),
+  ]
+);
 
 export type Asset = typeof assets.$inferSelect;
 export type InsertAsset = typeof assets.$inferInsert;
 
 // ─── AI Settings ─────────────────────────────────────────────────────────────
-export const aiSettings = mysqlTable("ai_settings", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull().unique(),
-  enabled: boolean("enabled").default(true),
-  provider: varchar("provider", { length: 64 }).default("built-in"),
-  model: varchar("model", { length: 128 }),
-  temperature: int("temperature").default(70), // stored as 0-100, divide by 100
-  maxTokens: int("maxTokens").default(2048),
-  systemPrompt: text("systemPrompt"),
-  brandVoicePrompt: text("brandVoicePrompt"),
-  safetyPrompt: text("safetyPrompt"),
-  streaming: boolean("streaming").default(true),
-  defaultLanguage: varchar("defaultLanguage", { length: 16 }).default("en"),
-  budgetLimitCents: int("budgetLimitCents"),
-  totalRequestCount: int("totalRequestCount").default(0),
-  totalInputTokens: bigint("totalInputTokens", { mode: "number" }).default(0),
-  totalOutputTokens: bigint("totalOutputTokens", { mode: "number" }).default(0),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+export const aiSettings = sqliteTable(
+  "ai_settings",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: integer("userId").notNull().unique(),
+    enabled: integer("enabled", { mode: "boolean" }).default(true),
+    provider: text("provider").default("built-in"),
+    model: text("model"),
+    temperature: integer("temperature").default(70), // stored as 0-100, divide by 100
+    maxTokens: integer("maxTokens").default(2048),
+    systemPrompt: text("systemPrompt"),
+    brandVoicePrompt: text("brandVoicePrompt"),
+    safetyPrompt: text("safetyPrompt"),
+    streaming: integer("streaming", { mode: "boolean" }).default(true),
+    defaultLanguage: text("defaultLanguage").default("en"),
+    budgetLimitCents: integer("budgetLimitCents"),
+    totalRequestCount: integer("totalRequestCount").default(0),
+    totalInputTokens: integer("totalInputTokens").default(0),
+    totalOutputTokens: integer("totalOutputTokens").default(0),
+    createdAt: integer("createdAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+    updatedAt: integer("updatedAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  table => [index("ai_settings_user").on(table.userId)]
+);
 
 export type AiSetting = typeof aiSettings.$inferSelect;
 export type InsertAiSetting = typeof aiSettings.$inferInsert;
@@ -203,22 +282,24 @@ export type InsertAiSetting = typeof aiSettings.$inferInsert;
 // ─── User-owned AI Provider Keys ────────────────────────────────────────────
 // Keys are encrypted by the server before persistence. They must never be
 // returned to either client application or stored in mobile device storage.
-export const userAiProviders = mysqlTable(
+export const userAiProviders = sqliteTable(
   "user_ai_providers",
   {
-    id: int("id").autoincrement().primaryKey(),
-    userId: int("userId").notNull(),
-    provider: mysqlEnum("provider", [
-      "openrouter",
-      "gemini",
-      "groq",
-      "mistral",
-    ]).notNull(),
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: integer("userId").notNull(),
+    provider: text("provider", {
+      enum: ["openrouter", "gemini", "groq", "mistral"],
+    }).notNull(),
     encryptedApiKey: text("encryptedApiKey").notNull(),
-    selectedModel: varchar("selectedModel", { length: 160 }).notNull(),
-    enabled: boolean("enabled").default(true).notNull(),
-    createdAt: timestamp("createdAt").defaultNow().notNull(),
-    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+    selectedModel: text("selectedModel").notNull(),
+    enabled: integer("enabled", { mode: "boolean" }).default(true).notNull(),
+    createdAt: integer("createdAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+    updatedAt: integer("updatedAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .$onUpdate(() => new Date())
+      .notNull(),
   },
   table => [
     uniqueIndex("user_ai_providers_user_provider_unique").on(
@@ -232,269 +313,371 @@ export type UserAiProvider = typeof userAiProviders.$inferSelect;
 export type InsertUserAiProvider = typeof userAiProviders.$inferInsert;
 
 // ─── Scheduled Posts ───────────────────────────────────────────────────────────
-export const scheduledPosts = mysqlTable("scheduled_posts", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  siteId: int("siteId").notNull(),
-  postId: int("postId"),
-  draftPath: varchar("draftPath", { length: 512 }).notNull(),
-  targetPath: varchar("targetPath", { length: 512 }).notNull(),
-  scheduledAt: timestamp("scheduledAt").notNull(),
-  timezone: varchar("timezone", { length: 64 }).default("UTC"),
-  status: mysqlEnum("status", [
-    "pending",
-    "processing",
-    "published",
-    "failed",
-    "cancelled",
-  ]).default("pending"),
-  commitMessage: text("commitMessage"),
-  errorMessage: text("errorMessage"),
-  publishedAt: timestamp("publishedAt"),
-  scheduleCronTaskUid: varchar("scheduleCronTaskUid", { length: 65 }),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+export const scheduledPosts = sqliteTable(
+  "scheduled_posts",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: integer("userId").notNull(),
+    siteId: integer("siteId").notNull(),
+    postId: integer("postId"),
+    draftPath: text("draftPath").notNull(),
+    targetPath: text("targetPath").notNull(),
+    branch: text("branch"),
+    scheduledAt: integer("scheduledAt", { mode: "timestamp" }).notNull(),
+    timezone: text("timezone").default("UTC"),
+    status: text("status", {
+      enum: ["pending", "processing", "published", "failed", "cancelled"],
+    }).default("pending"),
+    commitMessage: text("commitMessage"),
+    errorMessage: text("errorMessage"),
+    publishedAt: integer("publishedAt", { mode: "timestamp" }),
+    scheduleCronTaskUid: text("scheduleCronTaskUid"),
+    createdAt: integer("createdAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+    updatedAt: integer("updatedAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  table => [
+    index("scheduled_posts_user").on(table.userId),
+    index("scheduled_posts_due").on(table.status, table.scheduledAt),
+  ]
+);
 
 export type ScheduledPost = typeof scheduledPosts.$inferSelect;
 export type InsertScheduledPost = typeof scheduledPosts.$inferInsert;
 
 // ─── Reusable Content Blocks ──────────────────────────────────────────────────
-export const reusableBlocks = mysqlTable("reusable_blocks", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  name: varchar("name", { length: 128 }).notNull(),
-  category: varchar("category", { length: 64 }),
-  content: text("content").notNull(),
-  contentType: mysqlEnum("contentType", ["markdown", "html", "liquid"]).default(
-    "markdown"
-  ),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+export const reusableBlocks = sqliteTable(
+  "reusable_blocks",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: integer("userId").notNull(),
+    name: text("name").notNull(),
+    category: text("category"),
+    content: text("content").notNull(),
+    contentType: text("contentType", {
+      enum: ["markdown", "html", "liquid"],
+    }).default("markdown"),
+    createdAt: integer("createdAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+    updatedAt: integer("updatedAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  table => [index("reusable_blocks_user").on(table.userId)]
+);
 
 export type ReusableBlock = typeof reusableBlocks.$inferSelect;
 export type InsertReusableBlock = typeof reusableBlocks.$inferInsert;
 
 // ─── Front Matter Templates ───────────────────────────────────────────────────
-export const frontMatterTemplates = mysqlTable("front_matter_templates", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  siteId: int("siteId"),
-  name: varchar("name", { length: 128 }).notNull(),
-  template: json("template").$type<Record<string, unknown>>().notNull(),
-  isDefault: boolean("isDefault").default(false),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+export const frontMatterTemplates = sqliteTable(
+  "front_matter_templates",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: integer("userId").notNull(),
+    siteId: integer("siteId"),
+    name: text("name").notNull(),
+    template: text("template", { mode: "json" })
+      .$type<Record<string, unknown>>()
+      .notNull(),
+    isDefault: integer("isDefault", { mode: "boolean" }).default(false),
+    createdAt: integer("createdAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+    updatedAt: integer("updatedAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  table => [index("front_matter_templates_user").on(table.userId)]
+);
 
 export type FrontMatterTemplate = typeof frontMatterTemplates.$inferSelect;
 
 // ─── Repurposed Content ───────────────────────────────────────────────────────
-export const repurposedContent = mysqlTable("repurposed_content", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  siteId: int("siteId").notNull(),
-  postId: int("postId").notNull(),
-  postTitle: varchar("postTitle", { length: 512 }),
-  postSlug: varchar("postSlug", { length: 256 }),
-  /** Format type: twitter, linkedin, tiktok, youtube, newsletter, email, podcast, slides */
-  format: mysqlEnum("format", [
-    "twitter",
-    "linkedin",
-    "tiktok",
-    "youtube",
-    "newsletter",
-    "email",
-    "podcast",
-    "slides",
-  ]).notNull(),
-  /** The repurposed content */
-  content: text("content").notNull(),
-  /** Metadata specific to format (e.g., character count, thread count, etc.) */
-  metadata: json("metadata").$type<Record<string, unknown>>(),
-  /** Whether this content has been edited by user */
-  isCustomized: boolean("isCustomized").default(false),
-  /** Status: generated, approved, published, archived */
-  status: mysqlEnum("status", [
-    "generated",
-    "approved",
-    "published",
-    "archived",
-  ]).default("generated"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+export const repurposedContent = sqliteTable(
+  "repurposed_content",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: integer("userId").notNull(),
+    siteId: integer("siteId").notNull(),
+    postId: integer("postId").notNull(),
+    postTitle: text("postTitle"),
+    postSlug: text("postSlug"),
+    /** Format type: twitter, linkedin, tiktok, youtube, newsletter, email, podcast, slides */
+    format: text("format", {
+      enum: [
+        "twitter",
+        "linkedin",
+        "tiktok",
+        "youtube",
+        "newsletter",
+        "email",
+        "podcast",
+        "slides",
+      ],
+    }).notNull(),
+    /** The repurposed content */
+    content: text("content").notNull(),
+    /** Metadata specific to format (e.g., character count, thread count, etc.) */
+    metadata: text("metadata", { mode: "json" }).$type<
+      Record<string, unknown>
+    >(),
+    /** Whether this content has been edited by user */
+    isCustomized: integer("isCustomized", { mode: "boolean" }).default(false),
+    /** Status: generated, approved, published, archived */
+    status: text("status", {
+      enum: ["generated", "approved", "published", "archived"],
+    }).default("generated"),
+    createdAt: integer("createdAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+    updatedAt: integer("updatedAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  table => [
+    index("repurposed_content_user").on(table.userId),
+    index("repurposed_content_site_user").on(table.siteId, table.userId),
+  ]
+);
 
 export type RepurposedContent = typeof repurposedContent.$inferSelect;
 export type InsertRepurposedContent = typeof repurposedContent.$inferInsert;
 
 // ─── Social Media Accounts ────────────────────────────────────────────────────
-export const socialMediaAccounts = mysqlTable("social_media_accounts", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  platform: mysqlEnum("platform", [
-    "twitter",
-    "linkedin",
-    "facebook",
-    "instagram",
-  ]).notNull(),
-  accountId: varchar("accountId", { length: 256 }).notNull(),
-  username: varchar("username", { length: 256 }),
-  displayName: varchar("displayName", { length: 256 }),
-  profileImageUrl: text("profileImageUrl"),
-  accessToken: text("accessToken").notNull(),
-  refreshToken: text("refreshToken"),
-  expiresAt: timestamp("expiresAt"),
-  isConnected: boolean("isConnected").default(true),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+export const socialMediaAccounts = sqliteTable(
+  "social_media_accounts",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: integer("userId").notNull(),
+    platform: text("platform", {
+      enum: ["twitter", "linkedin", "facebook", "instagram"],
+    }).notNull(),
+    accountId: text("accountId").notNull(),
+    username: text("username"),
+    displayName: text("displayName"),
+    profileImageUrl: text("profileImageUrl"),
+    accessToken: text("accessToken").notNull(),
+    refreshToken: text("refreshToken"),
+    expiresAt: integer("expiresAt", { mode: "timestamp" }),
+    isConnected: integer("isConnected", { mode: "boolean" }).default(true),
+    createdAt: integer("createdAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+    updatedAt: integer("updatedAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  table => [index("social_media_accounts_user").on(table.userId)]
+);
 
 export type SocialMediaAccount = typeof socialMediaAccounts.$inferSelect;
 export type InsertSocialMediaAccount = typeof socialMediaAccounts.$inferInsert;
 
 // ─── Scheduled Social Media Posts ──────────────────────────────────────────────
-export const scheduledSocialPosts = mysqlTable("scheduled_social_posts", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  repurposedContentId: int("repurposedContentId").notNull(),
-  socialMediaAccountId: int("socialMediaAccountId").notNull(),
-  platform: mysqlEnum("platform", [
-    "twitter",
-    "linkedin",
-    "facebook",
-    "instagram",
-  ]).notNull(),
-  content: text("content").notNull(),
-  scheduledAt: timestamp("scheduledAt").notNull(),
-  timezone: varchar("timezone", { length: 64 }).default("UTC"),
-  status: mysqlEnum("status", [
-    "pending",
-    "processing",
-    "published",
-    "failed",
-    "cancelled",
-  ]).default("pending"),
-  externalPostId: varchar("externalPostId", { length: 256 }),
-  externalUrl: text("externalUrl"),
-  errorMessage: text("errorMessage"),
-  retryCount: int("retryCount").default(0),
-  maxRetries: int("maxRetries").default(3),
-  lastRetryAt: timestamp("lastRetryAt"),
-  publishedAt: timestamp("publishedAt"),
-  scheduleCronTaskUid: varchar("scheduleCronTaskUid", { length: 65 }),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+export const scheduledSocialPosts = sqliteTable(
+  "scheduled_social_posts",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: integer("userId").notNull(),
+    repurposedContentId: integer("repurposedContentId").notNull(),
+    socialMediaAccountId: integer("socialMediaAccountId").notNull(),
+    platform: text("platform", {
+      enum: ["twitter", "linkedin", "facebook", "instagram"],
+    }).notNull(),
+    content: text("content").notNull(),
+    scheduledAt: integer("scheduledAt", { mode: "timestamp" }).notNull(),
+    timezone: text("timezone").default("UTC"),
+    status: text("status", {
+      enum: ["pending", "processing", "published", "failed", "cancelled"],
+    }).default("pending"),
+    externalPostId: text("externalPostId"),
+    externalUrl: text("externalUrl"),
+    errorMessage: text("errorMessage"),
+    retryCount: integer("retryCount").default(0),
+    maxRetries: integer("maxRetries").default(3),
+    lastRetryAt: integer("lastRetryAt", { mode: "timestamp" }),
+    publishedAt: integer("publishedAt", { mode: "timestamp" }),
+    scheduleCronTaskUid: text("scheduleCronTaskUid"),
+    createdAt: integer("createdAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+    updatedAt: integer("updatedAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  table => [
+    index("scheduled_social_posts_user").on(table.userId),
+    index("scheduled_social_posts_due").on(table.status, table.scheduledAt),
+  ]
+);
 
 export type ScheduledSocialPost = typeof scheduledSocialPosts.$inferSelect;
 export type InsertScheduledSocialPost =
   typeof scheduledSocialPosts.$inferInsert;
 
 // ─── Content Analytics ────────────────────────────────────────────────────────
-export const contentAnalytics = mysqlTable("content_analytics", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  repurposedContentId: int("repurposedContentId").notNull(),
-  platform: mysqlEnum("platform", [
-    "twitter",
-    "linkedin",
-    "facebook",
-    "instagram",
-  ]).notNull(),
-  externalPostId: varchar("externalPostId", { length: 256 }),
-  externalUrl: text("externalUrl"),
-  impressions: int("impressions").default(0),
-  engagements: int("engagements").default(0),
-  clicks: int("clicks").default(0),
-  shares: int("shares").default(0),
-  likes: int("likes").default(0),
-  replies: int("replies").default(0),
-  retweets: int("retweets").default(0),
-  /** Raw analytics data from platform API */
-  rawMetrics: json("rawMetrics").$type<Record<string, unknown>>(),
-  /** Last time metrics were synced from platform */
-  lastSyncedAt: timestamp("lastSyncedAt"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+export const contentAnalytics = sqliteTable(
+  "content_analytics",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: integer("userId").notNull(),
+    repurposedContentId: integer("repurposedContentId").notNull(),
+    platform: text("platform", {
+      enum: ["twitter", "linkedin", "facebook", "instagram"],
+    }).notNull(),
+    externalPostId: text("externalPostId"),
+    externalUrl: text("externalUrl"),
+    impressions: integer("impressions").default(0),
+    engagements: integer("engagements").default(0),
+    clicks: integer("clicks").default(0),
+    shares: integer("shares").default(0),
+    likes: integer("likes").default(0),
+    replies: integer("replies").default(0),
+    retweets: integer("retweets").default(0),
+    /** Raw analytics data from platform API */
+    rawMetrics: text("rawMetrics", { mode: "json" }).$type<
+      Record<string, unknown>
+    >(),
+    /** Last time metrics were synced from platform */
+    lastSyncedAt: integer("lastSyncedAt", { mode: "timestamp" }),
+    createdAt: integer("createdAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+    updatedAt: integer("updatedAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  table => [index("content_analytics_user").on(table.userId)]
+);
 
 export type ContentAnalytics = typeof contentAnalytics.$inferSelect;
 export type InsertContentAnalytics = typeof contentAnalytics.$inferInsert;
 
 // ─── Content Variations (A/B Testing) ──────────────────────────────────────────
-export const contentVariations = mysqlTable("content_variations", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  postId: int("postId").notNull(),
-  variationIndex: int("variationIndex").notNull(), // 0 = original, 1-N = variations
-  headline: text("headline").notNull(),
-  content: text("content").notNull(),
-  tone: varchar("tone", { length: 64 }), // e.g., "professional", "casual", "humorous"
-  angle: varchar("angle", { length: 256 }), // e.g., "beginner-friendly", "advanced", "contrarian"
-  status: mysqlEnum("status", ["draft", "published", "archived"])
-    .default("draft")
-    .notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+export const contentVariations = sqliteTable(
+  "content_variations",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: integer("userId").notNull(),
+    postId: integer("postId").notNull(),
+    variationIndex: integer("variationIndex").notNull(), // 0 = original, 1-N = variations
+    headline: text("headline").notNull(),
+    content: text("content").notNull(),
+    tone: text("tone"), // e.g., "professional", "casual", "humorous"
+    angle: text("angle"), // e.g., "beginner-friendly", "advanced", "contrarian"
+    status: text("status", { enum: ["draft", "published", "archived"] })
+      .default("draft")
+      .notNull(),
+    createdAt: integer("createdAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+    updatedAt: integer("updatedAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  table => [index("content_variations_user").on(table.userId)]
+);
 
 export type ContentVariation = typeof contentVariations.$inferSelect;
 export type InsertContentVariation = typeof contentVariations.$inferInsert;
 
 // ─── A/B Test Results ─────────────────────────────────────────────────────────
-export const abTestResults = mysqlTable("ab_test_results", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  postId: int("postId").notNull(),
-  variationIndex: int("variationIndex").notNull(),
-  platform: mysqlEnum("platform", [
-    "twitter",
-    "linkedin",
-    "facebook",
-    "instagram",
-    "email",
-    "direct",
-  ]).notNull(),
-  externalPostId: varchar("externalPostId", { length: 256 }),
-  impressions: int("impressions").default(0),
-  engagements: int("engagements").default(0),
-  clicks: int("clicks").default(0),
-  shares: int("shares").default(0),
-  likes: int("likes").default(0),
-  replies: int("replies").default(0),
-  engagementRate: decimal("engagementRate", { precision: 5, scale: 2 }).default(
-    "0"
-  ), // percentage
-  status: mysqlEnum("status", ["active", "completed", "paused"])
-    .default("active")
-    .notNull(),
-  startedAt: timestamp("startedAt").defaultNow().notNull(),
-  endedAt: timestamp("endedAt"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+export const abTestResults = sqliteTable(
+  "ab_test_results",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: integer("userId").notNull(),
+    postId: integer("postId").notNull(),
+    variationIndex: integer("variationIndex").notNull(),
+    platform: text("platform", {
+      enum: ["twitter", "linkedin", "facebook", "instagram", "email", "direct"],
+    }).notNull(),
+    externalPostId: text("externalPostId"),
+    impressions: integer("impressions").default(0),
+    engagements: integer("engagements").default(0),
+    clicks: integer("clicks").default(0),
+    shares: integer("shares").default(0),
+    likes: integer("likes").default(0),
+    replies: integer("replies").default(0),
+    engagementRate: text("engagementRate").default("0"), // percentage
+    status: text("status", { enum: ["active", "completed", "paused"] })
+      .default("active")
+      .notNull(),
+    startedAt: integer("startedAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+    endedAt: integer("endedAt", { mode: "timestamp" }),
+    createdAt: integer("createdAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+    updatedAt: integer("updatedAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  table => [index("ab_test_results_user").on(table.userId)]
+);
 
 export type AbTestResult = typeof abTestResults.$inferSelect;
 export type InsertAbTestResult = typeof abTestResults.$inferInsert;
 
 // ─── A/B Test Summary ─────────────────────────────────────────────────────────
-export const abTestSummary = mysqlTable("ab_test_summary", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  postId: int("postId").notNull(),
-  winningVariationIndex: int("winningVariationIndex"),
-  totalVariations: int("totalVariations").notNull(),
-  testDurationDays: int("testDurationDays").default(7),
-  winningMetric: varchar("winningMetric", { length: 64 }), // "engagement_rate", "clicks", "shares", etc.
-  status: mysqlEnum("status", ["running", "completed", "archived"])
-    .default("running")
-    .notNull(),
-  insights: json("insights").$type<Record<string, unknown>>(), // JSON with detailed insights
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+export const abTestSummary = sqliteTable(
+  "ab_test_summary",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: integer("userId").notNull(),
+    postId: integer("postId").notNull(),
+    winningVariationIndex: integer("winningVariationIndex"),
+    totalVariations: integer("totalVariations").notNull(),
+    testDurationDays: integer("testDurationDays").default(7),
+    winningMetric: text("winningMetric"), // "engagement_rate", "clicks", "shares", etc.
+    status: text("status", { enum: ["running", "completed", "archived"] })
+      .default("running")
+      .notNull(),
+    insights: text("insights", { mode: "json" }).$type<
+      Record<string, unknown>
+    >(), // JSON with detailed insights
+    createdAt: integer("createdAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+    updatedAt: integer("updatedAt", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  table => [index("ab_test_summary_user").on(table.userId)]
+);
 
 export type AbTestSummary = typeof abTestSummary.$inferSelect;
+
+export const rateWindows = sqliteTable(
+  "rate_windows",
+  {
+    key: text("key").primaryKey(),
+    count: integer("count").notNull(),
+    expiresAt: integer("expiresAt").notNull(),
+  },
+  table => [index("rate_windows_expiry").on(table.expiresAt)]
+);
+
+export const operatorNotifications = sqliteTable("operator_notifications", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  createdAt: integer("createdAt").notNull(),
+});
 export type InsertAbTestSummary = typeof abTestSummary.$inferInsert;

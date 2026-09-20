@@ -1,52 +1,39 @@
 import { z } from "zod";
-import { parse as parseCookie } from "cookie";
-import { COOKIE_NAME } from "@shared/const";
+import { TRPCError } from "@trpc/server";
 import { protectedProcedure, router } from "../_core/trpc";
-import {
-  createHeartbeatJob,
-  deleteHeartbeatJob,
-  listHeartbeatJobs,
-} from "../_core/heartbeat";
-import {
-  createScheduledPost,
-  getSiteById,
-  getPostById,
-  getScheduledPostsBySite,
-  getScheduledPostById,
-  updateScheduledPost,
-} from "../db";
-import { notifyOwner } from "../_core/notification";
+import * as db from "../db";
+import { scheduledPosts } from "../../drizzle/schema";
+import { and, eq } from "drizzle-orm";
 
-/**
- * Convert a UTC Date to a 6-field cron expression that fires once at that time.
- * Format: "sec min hour dom mon dow"
- * The handler is idempotent — once published, subsequent triggers are no-ops.
- */
-function dateToCron(date: Date): string {
-  const sec = date.getUTCSeconds();
-  const min = date.getUTCMinutes();
-  const hour = date.getUTCHours();
-  const dom = date.getUTCDate();
-  const mon = date.getUTCMonth() + 1; // 1-12
-  return `${sec} ${min} ${hour} ${dom} ${mon} *`;
+function future(date: Date) {
+  if (date.getTime() <= Date.now())
+    throw new Error("Scheduled publish time must be in the future");
 }
-
+async function owned(id: number, userId: number) {
+  const row = await db.getScheduledPostById(id, userId);
+  if (!row) throw new Error("Scheduled post not found");
+  return row;
+}
+function path(value: string) {
+  const result = value.replace(/^\/+/, "");
+  if (
+    !result ||
+    result.split("/").some(part => part === ".." || part === "." || !part) ||
+    /[\\?#\x00-\x1f]/.test(result)
+  ) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Invalid repository path",
+    });
+  }
+  return result;
+}
 export const schedulerRouter = router({
-  /**
-   * List all scheduled posts for a site.
-   */
   list: protectedProcedure
     .input(z.object({ siteId: z.number() }))
     .query(({ ctx, input }) =>
-      getScheduledPostsBySite(input.siteId, ctx.user.id)
+      db.getScheduledPostsBySite(input.siteId, ctx.user.id)
     ),
-
-  /**
-   * Schedule a post for future publishing.
-   * Creates a heartbeat cron job and persists the taskUid on the row.
-   * NOTE: Heartbeat jobs require the site to be deployed first.
-   * In dev mode, we still create the DB row but skip the heartbeat creation.
-   */
   schedule: protectedProcedure
     .input(
       z.object({
@@ -60,112 +47,51 @@ export const schedulerRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const site = await getSiteById(input.siteId, ctx.user.id);
-      if (!site) {
-        throw new Error("Site not found");
-      }
-
+      const site = await db.getSiteById(input.siteId, ctx.user.id);
+      if (!site) throw new Error("Site not found");
       if (input.postId !== undefined) {
-        const post = await getPostById(input.postId, ctx.user.id);
-        if (!post || post.siteId !== site.id) {
-          throw new Error("Post not found");
-        }
+        const post = await db.getPostById(input.postId, ctx.user.id);
+        if (!post || post.siteId !== site.id) throw new Error("Post not found");
       }
-
-      if (input.scheduledAt.getTime() <= Date.now()) {
-        throw new Error("Scheduled publish time must be in the future");
-      }
-
-      // Create the DB row first
-      const id = await createScheduledPost({
+      future(input.scheduledAt);
+      const draftPath = path(input.draftPath),
+        targetPath = path(input.targetPath);
+      if (draftPath === targetPath)
+        throw new Error("Draft and target paths must differ");
+      const id = await db.createScheduledPost({
+        ...input,
+        draftPath,
+        targetPath,
         userId: ctx.user.id,
-        siteId: input.siteId,
-        postId: input.postId,
-        draftPath: input.draftPath,
-        targetPath: input.targetPath,
-        scheduledAt: input.scheduledAt,
-        timezone: input.timezone,
-        commitMessage: input.commitMessage,
+        branch: site.selectedBranch || site.defaultBranch || "main",
         status: "pending",
       });
-
-      // Attempt to create the heartbeat job
-      // This will fail in dev (sandbox not deployed) — we catch and log
-      try {
-        const sessionToken =
-          parseCookie(ctx.req.headers.cookie ?? "")[COOKIE_NAME] ?? "";
-        const cron = dateToCron(input.scheduledAt);
-        const filename = input.targetPath.split("/").pop() || input.targetPath;
-
-        const job = await createHeartbeatJob(
-          {
-            name: `jekyll-publish-${id}`,
-            cron,
-            path: "/api/scheduled/publish-post",
-            payload: { scheduledPostId: id },
-            description: `Scheduled publish: ${filename} at ${input.scheduledAt.toISOString()}`,
-          },
-          sessionToken
-        );
-
-        // Persist the taskUid so the handler can look up by it
-        await updateScheduledPost(id, { scheduleCronTaskUid: job.taskUid });
-
-        return {
-          id,
-          taskUid: job.taskUid,
-          nextExecutionAt: job.nextExecutionAt,
-        };
-      } catch (err) {
-        // In dev or if heartbeat fails, the DB row exists but no cron is registered.
-        console.warn(
-          "[Scheduler] Could not create heartbeat job (site may not be deployed):",
-          err instanceof Error ? err.message : err
-        );
-        return {
-          id,
-          taskUid: null,
-          warning:
-            "Heartbeat job not created — deploy the site first to activate scheduling.",
-        };
-      }
+      return {
+        id,
+        taskUid: `d1:${id}`,
+        nextExecutionAt: input.scheduledAt.toISOString(),
+      };
     }),
-
-  /**
-   * Cancel a scheduled post.
-   * Deletes the heartbeat job and marks the row as cancelled.
-   */
   cancel: protectedProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      // Fetch the specific row by ID and userId (safe, no siteId=0 bug)
-      const row = await getScheduledPostById(input.id, ctx.user.id);
-      if (!row) {
-        return { success: false, error: "Scheduled post not found" };
-      }
-
-      // Delete the heartbeat job if we have a taskUid
-      if (row.scheduleCronTaskUid) {
-        try {
-          const sessionToken =
-            parseCookie(ctx.req.headers.cookie ?? "")[COOKIE_NAME] ?? "";
-          await deleteHeartbeatJob(row.scheduleCronTaskUid, sessionToken);
-        } catch (err) {
-          console.warn(
-            "[Scheduler] Could not delete heartbeat job:",
-            err instanceof Error ? err.message : err
-          );
-        }
-      }
-
-      await updateScheduledPost(input.id, { status: "cancelled" });
+      await owned(input.id, ctx.user.id);
+      const database = await db.getDb();
+      const changed = await database
+        .update(scheduledPosts)
+        .set({ status: "cancelled" })
+        .where(
+          and(
+            eq(scheduledPosts.id, input.id),
+            eq(scheduledPosts.userId, ctx.user.id),
+            eq(scheduledPosts.status, "pending")
+          )
+        )
+        .returning({ id: scheduledPosts.id });
+      if (!changed.length)
+        throw new Error("Only pending scheduled posts can be cancelled");
       return { success: true };
     }),
-
-  /**
-   * Move a caller-owned pending scheduled post to a future time.
-   * Replaces its Heartbeat job when the platform scheduler is available.
-   */
   reschedule: protectedProcedure
     .input(
       z.object({
@@ -175,107 +101,50 @@ export const schedulerRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const row = await getScheduledPostById(input.id, ctx.user.id);
-      if (!row) {
-        throw new Error("Scheduled post not found");
-      }
-      if (row.status !== "pending") {
+      await owned(input.id, ctx.user.id);
+      future(input.scheduledAt);
+      const database = await db.getDb();
+      const changed = await database
+        .update(scheduledPosts)
+        .set({
+          scheduledAt: input.scheduledAt,
+          ...(input.timezone ? { timezone: input.timezone } : {}),
+          errorMessage: null,
+        })
+        .where(
+          and(
+            eq(scheduledPosts.id, input.id),
+            eq(scheduledPosts.userId, ctx.user.id),
+            eq(scheduledPosts.status, "pending")
+          )
+        )
+        .returning({ id: scheduledPosts.id });
+      if (!changed.length)
         throw new Error("Only pending scheduled posts can be rescheduled");
-      }
-      if (input.scheduledAt.getTime() <= Date.now()) {
-        throw new Error("Scheduled publish time must be in the future");
-      }
-
-      const timezone = input.timezone ?? row.timezone ?? "UTC";
-      const sessionToken =
-        parseCookie(ctx.req.headers.cookie ?? "")[COOKIE_NAME] ?? "";
-
-      if (row.scheduleCronTaskUid) {
-        try {
-          await deleteHeartbeatJob(row.scheduleCronTaskUid, sessionToken);
-        } catch (err) {
-          console.warn(
-            "[Scheduler] Could not delete existing heartbeat job while rescheduling:",
-            err instanceof Error ? err.message : err
-          );
-        }
-      }
-
-      try {
-        const filename = row.targetPath.split("/").pop() || row.targetPath;
-        const job = await createHeartbeatJob(
-          {
-            name: `jekyll-publish-${row.id}`,
-            cron: dateToCron(input.scheduledAt),
-            path: "/api/scheduled/publish-post",
-            payload: { scheduledPostId: row.id },
-            description: `Scheduled publish: ${filename} at ${input.scheduledAt.toISOString()}`,
-          },
-          sessionToken
-        );
-        await updateScheduledPost(row.id, {
-          scheduledAt: input.scheduledAt,
-          timezone,
-          status: "pending",
-          errorMessage: null,
-          scheduleCronTaskUid: job.taskUid,
-        });
-        return {
-          success: true,
-          taskUid: job.taskUid,
-          nextExecutionAt: job.nextExecutionAt,
-        };
-      } catch (err) {
-        console.warn(
-          "[Scheduler] Could not create heartbeat job while rescheduling:",
-          err instanceof Error ? err.message : err
-        );
-        await updateScheduledPost(row.id, {
-          scheduledAt: input.scheduledAt,
-          timezone,
-          status: "pending",
-          errorMessage: null,
-          scheduleCronTaskUid: null,
-        });
-        return {
-          success: true,
-          taskUid: null,
-          warning:
-            "Heartbeat job not created — deploy the site first to activate scheduling.",
-        };
-      }
+      return {
+        success: true,
+        taskUid: `d1:${input.id}`,
+        nextExecutionAt: input.scheduledAt.toISOString(),
+      };
     }),
-
-  /**
-   * Cancel all scheduled posts for a site.
-   */
   cancelAll: protectedProcedure
     .input(z.object({ siteId: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const jobs = await getScheduledPostsBySite(input.siteId, ctx.user.id);
-      const sessionToken =
-        parseCookie(ctx.req.headers.cookie ?? "")[COOKIE_NAME] ?? "";
-
-      let cancelled = 0;
-      for (const job of jobs) {
-        if (job.status !== "pending") continue;
-        if (job.scheduleCronTaskUid) {
-          try {
-            await deleteHeartbeatJob(job.scheduleCronTaskUid, sessionToken);
-          } catch {
-            /* ignore */
-          }
-        }
-        await updateScheduledPost(job.id, { status: "cancelled" });
-        cancelled++;
-      }
-      return { cancelled };
+      const database = await db.getDb();
+      const rows = await database
+        .update(scheduledPosts)
+        .set({ status: "cancelled" })
+        .where(
+          and(
+            eq(scheduledPosts.siteId, input.siteId),
+            eq(scheduledPosts.userId, ctx.user.id),
+            eq(scheduledPosts.status, "pending")
+          )
+        )
+        .returning({ id: scheduledPosts.id });
+      return { cancelled: rows.length };
     }),
-
-  /**
-   * List heartbeat jobs for the current user (from the platform).
-   * Useful for debugging and admin view.
-   */
+  // Retain the wire name for the existing native client; this is a database queue.
   listHeartbeatJobs: protectedProcedure
     .input(
       z.object({
@@ -284,55 +153,57 @@ export const schedulerRouter = router({
       })
     )
     .query(async ({ ctx, input }) => {
-      try {
-        const sessionToken =
-          parseCookie(ctx.req.headers.cookie ?? "")[COOKIE_NAME] ?? "";
-        return await listHeartbeatJobs(sessionToken, {
-          page: input.page,
-          pageSize: input.pageSize,
-        });
-      } catch {
-        // Not deployed yet or no jobs
-        return { total: 0, actorUserId: "", jobs: [] };
-      }
+      const database = await db.getDb();
+      const rows = await database
+        .select()
+        .from(scheduledPosts)
+        .where(
+          and(
+            eq(scheduledPosts.userId, ctx.user.id),
+            eq(scheduledPosts.status, "pending")
+          )
+        );
+      return {
+        total: rows.length,
+        actorUserId: String(ctx.user.id),
+        jobs: rows
+          .slice((input.page - 1) * input.pageSize, input.page * input.pageSize)
+          .map(row => ({
+            taskUid: `d1:${row.id}`,
+            name: row.targetPath,
+            isEnable: true,
+            nextExecutionAt: row.scheduledAt.toISOString(),
+          })),
+      };
     }),
-
-  /**
-   * Manually mark a scheduled post as published (for testing/recovery).
-   */
   markPublished: protectedProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const row = await getScheduledPostById(input.id, ctx.user.id);
-      if (!row) {
-        throw new Error("Scheduled post not found");
-      }
-
-      await updateScheduledPost(input.id, {
-        status: "published",
-        publishedAt: new Date(),
+      await owned(input.id, ctx.user.id);
+      throw new TRPCError({
+        code: "PRECONDITION_FAILED",
+        message:
+          "A schedule is marked published only after GitHub confirms the commit.",
       });
-      return { success: true };
     }),
-
-  /**
-   * Manually mark a scheduled post as failed with an error message.
-   */
   markFailed: protectedProcedure
     .input(z.object({ id: z.number(), errorMessage: z.string().max(2000) }))
     .mutation(async ({ ctx, input }) => {
-      const row = await getScheduledPostById(input.id, ctx.user.id);
-      if (!row) {
-        throw new Error("Scheduled post not found");
-      }
-
-      await updateScheduledPost(input.id, {
-        status: "failed",
-        errorMessage: input.errorMessage,
-      });
-      await notifyOwner({
-        title: "Jekyll Forge: Scheduled publish failed",
-        content: `Scheduled post failed to publish.\nError: ${input.errorMessage}`,
-      });
+      await owned(input.id, ctx.user.id);
+      const database = await db.getDb();
+      const changed = await database
+        .update(scheduledPosts)
+        .set({ status: "failed", errorMessage: input.errorMessage })
+        .where(
+          and(
+            eq(scheduledPosts.id, input.id),
+            eq(scheduledPosts.userId, ctx.user.id),
+            eq(scheduledPosts.status, "pending")
+          )
+        )
+        .returning({ id: scheduledPosts.id });
+      if (!changed.length)
+        throw new Error("Only pending scheduled posts can be marked failed");
+      return { success: true };
     }),
 });

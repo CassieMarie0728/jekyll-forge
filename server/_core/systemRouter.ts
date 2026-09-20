@@ -1,8 +1,17 @@
+import { getRuntimeEnv } from "./runtime";
 import { z } from "zod";
 import { notifyOwner } from "./notification";
 import { adminProcedure, publicProcedure, router } from "./trpc";
 
 export const systemRouter = router({
+  notifications: adminProcedure.query(async () => {
+    const result = await getRuntimeEnv()
+      .DB.prepare(
+        "SELECT id, title, content, createdAt FROM operator_notifications ORDER BY id DESC LIMIT 100"
+      )
+      .all();
+    return result.results;
+  }),
   health: publicProcedure
     .input(
       z.object({

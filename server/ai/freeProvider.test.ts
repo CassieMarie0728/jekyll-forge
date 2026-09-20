@@ -1,3 +1,4 @@
+import { withRuntime } from "../_core/runtime";
 import { describe, expect, it } from "vitest";
 import {
   FreeAiProviderRateLimiter,
@@ -9,8 +10,7 @@ import {
 // prettier-ignore
 describe("free AI provider policy", () => {
   it("encrypts user-owned API keys with an authenticated envelope", () => {
-    const originalSecret = process.env.JWT_SECRET;
-    process.env.JWT_SECRET = "test-only-encryption-secret";
+    return withRuntime({ JWT_SECRET: "test-only-encryption-secret-at-least-32" } as CloudflareBindings, () => {
     const apiKey = "sk-user-owned-provider-key";
 
     const encrypted = encryptProviderApiKey(apiKey);
@@ -18,7 +18,7 @@ describe("free AI provider policy", () => {
     expect(encrypted).toMatch(/^v1:[^:]+:[^:]+:[^:]+$/);
     expect(encrypted).not.toContain(apiKey);
     expect(decryptProviderApiKey(encrypted)).toBe(apiKey);
-    process.env.JWT_SECRET = originalSecret;
+    });
   });
 
   it("rejects any paid or non-allowlisted model server-side", () => {

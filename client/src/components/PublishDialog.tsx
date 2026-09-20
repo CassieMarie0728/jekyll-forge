@@ -45,6 +45,7 @@ type Site = {
   selectedBranch?: string | null;
   defaultBranch?: string | null;
   timezone?: string | null;
+  rootPath?: string | null;
 };
 
 type Props = {
@@ -138,7 +139,7 @@ export default function PublishDialog({
   const [scheduleDate, setScheduleDate] = useState(
     format(new Date(Date.now() + 86400000), "yyyy-MM-dd'T'HH:mm")
   );
-  const [timezone, setTimezone] = useState(site?.timezone || "UTC");
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const [publishing, setPublishing] = useState(false);
 
   const validation = useMemo(
@@ -146,8 +147,12 @@ export default function PublishDialog({
     [frontMatter, markdown]
   );
   const filename = useMemo(() => generateFilename(frontMatter), [frontMatter]);
+  const rootPrefix = site?.rootPath?.replace(/^\/+|\/+$/g, "");
+  const prefix = rootPrefix ? `${rootPrefix}/` : "";
   const targetPath =
-    action === "drafts" ? `_drafts/${filename}` : `_posts/${filename}`;
+    action === "drafts"
+      ? `${prefix}_drafts/${filename}`
+      : `${prefix}_posts/${filename}`;
   const content = useMemo(
     () => serializePost(frontMatter, markdown),
     [frontMatter, markdown]
@@ -185,7 +190,7 @@ export default function PublishDialog({
         const result = await commitMutation.mutateAsync({
           owner: site.owner,
           repo: site.repo,
-          path: `_posts/${filename}`,
+          path: `${prefix}_posts/${filename}`,
           branch: branchName,
           content,
           message: msg,
@@ -203,12 +208,12 @@ export default function PublishDialog({
         } else {
           toast.success(`Committed to branch: ${branchName}`);
         }
-        onPublished(result.content?.sha || "", `_posts/${filename}`);
+        onPublished(result.content?.sha || "", `${prefix}_posts/${filename}`);
       } else if (action === "schedule") {
         const draftPath =
-          postPath && postPath.startsWith("_drafts/")
+          postPath && postPath.startsWith(`${prefix}_drafts/`)
             ? postPath
-            : `_drafts/${filename}`;
+            : `${prefix}_drafts/${filename}`;
         // Save to drafts first
         await commitMutation.mutateAsync({
           owner: site.owner,
@@ -217,13 +222,16 @@ export default function PublishDialog({
           branch: site.selectedBranch || site.defaultBranch || "main",
           content,
           message: `Save draft for scheduling: ${frontMatter.title || filename}`,
-          sha: currentSha,
+          sha:
+            postPath === (action === "schedule" ? draftPath : targetPath)
+              ? currentSha
+              : undefined,
         });
         await scheduleMutation.mutateAsync({
           siteId,
           postId: postId || undefined,
           draftPath,
-          targetPath: `_posts/${filename}`,
+          targetPath: `${prefix}_posts/${filename}`,
           scheduledAt: new Date(scheduleDate),
           timezone,
           commitMessage: msg,
@@ -240,7 +248,7 @@ export default function PublishDialog({
           branch: site.selectedBranch || site.defaultBranch || "main",
           content,
           message: msg,
-          sha: currentSha,
+          sha: postPath === targetPath ? currentSha : undefined,
         });
         if (postId) {
           await updatePostMutation.mutateAsync({
@@ -359,7 +367,9 @@ export default function PublishDialog({
                 <span>
                   Target:{" "}
                   <code className="bg-muted px-1 rounded">
-                    {action === "schedule" ? `_drafts/${filename}` : targetPath}
+                    {action === "schedule"
+                      ? `${prefix}_drafts/${filename}`
+                      : targetPath}
                   </code>
                 </span>
               </div>
@@ -407,28 +417,9 @@ export default function PublishDialog({
                 </div>
                 <div>
                   <Label className="text-xs mb-1 block">Timezone</Label>
-                  <Select value={timezone} onValueChange={setTimezone}>
-                    <SelectTrigger className="h-7 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {[
-                        "UTC",
-                        "America/New_York",
-                        "America/Los_Angeles",
-                        "America/Chicago",
-                        "Europe/London",
-                        "Europe/Paris",
-                        "Asia/Tokyo",
-                        "Asia/Shanghai",
-                        "Australia/Sydney",
-                      ].map(tz => (
-                        <SelectItem key={tz} value={tz} className="text-xs">
-                          {tz}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    {timezone} (your browser time)
+                  </p>
                 </div>
               </div>
             )}

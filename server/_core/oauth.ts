@@ -1,151 +1,185 @@
-import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
-import { randomBytes } from "crypto";
-import type { Express, Request, Response } from "express";
+import { COOKIE_NAME } from "@shared/const";
+import { randomBytes, timingSafeEqual } from "node:crypto";
+import { parse, serialize } from "cookie";
+import { SignJWT, jwtVerify } from "jose";
 import * as db from "../db";
+import { users } from "../../drizzle/schema";
+import { eq } from "drizzle-orm";
 import { getSessionCookieOptions } from "./cookies";
-import { sdk } from "./sdk";
+import { sdk, sessionKey } from "./sdk";
+import { getRuntimeEnv } from "./runtime";
 
-function getQueryParam(req: Request, key: string): string | undefined {
-  const value = req.query[key];
-  return typeof value === "string" ? value : undefined;
+const STATE_COOKIE = "forge_oauth_state";
+const CALLBACK = "/api/oauth/callback";
+export function appOrigin(): string {
+  const url = new URL(getRuntimeEnv().APP_URL);
+  if (
+    url.protocol !== "https:" &&
+    !(
+      url.protocol === "http:" &&
+      ["localhost", "127.0.0.1"].includes(url.hostname)
+    )
+  ) {
+    throw new Error("APP_URL must use HTTPS outside local development");
+  }
+  return url.origin;
 }
-
-const MOBILE_DEEP_LINK = "jekyllforge://auth-callback";
-const MOBILE_CALLBACK_PATH = "/api/oauth/mobile/callback";
-const MOBILE_AUTH_CODE_TTL_MS = 5 * 60 * 1000;
-
-function getRequestOrigin(req: Request): string {
-  return `${req.protocol}://${req.get("host")}`;
-}
-
-export function buildMobileAuthorizationUrl(
-  requestOrigin: string,
-  portalUrl: string,
-  appId: string
-): string {
-  const callbackUrl = `${requestOrigin}${MOBILE_CALLBACK_PATH}`;
-  const authorizationUrl = new URL("/app-auth", portalUrl);
-  authorizationUrl.searchParams.set("appId", appId);
-  authorizationUrl.searchParams.set("redirectUri", callbackUrl);
-  authorizationUrl.searchParams.set(
-    "state",
-    Buffer.from(callbackUrl).toString("base64")
-  );
-  authorizationUrl.searchParams.set("type", "signIn");
-  return authorizationUrl.toString();
-}
-
-function hasTrustedMobileCallbackState(req: Request, state: string): boolean {
-  const callbackUrl = `${getRequestOrigin(req)}${MOBILE_CALLBACK_PATH}`;
-  return Buffer.from(state, "base64").toString("utf8") === callbackUrl;
-}
-
-export function registerOAuthRoutes(app: Express) {
-  app.get("/api/oauth/mobile/start", (req: Request, res: Response) => {
-    const portalUrl = process.env.VITE_OAUTH_PORTAL_URL;
-    const appId = process.env.VITE_APP_ID;
-    if (!portalUrl || !appId) {
-      res.status(503).json({ error: "Mobile OAuth is not configured" });
-      return;
-    }
-
-    res.json({
-      authorizationUrl: buildMobileAuthorizationUrl(
-        getRequestOrigin(req),
-        portalUrl,
-        appId
-      ),
-    });
+const cookieOptions = (request: Request) =>
+  getSessionCookieOptions({
+    protocol: new URL(request.url).protocol.replace(":", ""),
   });
-
-  app.get(MOBILE_CALLBACK_PATH, async (req: Request, res: Response) => {
-    const code = getQueryParam(req, "code");
-    const state = getQueryParam(req, "state");
-    if (!code || !state || !hasTrustedMobileCallbackState(req, state)) {
-      res.status(400).json({ error: "Invalid mobile OAuth callback" });
-      return;
-    }
-
-    try {
-      const tokenResponse = await sdk.exchangeCodeForToken(code, state);
-      const userInfo = await sdk.getUserInfo(tokenResponse.accessToken);
-      if (!userInfo.openId) {
-        res.status(400).json({ error: "openId missing from user info" });
-        return;
+async function start(request: Request, mobile: boolean) {
+  const env = getRuntimeEnv();
+  if (!env.GITHUB_CLIENT_ID || !env.GITHUB_CLIENT_SECRET) {
+    return Response.json(
+      { error: "GitHub sign-in is not configured yet" },
+      { status: 503 }
+    );
+  }
+  const nonce = randomBytes(32).toString("base64url");
+  const state = await new SignJWT({ nonce, mobile })
+    .setProtectedHeader({ alg: "HS256" })
+    .setAudience("github-oauth")
+    .setIssuedAt()
+    .setExpirationTime("10m")
+    .sign(sessionKey());
+  const url = new URL("https://github.com/login/oauth/authorize");
+  url.searchParams.set("client_id", env.GITHUB_CLIENT_ID);
+  url.searchParams.set("redirect_uri", appOrigin() + CALLBACK);
+  // Repository write access remains a separate, explicit PAT connection.
+  url.searchParams.set("scope", "read:user");
+  url.searchParams.set("state", state);
+  return new Response(null, {
+    status: 302,
+    headers: {
+      Location: url.toString(),
+      "Set-Cookie": serialize(STATE_COOKIE, nonce, {
+        ...cookieOptions(request),
+        maxAge: 600,
+      }),
+    },
+  });
+}
+export async function handleOAuthRequest(request: Request): Promise<Response> {
+  if (request.method !== "GET")
+    return Response.json({ error: "Method not allowed" }, { status: 405 });
+  const url = new URL(request.url);
+  if (url.pathname === "/api/oauth/start") return start(request, false);
+  if (url.pathname === "/api/oauth/start-mobile") return start(request, true);
+  if (url.pathname === "/api/oauth/mobile/start")
+    return Response.json({
+      authorizationUrl: appOrigin() + "/api/oauth/start-mobile",
+    });
+  if (url.pathname !== CALLBACK)
+    return Response.json({ error: "OAuth route not found" }, { status: 404 });
+  const headers = new Headers({
+    "Set-Cookie": serialize(STATE_COOKIE, "", {
+      ...cookieOptions(request),
+      maxAge: 0,
+    }),
+  });
+  try {
+    const code = url.searchParams.get("code"),
+      state = url.searchParams.get("state");
+    if (!code || !state) throw new Error("Invalid callback");
+    const { payload } = await jwtVerify(state, sessionKey(), {
+      algorithms: ["HS256"],
+      audience: "github-oauth",
+    });
+    const nonce = parse(request.headers.get("cookie") ?? "")[STATE_COOKIE];
+    if (!nonce || typeof payload.nonce !== "string")
+      throw new Error("Invalid state");
+    const a = Buffer.from(nonce),
+      b = Buffer.from(payload.nonce);
+    if (a.length !== b.length || !timingSafeEqual(a, b))
+      throw new Error("Invalid state");
+    const env = getRuntimeEnv();
+    const tokenResponse = await fetch(
+      "https://github.com/login/oauth/access_token",
+      {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          client_id: env.GITHUB_CLIENT_ID,
+          client_secret: env.GITHUB_CLIENT_SECRET,
+          code,
+          redirect_uri: appOrigin() + CALLBACK,
+        }),
+        signal: AbortSignal.timeout(15000),
       }
-
-      await db.upsertUser({
-        openId: userInfo.openId,
-        name: userInfo.name || null,
-        email: userInfo.email ?? null,
-        loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
-        lastSignedIn: new Date(),
-      });
-
-      const user = await db.getUserByOpenId(userInfo.openId);
-      if (!user) {
-        res.status(500).json({ error: "Mobile user record was not created" });
-        return;
-      }
-
-      const mobileCode = randomBytes(32).toString("base64url");
+    );
+    const token = (await tokenResponse.json()) as { access_token?: string };
+    if (!tokenResponse.ok || !token.access_token)
+      throw new Error("GitHub token exchange failed");
+    const profileResponse = await fetch("https://api.github.com/user", {
+      headers: {
+        Authorization: `Bearer ${token.access_token}`,
+        Accept: "application/vnd.github+json",
+        "User-Agent": "Jekyll-Forge",
+      },
+      signal: AbortSignal.timeout(15000),
+    });
+    const profile = (await profileResponse.json()) as {
+      id?: number;
+      login?: string;
+      name?: string;
+      email?: string;
+      avatar_url?: string;
+    };
+    if (!profileResponse.ok || !profile.id || !profile.login)
+      throw new Error("GitHub profile unavailable");
+    const openId = `github:${profile.id}`;
+    await db.upsertUser({
+      openId,
+      name: profile.name || profile.login,
+      email: profile.email ?? null,
+      loginMethod: "github",
+      githubLogin: profile.login,
+      githubId: String(profile.id),
+      githubAvatarUrl: profile.avatar_url,
+      lastSignedIn: new Date(),
+    });
+    const database = await db.getDb();
+    await database
+      .update(users)
+      .set({
+        role: String(profile.id) === env.OWNER_GITHUB_ID ? "admin" : "user",
+      })
+      .where(eq(users.openId, openId));
+    const user = await db.getUserByOpenId(openId);
+    if (!user) throw new Error("Account creation failed");
+    if (payload.mobile === true) {
+      const ticket = randomBytes(32).toString("base64url");
       await db.createMobileAuthCode(
         user.id,
-        mobileCode,
-        new Date(Date.now() + MOBILE_AUTH_CODE_TTL_MS)
+        ticket,
+        new Date(Date.now() + 300000)
       );
-
-      res.redirect(
-        302,
-        `${MOBILE_DEEP_LINK}?code=${encodeURIComponent(mobileCode)}`
+      headers.set(
+        "Location",
+        `jekyllforge://auth-callback?code=${encodeURIComponent(ticket)}`
       );
-    } catch (error) {
-      console.error("[OAuth] Mobile callback failed", error);
-      res.status(500).json({ error: "Mobile OAuth callback failed" });
-    }
-  });
-
-  app.get("/api/oauth/callback", async (req: Request, res: Response) => {
-    const code = getQueryParam(req, "code");
-    const state = getQueryParam(req, "state");
-
-    if (!code || !state) {
-      res.status(400).json({ error: "code and state are required" });
-      return;
-    }
-
-    try {
-      const tokenResponse = await sdk.exchangeCodeForToken(code, state);
-      const userInfo = await sdk.getUserInfo(tokenResponse.accessToken);
-
-      if (!userInfo.openId) {
-        res.status(400).json({ error: "openId missing from user info" });
-        return;
-      }
-
-      await db.upsertUser({
-        openId: userInfo.openId,
-        name: userInfo.name || null,
-        email: userInfo.email ?? null,
-        loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
-        lastSignedIn: new Date(),
+    } else {
+      const session = await sdk.createSessionToken(openId, {
+        name: user.name ?? "",
       });
-
-      const sessionToken = await sdk.createSessionToken(userInfo.openId, {
-        name: userInfo.name || "",
-        expiresInMs: ONE_YEAR_MS,
-      });
-
-      const cookieOptions = getSessionCookieOptions(req);
-      res.cookie(COOKIE_NAME, sessionToken, {
-        ...cookieOptions,
-        maxAge: ONE_YEAR_MS,
-      });
-
-      res.redirect(302, "/");
-    } catch (error) {
-      console.error("[OAuth] Callback failed", error);
-      res.status(500).json({ error: "OAuth callback failed" });
+      headers.append(
+        "Set-Cookie",
+        serialize(COOKIE_NAME, session, {
+          ...cookieOptions(request),
+          maxAge: 7 * 86400,
+        })
+      );
+      headers.set("Location", "/repos");
     }
-  });
+    return new Response(null, { status: 302, headers });
+  } catch {
+    return Response.json(
+      { error: "Sign-in failed or expired. Start GitHub sign-in again." },
+      { status: 400, headers }
+    );
+  }
 }

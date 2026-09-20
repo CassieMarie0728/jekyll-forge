@@ -78,7 +78,7 @@ export default function LoginScreen() {
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonText}>Sign In with Manus</Text>
+            <Text style={styles.buttonText}>Sign In with GitHub</Text>
           )}
         </TouchableOpacity>
       </View>

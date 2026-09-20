@@ -172,6 +172,7 @@ export default function Editor() {
     siteId: string;
     postPath?: string;
   }>();
+  const apiUtils = trpc.useUtils();
   const [, navigate] = useLocation();
   const { activeSite, setActiveSite } = useWorkspace();
 
@@ -273,18 +274,12 @@ export default function Editor() {
     if (conflictCheckTimer.current) clearInterval(conflictCheckTimer.current);
     const checkConflict = async () => {
       try {
-        const result = await fetch(
-          `/api/trpc/github.getFile?input=${encodeURIComponent(
-            JSON.stringify({
-              owner: site.owner,
-              repo: site.repo,
-              path: selectedFile,
-              branch: site.selectedBranch || "main",
-            })
-          )}`
-        )
-          .then(r => r.json())
-          .then(d => d.result.data);
+        const result = await apiUtils.client.github.getFile.query({
+          owner: site.owner,
+          repo: site.repo,
+          path: selectedFile,
+          branch: site.selectedBranch || site.defaultBranch || "main",
+        });
         if (result.sha !== currentSha) {
           setRemoteUpdated(true);
           if (isDirty) setHasConflict(true);

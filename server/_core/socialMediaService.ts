@@ -136,7 +136,7 @@ export class TwitterService {
       }
 
       if (!response.ok) {
-        const error = await response.json();
+        const error = (await response.json()) as { detail?: string };
         throw new Error(
           `Twitter API error: ${error.detail || response.statusText}`
         );
@@ -303,7 +303,7 @@ export class LinkedInService {
       });
 
       if (!response.ok) {
-        const error = await response.json();
+        const error = (await response.json()) as { detail?: string };
         throw new Error(`LinkedIn API error: ${JSON.stringify(error)}`);
       }
 

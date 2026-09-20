@@ -1,20 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { vi } from "vitest";
 
-vi.mock("./_core/llm", () => ({
-  invokeLLM: vi.fn(async () => ({
-    choices: [
-      {
-        message: {
-          content: JSON.stringify({
-            headline: "Deterministic generated headline",
-            content: "Deterministic generated content",
-          }),
-        },
-      },
-    ],
+vi.mock("./ai/freeProvider", () => ({
+  invokeUserOwnedFreeAi: vi.fn(async () => ({
+    text: JSON.stringify({
+      headline: "Deterministic generated headline",
+      content: "Deterministic generated content",
+    }),
   })),
 }));
+import { invokeUserOwnedFreeAi } from "./ai/freeProvider";
 
 import {
   generatePostVariations,
@@ -25,15 +19,10 @@ import {
 describe("A/B Testing - Variation Generator", () => {
   describe("generatePostVariations", () => {
     it("should generate correct number of variations", async () => {
-      // Skip LLM-based tests in CI - they timeout
-      if (process.env.CI) {
-        expect(true).toBe(true);
-        return;
-      }
       const headline = "Test Headline";
       const content = "Test content for the post";
 
-      const variations = await generatePostVariations(headline, content, {
+      const variations = await generatePostVariations(7, headline, content, {
         count: 3,
       });
 
@@ -44,15 +33,10 @@ describe("A/B Testing - Variation Generator", () => {
     });
 
     it("should include tone and angle in variations", async () => {
-      // Skip LLM-based tests in CI - they timeout
-      if (process.env.CI) {
-        expect(true).toBe(true);
-        return;
-      }
       const headline = "Test Headline";
       const content = "Test content";
 
-      const variations = await generatePostVariations(headline, content, {
+      const variations = await generatePostVariations(7, headline, content, {
         count: 2,
         tones: ["professional", "casual"],
         angles: ["beginner-friendly", "advanced"],
@@ -68,34 +52,23 @@ describe("A/B Testing - Variation Generator", () => {
     });
 
     it("should respect max count of 5", { timeout: 15000 }, async () => {
-      // Skip LLM-based tests in CI - they timeout
-      if (process.env.CI) {
-        expect(true).toBe(true);
-        return;
-      }
       const headline = "Test";
       const content = "Content";
 
-      const variations = await generatePostVariations(headline, content, {
+      const variations = await generatePostVariations(7, headline, content, {
         count: 10, // Request more than max
       });
 
       expect(variations.length).toBeLessThanOrEqual(5);
     });
 
-    it("should return original content on LLM failure", async () => {
-      const headline = "Original Headline";
-      const content = "Original content";
-
-      // Mock LLM failure by testing with minimal input
-      const variations = await generatePostVariations(headline, content, {
-        count: 1,
-      });
-
-      expect(variations).toHaveLength(1);
-      // Even if generation fails, should return something
-      expect(variations[0].headline).toBeDefined();
-      expect(variations[0].content).toBeDefined();
+    it("surfaces provider failure instead of reporting invented variations", async () => {
+      vi.mocked(invokeUserOwnedFreeAi).mockRejectedValueOnce(
+        new Error("Provider unavailable")
+      );
+      await expect(
+        generatePostVariations(7, "Headline", "Content", { count: 1 })
+      ).rejects.toThrow("Provider unavailable");
     });
   });
 
@@ -235,13 +208,8 @@ describe("A/B Testing - Variation Generator", () => {
 
   describe("Variation Tones and Angles", () => {
     it("should support all default tones", async () => {
-      // Skip LLM-based tests in CI - they timeout
-      if (process.env.CI) {
-        expect(true).toBe(true);
-        return;
-      }
       const tones = ["professional", "casual", "humorous"];
-      const variations = await generatePostVariations("Test", "Content", {
+      const variations = await generatePostVariations(7, "Test", "Content", {
         count: 3,
         tones,
       });
@@ -252,13 +220,8 @@ describe("A/B Testing - Variation Generator", () => {
     });
 
     it("should support all default angles", async () => {
-      // Skip LLM-based tests in CI - they timeout
-      if (process.env.CI) {
-        expect(true).toBe(true);
-        return;
-      }
       const angles = ["beginner-friendly", "advanced", "contrarian"];
-      const variations = await generatePostVariations("Test", "Content", {
+      const variations = await generatePostVariations(7, "Test", "Content", {
         count: 3,
         angles,
       });
@@ -269,15 +232,10 @@ describe("A/B Testing - Variation Generator", () => {
     });
 
     it("should use custom tones and angles", async () => {
-      // Skip LLM-based tests in CI - they timeout
-      if (process.env.CI) {
-        expect(true).toBe(true);
-        return;
-      }
       const customTones = ["technical", "inspirational"];
       const customAngles = ["data-driven", "story-based"];
 
-      const variations = await generatePostVariations("Test", "Content", {
+      const variations = await generatePostVariations(7, "Test", "Content", {
         count: 2,
         tones: customTones,
         angles: customAngles,
@@ -292,13 +250,8 @@ describe("A/B Testing - Variation Generator", () => {
 
   describe("Edge Cases", () => {
     it("should handle very long content", { timeout: 15000 }, async () => {
-      // Skip LLM-based tests in CI - they timeout
-      if (process.env.CI) {
-        expect(true).toBe(true);
-        return;
-      }
       const longContent = "A".repeat(500);
-      const variations = await generatePostVariations("Test", longContent, {
+      const variations = await generatePostVariations(7, "Test", longContent, {
         count: 1,
       });
 
@@ -308,7 +261,7 @@ describe("A/B Testing - Variation Generator", () => {
 
     it("should handle special characters in headline", async () => {
       const headline = "Test & Headline with \"quotes\" and 'apostrophes'";
-      const variations = await generatePostVariations(headline, "Content", {
+      const variations = await generatePostVariations(7, headline, "Content", {
         count: 1,
       });
 
@@ -318,7 +271,7 @@ describe("A/B Testing - Variation Generator", () => {
 
     it("should handle unicode characters", async () => {
       const headline = "测试标题 🚀 Тест";
-      const variations = await generatePostVariations(headline, "Content", {
+      const variations = await generatePostVariations(7, headline, "Content", {
         count: 1,
       });
 

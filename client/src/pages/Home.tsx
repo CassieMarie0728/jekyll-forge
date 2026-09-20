@@ -53,7 +53,7 @@ const FEATURES = [
   {
     icon: Image,
     title: "Asset Manager",
-    desc: "Drag-and-drop uploads with S3 storage, image optimization, WEBP conversion, and AI alt text.",
+    desc: "Commit uploads to your GitHub repository, optimize supported images in your browser, and suggest alt text from filenames.",
   },
   {
     icon: Cpu,
@@ -98,7 +98,7 @@ const FEATURES = [
   {
     icon: Clock,
     title: "Scheduled Publishing",
-    desc: "Schedule posts for future publication with automatic retry logic, rate-limit handling, and error recovery.",
+    desc: "Queue posts for five-minute scheduling checks, with visible failure details and manual review after interrupted publishing.",
   },
 ];
 
@@ -200,8 +200,8 @@ export default function Home() {
       <section className="pt-32 pb-24 px-6 relative overflow-hidden">
         {/* Background elements */}
         <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute top-40 -left-20 w-[400px] h-[400px] bg-blue-500/10 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute top-40 -right-20 w-[400px] h-[400px] bg-purple-500/10 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute top-40 -left-20 w-[400px] h-[400px] bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute top-40 -right-20 w-[400px] h-[400px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
 
         <div className="max-w-5xl mx-auto text-center relative z-10">
           <motion.div
@@ -439,7 +439,7 @@ export default function Home() {
               {
                 n: "05",
                 title: "Schedule & publish",
-                desc: "Schedule posts for a chosen time with retry logic, rate-limit handling, and visible recovery details.",
+                desc: "Queue posts for a chosen time. Publishing runs on five-minute checks; review failed or interrupted writes before retrying.",
               },
               {
                 n: "06",

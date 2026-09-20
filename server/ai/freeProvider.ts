@@ -1,3 +1,5 @@
+import { getRuntimeEnv } from "../_core/runtime";
+import { consumeLimit } from "../_core/limits";
 import { TRPCError } from "@trpc/server";
 import {
   createCipheriv,
@@ -139,7 +141,7 @@ export function assertFreeModelAllowed(
 
 // prettier-ignore
 function getEncryptionKey(): Buffer {
-  const secret = process.env.JWT_SECRET;
+  const secret = getRuntimeEnv().JWT_SECRET;
   if (!secret) {
     throw new Error("JWT_SECRET is required to encrypt user-owned AI provider keys.");
   }
@@ -415,7 +417,11 @@ export async function invokeUserOwnedFreeAi(input: {
     configured.provider,
     configured.selectedModel
   );
-  freeAiProviderRateLimiter.consume(input.userId, provider);
+  const limits = PROVIDER_CATALOG[provider].rateLimit;
+  if (limits && (!await consumeLimit(`ai-minute:${input.userId}:${provider}`, limits.requestsPerMinute, 60) ||
+      !await consumeLimit(`ai-day:${input.userId}:${provider}`, limits.requestsPerDay, 86400))) {
+    throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "Free AI allowance reached. Try again after the limit resets." });
+  }
   const apiKey = decryptProviderApiKey(configured.encryptedApiKey);
   const maxTokens = Math.min(
     Math.max(input.maxOutputTokens ?? FREE_AI_MAX_OUTPUT_TOKENS, 64),

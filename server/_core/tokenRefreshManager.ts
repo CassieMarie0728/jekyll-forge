@@ -55,7 +55,7 @@ export async function refreshTwitterToken(
     });
 
     if (!response.ok) {
-      const error = await response.json();
+      const error = (await response.json()) as { error_description?: string };
       throw new Error(
         `Twitter token refresh failed: ${error.error_description || response.statusText}`
       );
@@ -97,7 +97,7 @@ export async function refreshLinkedInToken(
     );
 
     if (!response.ok) {
-      const error = await response.json();
+      const error = (await response.json()) as { error_description?: string };
       throw new Error(
         `LinkedIn token refresh failed: ${error.error_description || response.statusText}`
       );

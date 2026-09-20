@@ -57,6 +57,7 @@ export const postsRouter = router({
     .input(
       z.object({
         id: z.number(),
+        path: z.string().optional(),
         title: z.string().optional(),
         slug: z.string().optional(),
         status: z

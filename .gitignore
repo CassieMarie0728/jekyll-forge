@@ -8,6 +8,10 @@ build/
 *.dist
 
 # Environment variables
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+.wrangler/
 .env
 .env.*
 !.env.example

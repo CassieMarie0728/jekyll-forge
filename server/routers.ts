@@ -1,9 +1,9 @@
-import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
+import { COOKIE_NAME } from "@shared/const";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import * as db from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
-import { sdk } from "./_core/sdk";
+import { sdk, publicUser } from "./_core/sdk";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import { githubRouter } from "./routers/github";
@@ -23,7 +23,7 @@ import { aiProvidersRouter } from "./routers/aiProviders";
 export const appRouter = router({
   system: systemRouter,
   auth: router({
-    me: publicProcedure.query(opts => opts.ctx.user),
+    me: publicProcedure.query(opts => publicUser(opts.ctx.user)),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
@@ -43,7 +43,7 @@ export const appRouter = router({
 
         const token = await sdk.createSessionToken(user.openId, {
           name: user.name || "",
-          expiresInMs: ONE_YEAR_MS,
+          expiresInMs: 7 * 86400000,
         });
         return {
           token,

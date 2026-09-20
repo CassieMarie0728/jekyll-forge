@@ -21,6 +21,7 @@ vi.mock("@/contexts/WorkspaceContext", () => ({
 
 vi.mock("@/lib/trpc", () => ({
   trpc: {
+    useUtils: () => ({ client: { github: { getFile: { query: vi.fn() } } } }),
     sites: {
       get: {
         useQuery: vi.fn(() => ({

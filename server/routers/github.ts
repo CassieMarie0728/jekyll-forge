@@ -4,6 +4,31 @@ import { TRPCError } from "@trpc/server";
 import { getUserByOpenId, upsertUser } from "../db";
 import { GITHUB_PAGES_SUPPORTED_PLUGINS } from "../../shared/types";
 
+type GitHubFile = {
+  name: string;
+  path: string;
+  sha: string;
+  content: string;
+  type: string;
+  download_url: string | null;
+};
+type GitHubRepo = {
+  id: number;
+  name: string;
+  full_name: string;
+  description?: string;
+  private: boolean;
+  default_branch: string;
+  owner: { login: string; avatar_url: string };
+  html_url: string;
+  updated_at: string;
+  language: string | null;
+  stargazers_count: number;
+};
+type GitHubCommit = {
+  content: { sha: string } | null;
+  commit: { html_url: string; sha: string };
+};
 const GITHUB_API = "https://api.github.com";
 
 export function githubApiErrorForStatus(status: number) {
@@ -37,12 +62,18 @@ export function githubApiErrorForStatus(status: number) {
   });
 }
 
-async function ghFetch(token: string, path: string, options: RequestInit = {}) {
+async function ghFetch<T = GitHubFile>(
+  token: string,
+  path: string,
+  options: RequestInit = {}
+): Promise<T> {
   const res = await fetch(`${GITHUB_API}${path}`, {
     ...options,
+    signal: options.signal ?? AbortSignal.timeout(20000),
     headers: {
       Authorization: `Bearer ${token}`,
       Accept: "application/vnd.github+json",
+      "User-Agent": "Jekyll-Forge",
       "X-GitHub-Api-Version": "2022-11-28",
       "Content-Type": "application/json",
       ...(options.headers || {}),
@@ -51,7 +82,7 @@ async function ghFetch(token: string, path: string, options: RequestInit = {}) {
   if (!res.ok) {
     throw githubApiErrorForStatus(res.status);
   }
-  return res.json();
+  return res.json() as Promise<T>;
 }
 
 async function getGitHubToken(userId: number, openId: string): Promise<string> {
@@ -71,7 +102,11 @@ export const githubRouter = router({
     .input(z.object({ token: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
       // Verify token works
-      const ghUser = await ghFetch(input.token, "/user");
+      const ghUser = await ghFetch<{
+        login: string;
+        avatar_url: string;
+        id: number;
+      }>(input.token, "/user");
       await upsertUser({
         openId: ctx.user.openId,
         githubToken: input.token,
@@ -116,7 +151,7 @@ export const githubRouter = router({
     )
     .query(async ({ ctx, input }) => {
       const token = await getGitHubToken(ctx.user.id, ctx.user.openId);
-      const repos = await ghFetch(
+      const repos = await ghFetch<GitHubRepo[]>(
         token,
         `/user/repos?sort=updated&per_page=${input.perPage}&page=${input.page}&affiliation=owner,collaborator,organization_member`
       );
@@ -242,7 +277,7 @@ export const githubRouter = router({
     .input(z.object({ owner: z.string(), repo: z.string() }))
     .query(async ({ ctx, input }) => {
       const token = await getGitHubToken(ctx.user.id, ctx.user.openId);
-      return ghFetch(
+      return ghFetch<Array<{ name: string; commit: { sha: string } }>>(
         token,
         `/repos/${input.owner}/${input.repo}/branches?per_page=50`
       );
@@ -259,7 +294,7 @@ export const githubRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const token = await getGitHubToken(ctx.user.id, ctx.user.openId);
-      const ref = await ghFetch(
+      const ref = await ghFetch<{ object: { sha: string } }>(
         token,
         `/repos/${input.owner}/${input.repo}/git/ref/heads/${input.fromBranch}`
       );
@@ -284,7 +319,7 @@ export const githubRouter = router({
     .query(async ({ ctx, input }) => {
       const token = await getGitHubToken(ctx.user.id, ctx.user.openId);
       const pathPart = input.path ? `/${input.path}` : "";
-      return ghFetch(
+      return ghFetch<GitHubFile[]>(
         token,
         `/repos/${input.owner}/${input.repo}/contents${pathPart}?ref=${input.branch}`
       );
@@ -330,7 +365,7 @@ export const githubRouter = router({
         branch: input.branch,
       };
       if (input.sha) body.sha = input.sha;
-      return ghFetch(
+      return ghFetch<GitHubCommit>(
         token,
         `/repos/${input.owner}/${input.repo}/contents/${input.path}`,
         {
@@ -380,20 +415,26 @@ export const githubRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const token = await getGitHubToken(ctx.user.id, ctx.user.openId);
-      return ghFetch(token, `/repos/${input.owner}/${input.repo}/pulls`, {
-        method: "POST",
-        body: JSON.stringify({
-          title: input.title,
-          head: input.head,
-          base: input.base,
-          body: input.body || "",
-        }),
-      });
+      return ghFetch<{ number: number; html_url: string }>(
+        token,
+        `/repos/${input.owner}/${input.repo}/pulls`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            title: input.title,
+            head: input.head,
+            base: input.base,
+            body: input.body || "",
+          }),
+        }
+      );
     }),
 
   getRateLimit: protectedProcedure.query(async ({ ctx }) => {
     const token = await getGitHubToken(ctx.user.id, ctx.user.openId);
-    return ghFetch(token, "/rate_limit");
+    return ghFetch<{
+      rate: { remaining: number; limit: number; reset: number };
+    }>(token, "/rate_limit");
   }),
 
   getPagesStatus: protectedProcedure
@@ -401,7 +442,7 @@ export const githubRouter = router({
     .query(async ({ ctx, input }) => {
       const token = await getGitHubToken(ctx.user.id, ctx.user.openId);
       try {
-        return await ghFetch(
+        return await ghFetch<{ status: string; html_url: string }>(
           token,
           `/repos/${input.owner}/${input.repo}/pages`
         );

@@ -54,20 +54,12 @@ describe("scheduler ownership safeguards", () => {
     expect(dbMocks.updateScheduledPost).not.toHaveBeenCalled();
   });
 
-  it("updates only a caller-owned scheduled post when marking it published", async () => {
+  it("does not allow clients to claim publication without a GitHub commit", async () => {
     dbMocks.getScheduledPostById.mockResolvedValue({ id: 42, userId: 7 });
-    const caller = schedulerRouter.createCaller(createContext());
-
-    await expect(caller.markPublished({ id: 42 })).resolves.toEqual({
-      success: true,
-    });
-    expect(dbMocks.updateScheduledPost).toHaveBeenCalledWith(
-      42,
-      expect.objectContaining({
-        status: "published",
-        publishedAt: expect.any(Date),
-      })
-    );
+    await expect(
+      schedulerRouter.createCaller(createContext()).markPublished({ id: 42 })
+    ).rejects.toThrow("only after GitHub confirms");
+    expect(dbMocks.updateScheduledPost).not.toHaveBeenCalled();
   });
 
   it("rejects scheduling against a site that is not owned by the caller", async () => {

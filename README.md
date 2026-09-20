@@ -2,6 +2,14 @@
 
 Jekyll Forge is a visual CMS for Jekyll blogs.
 
+## Independent hosting migration
+
+This branch prepares the app for Cloudflare Workers and D1 with GitHub login.
+Production deployment and external-service acceptance are still pending.
+Start with [Cloudflare setup](./CLOUDFLARE_SETUP.md) and the
+[migration record](./MANUS_EXIT_PLAN.md). Historical Manus setup documents do
+not describe this branch's active runtime. Existing GitHub content is preserved.
+
 ## Platform audit and active remediation
 
 The current evidence-backed audit and its prioritized remediation tracker are maintained in the repository so they are available from the project file tree:
