@@ -1,263 +1,242 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Jekyll Forge is a visual CMS for Jekyll blogs. Write, preview, publish, and stop wrestling your repo like it owes you money.">
-    <meta name="keywords" content="Jekyll, CMS, blog, GitHub, visual editor, AI writing, static site publishing">
-    <meta name="author" content="Jekyll Forge">
-    <meta property="og:title" content="Jekyll Forge - Write the Damn Post">
-    <meta property="og:description" content="A visual content studio for Jekyll blogs. Markdown when you want it. Preview when you need it. GitHub when it behaves.">
-    <meta property="og:image" content="https://d2xsxph8kpxj0f.cloudfront.net/310519663677930309/5wkBquEUPqEsiikipJdWYy/jekyll-forge-hero-S3cNXXDYJRBfNgq5WJGdCA.webp">
-    <meta property="og:url" content="https://cassiemarie0728.github.io/jekyll-forge/">
-    <meta name="twitter:card" content="summary_large_image">
-    <title>Jekyll Forge - Write the Damn Post</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="cass.css">
-    <link rel="stylesheet" href="layout-fix.css">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%230066FF' width='100' height='100'/><text x='50' y='60' font-size='60' font-weight='bold' fill='white' text-anchor='middle'>⚒</text></svg>">
-</head>
-<body>
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="container">
-            <div class="nav-brand">
-                <svg class="logo" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2L2 7V12L12 17L22 12V7L12 2Z" fill="currentColor"/>
-                    <path d="M12 17V22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-                <span>Jekyll Forge</span>
-            </div>
-            <div class="nav-links">
-                <a href="#features">Features</a>
-                <a href="#how-it-works">How It Works</a>
-                <a href="#pricing">Pricing</a>
-                <a href="https://jekyllforge-5wkbqueu.manus.space" class="btn btn-primary" target="_blank" rel="noopener">Launch App</a>
-            </div>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Write, preview, and publish your Jekyll blog through GitHub. Optional AI, recoverable drafts, and a final say that stays yours."
+    />
+    <meta name="theme-color" content="#0b0f0f" />
+    <meta property="og:title" content="Jekyll Forge — Write the damn post." />
+    <meta
+      property="og:description"
+      content="Your words. Your repo. Considerably less screaming."
+    />
+    <meta property="og:type" content="website" />
+    <link
+      rel="canonical"
+      href="https://cassiemarie0728.github.io/jekyll-forge/"
+    />
+    <title>Jekyll Forge — Write the damn post.</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="forge.css?v=20260920" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="shell masthead">
+      <a class="brand" href="#main">Jekyll Forge</a>
+      <nav aria-label="Main navigation">
+        <a href="#features">The goods</a><a href="#how-it-works">How it works</a
+        ><a href="#field-manual">Field manual</a>
+      </nav>
+      <a
+        class="button primary"
+        href="https://jekyll-forge.c728.workers.dev/repos"
+        >Launch Forge <span aria-hidden="true">↗</span></a
+      >
+    </header>
+    <main id="main">
+      <section class="shell hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <h1 id="hero-title">Write the<br />damn <span>post.</span></h1>
+          <p class="lead">
+            Your words. Your repo.<br class="small-only" />
+            Considerably less screaming.
+          </p>
+          <p class="intro">
+            Write, preview, and publish your Jekyll blog through GitHub.
+            Optional AI. Recoverable drafts. You keep the wheel.
+          </p>
+          <div class="actions">
+            <a
+              class="button primary"
+              href="https://jekyll-forge.c728.workers.dev/repos"
+              >Launch Forge <span aria-hidden="true">↗</span></a
+            ><a
+              class="button secondary"
+              href="https://github.com/CassieMarie0728/jekyll-forge"
+              >Explore the source</a
+            >
+          </div>
         </div>
-    </nav>
-
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="container">
-            <div class="hero-content">
-                <div class="hero-text">
-                    <div class="badge">THE VISUAL CMS FOR JEKYLL BLOGS</div>
-                    <h1>Write the damn post.<br>Preview the chaos.<br><span class="gradient">Ship it without bleeding on Git.</span></h1>
-                    <p>Jekyll Forge is a visual content studio for people who love static sites but do not always feel like fistfighting front matter at 2 AM. Write, preview, manage assets, and publish through GitHub without turning your blog into a cursed terminal ritual.</p>
-                    <div class="hero-cta">
-                        <a href="https://jekyllforge-5wkbqueu.manus.space" class="btn btn-primary btn-lg" target="_blank" rel="noopener">Start Forging</a>
-                        <a href="https://github.com/CassieMarie0728/jekyll-forge" class="btn btn-outline btn-lg" target="_blank" rel="noopener">View the Repo</a>
-                    </div>
-                    <div class="hero-social">
-                        <p>Built for writers, bloggers, repo goblins, and anyone tired of publishing through emotional damage.</p>
-                        <div class="avatars" aria-hidden="true">
-                            <div class="avatar"></div>
-                            <div class="avatar"></div>
-                            <div class="avatar"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="hero-image">
-                    <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663677930309/5wkBquEUPqEsiikipJdWYy/jekyll-forge-hero-S3cNXXDYJRBfNgq5WJGdCA.webp" alt="Jekyll Forge editor interface">
-                </div>
+        <figure class="manuscript">
+          <figcaption>
+            Markdown → published.<br />You approve the jump.
+          </figcaption>
+          <div class="comparison">
+            <div>
+              <pre># A little less chaos</pre>
+              <p>Your next great post starts here.</p>
+              <span class="slash" aria-hidden="true">/</span>
             </div>
+            <div>
+              <h2>A little less chaos</h2>
+              <p>Your next great post starts here.</p>
+              <span class="slash" aria-hidden="true">/</span>
+            </div>
+          </div>
+          <p class="sample-note">A formatting example. Your words go here.</p>
+        </figure>
+      </section>
+      <div class="shell principles">
+        <div>
+          <h2>Your GitHub repository</h2>
+          <p>Your content. Your history.<br />Right where it belongs.</p>
         </div>
-    </section>
-
-    <!-- Features Section -->
-    <section id="features" class="features">
-        <div class="container">
-            <div class="section-header">
-                <h2>Everything Your Blog Needed Before GitHub Started Swinging Chairs</h2>
-                <p>A cleaner way to manage Jekyll content without sacrificing the power, portability, and beautiful nerd nonsense that makes static sites worth it.</p>
-            </div>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">📝</div>
-                    <h3>Visual Editor</h3>
-                    <p>Draft posts in a clean editor, then drop into Markdown when you want full control. No mystery formatting. No editor tantrums.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🔗</div>
-                    <h3>GitHub Native</h3>
-                    <p>Connect your repo, make changes, and publish through GitHub. Your content stays yours, not locked in some shiny SaaS basement.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">✨</div>
-                    <h3>AI Writing Assistant</h3>
-                    <p>Use AI to tighten drafts, clean up clunky paragraphs, generate ideas, and make the page sound less like it was assembled by a sleep-deprived toaster.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🖼️</div>
-                    <h3>Asset Manager</h3>
-                    <p>Upload, organize, and place images without turning your media folder into a haunted junk drawer of final-final-actually-final files.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">⏰</div>
-                    <h3>Scheduled Publishing</h3>
-                    <p>Queue posts before your brain wanders into traffic. Plan ahead, schedule the drop, and let the machine do the boring part.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">👁️</div>
-                    <h3>Real-Time Preview</h3>
-                    <p>See the post before it escapes into the wild. Preview Markdown, front matter, layouts, and changes before GitHub gets a vote.</p>
-                </div>
-            </div>
+        <div>
+          <h2>Your choice of AI</h2>
+          <p>Use it. Don’t use it.<br />Completely up to you.</p>
         </div>
-    </section>
-
-    <!-- Feature Showcase -->
-    <section class="showcase">
-        <div class="container">
-            <div class="showcase-content">
-                <div class="showcase-text">
-                    <h2>Three Modes. One Mission: Publish Without Losing Your Mind.</h2>
-                    <p>Write visually, edit raw Markdown, or split the difference with live preview. Jekyll Forge adapts to the way your brain works that day, whether you are feeling organized or one browser tab away from combustion.</p>
-                    <ul class="feature-list">
-                        <li><strong>Visual Mode:</strong> Format, draft, and shape posts without memorizing every Markdown incantation.</li>
-                        <li><strong>Markdown Mode:</strong> Drop straight into the raw text when you want control and zero babysitting.</li>
-                        <li><strong>Split Preview:</strong> Edit on one side, preview on the other, and catch the weirdness before it goes live.</li>
-                    </ul>
-                </div>
-                <div class="showcase-image">
-                    <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663677930309/5wkBquEUPqEsiikipJdWYy/jekyll-forge-editor-feature-nEEcu4udJDcAk9fhN9q3mi.webp" alt="Three-mode editor showcase">
-                </div>
-            </div>
+        <div>
+          <h2>Your final say</h2>
+          <p>Draft, review, and publish<br />when you’re ready.</p>
         </div>
-    </section>
-
-    <!-- How It Works -->
-    <section id="how-it-works" class="how-it-works">
-        <div class="container">
-            <div class="section-header">
-                <h2>How It Works Without the Ritual Sacrifice</h2>
-                <p>Three steps. No smoke machine. No corporate wizardry. Just connect, choose, write, and ship.</p>
-            </div>
-            <div class="steps">
-                <div class="step">
-                    <div class="step-number">1</div>
-                    <h3>Connect GitHub</h3>
-                    <p>Authorize Jekyll Forge so it can work with your repositories without making you manually drag files through the mud.</p>
-                </div>
-                <div class="step">
-                    <div class="step-number">2</div>
-                    <h3>Pick Your Blog</h3>
-                    <p>Select the Jekyll repo you want to manage. The app reads the structure and gets out of your way.</p>
-                </div>
-                <div class="step">
-                    <div class="step-number">3</div>
-                    <h3>Write and Ship</h3>
-                    <p>Create posts, preview changes, manage assets, and publish back to GitHub without needing a helmet and a prayer.</p>
-                </div>
-            </div>
+      </div>
+      <section class="shell section" id="features">
+        <h2 class="section-title">
+          A writing desk.<br class="small-only" />
+          With backup.
+        </h2>
+        <p class="section-intro">
+          Ideas happen. Drafts wander. Repos don’t forget.
+        </p>
+        <dl class="features">
+          <div>
+            <dt><span>01 /</span> Rescue the draft</dt>
+            <dd>
+              Browser recovery, Forge saves, and revision snapshots. Three
+              different jobs. Zero mystery meat.
+            </dd>
+          </div>
+          <div>
+            <dt><span>02 /</span> Inspect the damage</dt>
+            <dd>
+              Review the destination and content diff before anything lands in
+              GitHub. Surprise commits are a terrible love language.
+            </dd>
+          </div>
+          <div>
+            <dt><span>03 /</span> Keep your voice</dt>
+            <dd>
+              Optional AI for outlines, rewrites, and ideas. Deadpool-cool
+              included. You are still the author.
+            </dd>
+          </div>
+        </dl>
+      </section>
+      <section class="shell section" id="how-it-works">
+        <h2 class="section-title">Three steps. No origin story.</h2>
+        <ol class="steps">
+          <li>
+            <h3>Connect your repo</h3>
+            <p>
+              Sign in with GitHub, connect repository access, and choose the
+              repository and branch Forge should work with.
+            </p>
+          </li>
+          <li>
+            <h3>Write and recover</h3>
+            <p>
+              Edit Markdown and front matter with a live preview. Recovery stays
+              on this browser; Save keeps a draft in Forge.
+            </p>
+          </li>
+          <li>
+            <h3>Review and publish</h3>
+            <p>
+              Check the destination and diff. Commit to GitHub, create a branch
+              or pull request, or schedule a new post.
+            </p>
+          </li>
+        </ol>
+      </section>
+      <section class="shell section faq" id="field-manual">
+        <h2 class="section-title">Read the fine print. It has jokes.</h2>
+        <details open>
+          <summary>Do I need a paid AI key?</summary>
+          <p>
+            No. AI is optional. Free provider options are available; optional
+            Mistral billing follows your account. You bring your own key. Forge
+            never switches providers automatically. Your wallet gets a vote.
+          </p>
+        </details>
+        <details>
+          <summary>Where do my drafts live?</summary>
+          <p>
+            Recovery copies live in this browser and can be restored or
+            downloaded. Save stores the draft in Forge’s database. Publishing
+            writes to your selected GitHub repository. Clearing browser data can
+            remove recovery copies—save or download work you need to keep.
+          </p>
+        </details>
+        <details>
+          <summary>Will it install every Jekyll theme?</summary>
+          <p>
+            Forge can edit theme and plugin configuration. Custom themes may
+            need extra dependencies or setup. It is a writing tool, not a tiny
+            wizard living inside your Gemfile.
+          </p>
+        </details>
+        <details>
+          <summary>Does my laptop need to stay on?</summary>
+          <p>
+            No. The hosted app runs on Cloudflare. Scheduled jobs run on the
+            server at roughly five-minute intervals, so a backlog can delay
+            publication. Hosting and AI provider quotas still apply.
+          </p>
+        </details>
+        <details>
+          <summary>Where’s the ridiculously detailed documentation?</summary>
+          <p>
+            The Mintlify field manual is being prepared. Until then, the
+            <a
+              href="https://github.com/CassieMarie0728/jekyll-forge/blob/codex/manus-free-cloudflare/CLOUDFLARE_SETUP.md"
+              >current setup guide</a
+            >
+            covers hosting, storage, and known limitations. No button to an
+            imaginary docs site. We have standards. Occasionally.
+          </p>
+        </details>
+      </section>
+      <section class="shell finale">
+        <div>
+          <h2>Your next post is not going to write itself.</h2>
+          <p>
+            (Unless you ask the AI. Still proofread it, you beautiful menace.)
+          </p>
+          <div class="actions">
+            <a
+              class="button primary"
+              href="https://jekyll-forge.c728.workers.dev/repos"
+              >Launch Forge <span aria-hidden="true">↗</span></a
+            ><a
+              class="button secondary"
+              href="https://github.com/CassieMarie0728/jekyll-forge/blob/codex/manus-free-cloudflare/CLOUDFLARE_SETUP.md"
+              >Read the field manual</a
+            >
+          </div>
         </div>
-    </section>
-
-    <!-- Pricing Section -->
-    <section id="pricing" class="pricing">
-        <div class="container">
-            <div class="section-header">
-                <h2>Pricing Without the Creepy Fine Print</h2>
-                <p>Start simple. Upgrade when the blog grows teeth. No nonsense, no mystery invoice jump scare.</p>
-            </div>
-            <div class="pricing-grid">
-                <div class="pricing-card">
-                    <h3>Starter</h3>
-                    <p class="price">Free</p>
-                    <ul class="pricing-features">
-                        <li>✓ Up to 3 Jekyll sites</li>
-                        <li>✓ Visual editor</li>
-                        <li>✓ GitHub integration</li>
-                        <li>✓ Basic asset manager</li>
-                        <li>✗ AI writing assistant</li>
-                        <li>✗ Scheduled publishing</li>
-                    </ul>
-                    <a href="https://jekyllforge-5wkbqueu.manus.space" class="btn btn-outline" target="_blank" rel="noopener">Get Started</a>
-                </div>
-                <div class="pricing-card featured">
-                    <div class="badge-featured">Best for Serious Chaos</div>
-                    <h3>Pro</h3>
-                    <p class="price">$12<span>/month</span></p>
-                    <ul class="pricing-features">
-                        <li>✓ Unlimited Jekyll sites</li>
-                        <li>✓ Visual editor</li>
-                        <li>✓ GitHub integration</li>
-                        <li>✓ Advanced asset manager</li>
-                        <li>✓ AI writing assistant (50 tasks/month)</li>
-                        <li>✓ Scheduled publishing</li>
-                    </ul>
-                    <a href="https://jekyllforge-5wkbqueu.manus.space" class="btn btn-primary" target="_blank" rel="noopener">Start Free Trial</a>
-                </div>
-                <div class="pricing-card">
-                    <h3>Team</h3>
-                    <p class="price">$49<span>/month</span></p>
-                    <ul class="pricing-features">
-                        <li>✓ Unlimited Jekyll sites</li>
-                        <li>✓ Team collaboration</li>
-                        <li>✓ Advanced permissions</li>
-                        <li>✓ Unlimited AI tasks</li>
-                        <li>✓ Priority support</li>
-                        <li>✓ Custom integrations</li>
-                    </ul>
-                    <a href="https://jekyllforge-5wkbqueu.manus.space" class="btn btn-outline" target="_blank" rel="noopener">Contact Sales</a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- CTA Section -->
-    <section class="cta">
-        <div class="container">
-            <div class="cta-content">
-                <h2>Ready to Stop Wrestling Your Blog?</h2>
-                <p>Open the forge, write the thing, preview the damage, and ship it before GitHub has time to develop another personality disorder.</p>
-                <a href="https://jekyllforge-5wkbqueu.manus.space" class="btn btn-primary btn-lg" target="_blank" rel="noopener">Launch Jekyll Forge</a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h4>Jekyll Forge</h4>
-                    <p>Visual CMS for Jekyll blogs. Write cleaner. Publish faster. Bleed less on Git.</p>
-                </div>
-                <div class="footer-section">
-                    <h4>Product</h4>
-                    <ul>
-                        <li><a href="#features">Features</a></li>
-                        <li><a href="#pricing">Pricing</a></li>
-                        <li><a href="#how-it-works">How It Works</a></li>
-                        <li><a href="https://jekyllforge-5wkbqueu.manus.space" target="_blank" rel="noopener">Launch App</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h4>Resources</h4>
-                    <ul>
-                        <li><a href="https://github.com/CassieMarie0728/jekyll-forge" target="_blank" rel="noopener">GitHub Repo</a></li>
-                        <li><a href="https://jekyllrb.com" target="_blank" rel="noopener">Jekyll Docs</a></li>
-                        <li><a href="https://jekyllrb.com/docs/posts/" target="_blank" rel="noopener">Jekyll Posts</a></li>
-                        <li><a href="https://docs.github.com/en/pages" target="_blank" rel="noopener">GitHub Pages</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h4>Legal-ish</h4>
-                    <ul>
-                        <li><a href="#">Privacy Policy</a></li>
-                        <li><a href="#">Terms of Service</a></li>
-                        <li><a href="#">Cookie Policy</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2026 Jekyll Forge. Built for writers, repo goblins, and anyone who has ever screamed at a YAML file.</p>
-            </div>
-        </div>
+      </section>
+    </main>
+    <footer class="shell footer">
+      <a class="brand" href="#main">Jekyll Forge</a>
+      <div>
+        <nav aria-label="Footer navigation">
+          <a href="https://github.com/CassieMarie0728/jekyll-forge">GitHub</a
+          ><a
+            href="https://github.com/CassieMarie0728/jekyll-forge/blob/codex/manus-free-cloudflare/CLOUDFLARE_SETUP.md"
+            >Setup guide</a
+          >
+        </nav>
+        <p>Mintlify documentation is being prepared.</p>
+      </div>
     </footer>
-
-    <script src="script.js"></script>
-</body>
+  </body>
 </html>
