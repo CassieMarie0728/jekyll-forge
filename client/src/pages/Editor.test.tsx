@@ -110,6 +110,48 @@ describe("editor markdown utilities", () => {
     expect(screen.getByText("Preview")).toBeInTheDocument();
   });
 
+  it("formats the current heading line without inserting descriptions or stacking markers", async () => {
+    render(<Editor />);
+    const body = screen.getByPlaceholderText(
+      "Start writing your post in Markdown..."
+    ) as HTMLTextAreaElement;
+    fireEvent.change(body, {
+      target: { value: "CHAPTER SEVEN\nTERMS OF PROTECTION" },
+    });
+    body.setSelectionRange(5, 5);
+    fireEvent.click(screen.getByTitle("H1"));
+    expect(body).toHaveValue("# CHAPTER SEVEN\nTERMS OF PROTECTION");
+    await waitFor(() => expect(body.selectionStart).toBe(15));
+    body.setSelectionRange(4, 4);
+    fireEvent.click(screen.getByTitle("H2"));
+    expect(body).toHaveValue("## CHAPTER SEVEN\nTERMS OF PROTECTION");
+  });
+
+  it("starts an empty heading without placeholder text", () => {
+    render(<Editor />);
+    fireEvent.click(screen.getByTitle("H3"));
+    expect(
+      screen.getByPlaceholderText("Start writing your post in Markdown...")
+    ).toHaveValue("### ");
+  });
+
+  it("preserves selected list content and places the caret inside empty bold markup", async () => {
+    render(<Editor />);
+    const body = screen.getByPlaceholderText(
+      "Start writing your post in Markdown..."
+    ) as HTMLTextAreaElement;
+    fireEvent.change(body, { target: { value: "First\nSecond" } });
+    body.setSelectionRange(0, body.value.length);
+    fireEvent.click(screen.getByTitle("List"));
+    expect(body).toHaveValue("- First\n- Second");
+    await waitFor(() => expect(body.selectionStart).toBe(body.value.length));
+    fireEvent.change(body, { target: { value: "" } });
+    body.setSelectionRange(0, 0);
+    fireEvent.click(screen.getByTitle("Bold"));
+    expect(body).toHaveValue("****");
+    await waitFor(() => expect(body.selectionStart).toBe(2));
+  });
+
   it("loads the AI assistant only after the editor AI control is opened", async () => {
     render(<Editor />);
 

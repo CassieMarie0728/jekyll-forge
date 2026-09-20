@@ -112,53 +112,65 @@ const TOOLBAR_ACTIONS = [
   {
     icon: Bold,
     label: "Bold",
-    action: (sel: string) => `**${sel || "bold text"}**`,
+    action: (sel: string) => `**${sel}**`,
   },
   {
     icon: Italic,
     label: "Italic",
-    action: (sel: string) => `*${sel || "italic text"}*`,
+    action: (sel: string) => `*${sel}*`,
   },
   {
     icon: Heading1,
     label: "H1",
-    action: (sel: string) => `# ${sel || "Heading 1"}`,
+    action: (sel: string) => `# ${sel}`,
   },
   {
     icon: Heading2,
     label: "H2",
-    action: (sel: string) => `## ${sel || "Heading 2"}`,
+    action: (sel: string) => `## ${sel}`,
   },
   {
     icon: Heading3,
     label: "H3",
-    action: (sel: string) => `### ${sel || "Heading 3"}`,
+    action: (sel: string) => `### ${sel}`,
   },
   {
     icon: Link2,
     label: "Link",
-    action: (sel: string) => `[${sel || "link text"}](url)`,
+    action: (sel: string) => `[${sel}](url)`,
   },
   {
     icon: Image,
     label: "Image",
-    action: (sel: string) => `![${sel || "alt text"}](image-url)`,
+    action: (sel: string) => `![${sel}](image-url)`,
   },
   {
     icon: Quote,
     label: "Quote",
-    action: (sel: string) => `> ${sel || "blockquote"}`,
+    action: (sel: string) => `> ${sel}`,
   },
   {
     icon: Code,
     label: "Code",
-    action: (sel: string) => `\`${sel || "code"}\``,
+    action: (sel: string) => `\`${sel}\``,
   },
-  { icon: List, label: "List", action: () => "- Item 1\n- Item 2\n- Item 3" },
+  {
+    icon: List,
+    label: "List",
+    action: (sel: string) =>
+      sel
+        .split("\n")
+        .map(line => `- ${line}`)
+        .join("\n"),
+  },
   {
     icon: ListOrdered,
     label: "Ordered List",
-    action: () => "1. Item 1\n2. Item 2\n3. Item 3",
+    action: (sel: string) =>
+      sel
+        .split("\n")
+        .map((line, index) => `${index + 1}. ${line}`)
+        .join("\n"),
   },
   {
     icon: Table,
@@ -457,19 +469,48 @@ export default function Editor() {
     }, 0);
   };
 
-  const handleToolbarAction = (action: (sel: string) => string) => {
+  const handleToolbarAction = (
+    action: (sel: string) => string,
+    label: string
+  ) => {
     const ta = textareaRef.current;
     if (!ta) return;
-    const start = ta.selectionStart;
-    const end = ta.selectionEnd;
+    let start = ta.selectionStart;
+    let end = ta.selectionEnd;
+    const heading = /^H[123]$/.test(label);
+    if (heading) {
+      // Headings apply to whole lines, including when only the caret is placed.
+      start = start === 0 ? 0 : ta.value.lastIndexOf("\n", start - 1) + 1;
+      const lastSelected =
+        end > ta.selectionStart && ta.value[end - 1] === "\n" ? end - 1 : end;
+      const lineEnd = ta.value.indexOf("\n", lastSelected);
+      end = lineEnd < 0 ? ta.value.length : lineEnd;
+    }
     const selected = ta.value.slice(start, end);
-    const inserted = action(selected);
+    const inserted = heading
+      ? selected
+          .split("\n")
+          .map(line => action(line.replace(/^ {0,3}#{1,6}(?:[ \t]+|$)/, "")))
+          .join("\n")
+      : action(selected);
     const newVal = ta.value.slice(0, start) + inserted + ta.value.slice(end);
     setMarkdown(newVal);
     setIsDirty(true);
     setTimeout(() => {
       ta.focus();
-      ta.setSelectionRange(start + inserted.length, start + inserted.length);
+      const emptyInlineOffset: Record<string, number> = {
+        Bold: 2,
+        Italic: 1,
+        Code: 1,
+        Link: 1,
+        Image: 2,
+      };
+      const caret =
+        start +
+        (!selected && label in emptyInlineOffset
+          ? emptyInlineOffset[label]
+          : inserted.length);
+      ta.setSelectionRange(caret, caret);
     }, 0);
   };
 
@@ -585,7 +626,7 @@ export default function Editor() {
                 size="icon"
                 className="h-6 w-6 flex-shrink-0"
                 title={label}
-                onClick={() => handleToolbarAction(action)}
+                onClick={() => handleToolbarAction(action, label)}
               >
                 <Icon className="w-3 h-3" />
               </Button>
