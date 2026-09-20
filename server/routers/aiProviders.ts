@@ -76,6 +76,7 @@ export const aiProvidersRouter = router({
         provider: providerSchema,
         model: z.string().min(1).max(160),
         apiKey: z.string().trim().min(8).max(1024),
+        // Retain the wire name for existing clients; acknowledges the displayed account billing policy.
         acknowledgeFreeTier: z.literal(true),
       })
     )

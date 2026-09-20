@@ -261,6 +261,7 @@ export const aiSettings = sqliteTable(
     safetyPrompt: text("safetyPrompt"),
     streaming: integer("streaming", { mode: "boolean" }).default(true),
     defaultLanguage: text("defaultLanguage").default("en"),
+    defaultTone: text("defaultTone").default("professional"),
     budgetLimitCents: integer("budgetLimitCents"),
     totalRequestCount: integer("totalRequestCount").default(0),
     totalInputTokens: integer("totalInputTokens").default(0),

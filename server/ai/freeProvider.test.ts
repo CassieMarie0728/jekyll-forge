@@ -21,19 +21,19 @@ describe("free AI provider policy", () => {
     });
   });
 
-  it("rejects any paid or non-allowlisted model server-side", () => {
+  it("rejects unsupported models and paid OpenRouter paths", () => {
     expect(() => assertFreeModelAllowed("openrouter", "openai/gpt-4o")).toThrow(
-      "not approved"
+      "not supported"
     );
     expect(() => assertFreeModelAllowed("gemini", "gemini-2.5-pro")).toThrow(
-      "not approved"
+      "not supported"
     );
-    expect(() => assertFreeModelAllowed("mistral", "mistral-small-latest")).toThrow(
-      "temporarily unavailable"
+    expect(() => assertFreeModelAllowed("mistral", "invented-model")).toThrow(
+      "not supported"
     );
   });
 
-  it("permits only the documented no-cost model paths", () => {
+  it("permits supported free options and optional Mistral models", () => {
     expect(assertFreeModelAllowed("openrouter", "meta-llama/llama-3.3-70b-instruct:free")).toEqual({
       provider: "openrouter",
       model: "meta-llama/llama-3.3-70b-instruct:free",
@@ -42,6 +42,7 @@ describe("free AI provider policy", () => {
       provider: "gemini",
       model: "gemini-2.5-flash-lite",
     });
+    expect(assertFreeModelAllowed("mistral", "mistral-small-latest")).toEqual({ provider: "mistral", model: "mistral-small-latest" });
     expect(assertFreeModelAllowed("groq", "openai/gpt-oss-20b")).toEqual({
       provider: "groq",
       model: "openai/gpt-oss-20b",

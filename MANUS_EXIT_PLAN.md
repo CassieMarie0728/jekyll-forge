@@ -28,7 +28,7 @@ See [deployment instructions and remaining acceptance gates](./CLOUDFLARE_SETUP.
 
 ## Proposed deployment
 
-Cloudflare Workers serves the React application and tRPC API. D1 stores application state. GitHub login replaces Manus login. Blog images belong in the selected GitHub repository, alongside the content. Cron triggers process durable scheduled-post rows. AI continues through user-owned, free-only providers. No R2 subscription is necessary for this design.
+Cloudflare Workers serves the React application and tRPC API. D1 stores application state. GitHub login replaces Manus login. Blog images belong in the selected GitHub repository, alongside the content. Cron triggers process durable scheduled-post rows. AI continues through user-owned providers with free options and optional Mistral. No R2 subscription is necessary for this design.
 
 This is a platform migration, not a change to an environment variable. MySQL-specific schema/query behavior, native image processing, and long-running timers must be adapted and tested.
 
