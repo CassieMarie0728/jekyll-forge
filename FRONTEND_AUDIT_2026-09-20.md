@@ -48,3 +48,12 @@ Scope: authenticated Jekyll Forge app at https://jekyll-forge.c728.workers.dev, 
 - A searchable GitHub content/asset inventory with clear Forge-only versus repository-wide counts.
 
 These are recommendations, not features claimed as shipped in this pass. The public GitHub Pages landing site and Mintlify documentation remain separate work.
+
+## Final validation
+
+- 16 targeted component checks passed: editor 11, assets 1, dashboard 3, account settings 1.
+- TypeScript check and production build passed. Existing large-chunk warning remains.
+- Deployed Worker version: `cf58d2cb-2188-4ff4-b763-6b2a13fb9b07`.
+- Live 390px check: post details opens editable metadata; post drawer lists both saved drafts and the GitHub post; preview and AI panels open. Dashboard controls fit with no document horizontal overflow.
+- Direct entry to `/assets/2` preserves workspace 2 in dashboard/editor navigation. AI Settings selects the active provider and shows the fixed snapshot behavior.
+- Browser viewport restored. No production posts, repository files, keys, social connections, or provider preferences changed by this audit.
