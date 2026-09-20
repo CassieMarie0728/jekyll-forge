@@ -45,3 +45,11 @@ describe("writing tone preferences", () => {
     expect(prompt).not.toContain("fourth-wall-breaking");
   });
 });
+
+it("applies saved content language without translating structured keys", async () => {
+  mocks.get.mockResolvedValue({ enabled: true, defaultLanguage: "Spanish" });
+  await caller.generate({ task: "draft" });
+  const prompt = mocks.generate.mock.calls[0][0].messages[0].content;
+  expect(prompt).toContain("content in Spanish");
+  expect(prompt).toContain("Preserve required JSON keys");
+});

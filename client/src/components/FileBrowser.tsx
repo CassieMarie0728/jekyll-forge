@@ -17,6 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 // Local types to avoid importing from drizzle/schema on the client
 type Site = {
+  rootPath?: string | null;
   owner: string;
   repo: string;
   selectedBranch?: string | null;
@@ -66,8 +67,10 @@ export default function FileBrowser({
       {
         owner: site?.owner || "",
         repo: site?.repo || "",
-        path: "_drafts",
-        branch: site?.selectedBranch || "main",
+        path: [site?.rootPath?.replace(/^\/+|\/+$/g, ""), "_drafts"]
+          .filter(Boolean)
+          .join("/"),
+        branch: site?.selectedBranch || site?.defaultBranch || "main",
       },
       { enabled: !!site, retry: false }
     );
@@ -76,8 +79,10 @@ export default function FileBrowser({
       {
         owner: site?.owner || "",
         repo: site?.repo || "",
-        path: "_posts",
-        branch: site?.selectedBranch || "main",
+        path: [site?.rootPath?.replace(/^\/+|\/+$/g, ""), "_posts"]
+          .filter(Boolean)
+          .join("/"),
+        branch: site?.selectedBranch || site?.defaultBranch || "main",
       },
       { enabled: !!site, retry: false }
     );

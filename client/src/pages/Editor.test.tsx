@@ -23,6 +23,7 @@ vi.mock("@/contexts/WorkspaceContext", () => ({
 
 vi.mock("@/lib/trpc", () => ({
   trpc: {
+    auth: { me: { useQuery: () => ({ data: { id: 7 } }) } },
     useUtils: () => ({ client: { github: { getFile: { query: vi.fn() } } } }),
     sites: {
       get: {
@@ -160,9 +161,7 @@ describe("editor markdown utilities", () => {
       "Start writing your post in Markdown..."
     );
     fireEvent.change(body, { target: { value: "Keep this draft" } });
-    fireEvent.click(
-      screen.getByRole("button", { name: "Post details" })
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Post details" }));
     expect(
       screen.getByRole("dialog", { name: "Post details" })
     ).toBeInTheDocument();
@@ -187,9 +186,7 @@ describe("editor markdown utilities", () => {
 
     expect(screen.queryByText("AI Assistant loaded")).not.toBeInTheDocument();
 
-    fireEvent.click(
-      screen.getAllByRole("button", { name: "AI" })[0]
-    );
+    fireEvent.click(screen.getAllByRole("button", { name: "AI" })[0]);
 
     await waitFor(() => {
       expect(screen.getByText("AI Assistant loaded")).toBeInTheDocument();

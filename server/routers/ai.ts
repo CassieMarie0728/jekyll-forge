@@ -108,6 +108,8 @@ export const aiRouter = router({
         systemPrompt += `\n\nBrand voice: ${settings.brandVoicePrompt}`;
       systemPrompt += `\n\n${writingToneInstructions(input.tone || settings?.defaultTone || "professional")}`;
 
+      systemPrompt += `\n\nWrite human-readable content in ${settings?.defaultLanguage || "English"}. Preserve required JSON keys, code, URLs, front-matter field names, and the requested output structure. An explicit translation target in the request takes precedence.`;
+
       // Build user message
       const parts: string[] = [taskPrompt];
       if (input.frontMatter)

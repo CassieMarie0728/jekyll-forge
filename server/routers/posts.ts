@@ -84,7 +84,16 @@ export const postsRouter = router({
     )
     .mutation(({ ctx, input }) => {
       const { id, ...data } = input;
-      return updatePost(id, ctx.user.id, data);
+      return updatePost(id, ctx.user.id, {
+        ...data,
+        ...(data.markdown !== undefined
+          ? {
+              autosaveContent: null,
+              autosaveFrontMatter: null,
+              lastAutosaveAt: null,
+            }
+          : {}),
+      });
     }),
 
   delete: protectedProcedure

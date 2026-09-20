@@ -57,6 +57,11 @@ const NAV_ITEMS = [
     href: (id: string) => `/dashboard/${id}`,
   },
   { icon: FileText, label: "Posts", href: (id: string) => `/editor/${id}` },
+  {
+    icon: FileText,
+    label: "Repository files",
+    href: (id: string) => `/inventory/${id}`,
+  },
   { icon: Image, label: "Assets", href: (id: string) => `/assets/${id}` },
   {
     icon: Calendar,
@@ -105,7 +110,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   });
 
   const routeSiteId = location.match(
-    /^\/(?:dashboard|editor|assets|scheduler|themes|health|ai-settings|social-analytics)\/(\d+)(?:\/|$)/
+    /^\/(?:dashboard|editor|inventory|assets|scheduler|themes|health|ai-settings|social-analytics)\/(\d+)(?:\/|$)/
   )?.[1];
   const siteId =
     routeSiteId ||

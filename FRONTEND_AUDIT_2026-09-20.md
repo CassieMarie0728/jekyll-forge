@@ -57,3 +57,33 @@ These are recommendations, not features claimed as shipped in this pass. The pub
 - Live 390px check: post details opens editable metadata; post drawer lists both saved drafts and the GitHub post; preview and AI panels open. Dashboard controls fit with no document horizontal overflow.
 - Direct entry to `/assets/2` preserves workspace 2 in dashboard/editor navigation. AI Settings selects the active provider and shows the fixed snapshot behavior.
 - Browser viewport restored. No production posts, repository files, keys, social connections, or provider preferences changed by this audit.
+
+
+## Follow-up implementation: recovery, publishing review, and backend repairs
+
+- Added browser-local recovery copies for new and existing drafts, separated by signed-in user and workspace. Restore, download, and explicit deletion are available; storage failures surface an emergency download. Recovery copies remain on the originating browser, while Save stores drafts in Forge.
+- Existing draft autosaves show waiting, saving, saved, and failed states with retry. Saves are serialized within the editor; responses from an old selection cannot replace another selected post. New drafts receive distinct paths to avoid overwriting same-title drafts.
+- Publishing displays repository, branch, path, and a real destination diff. Review must succeed and be acknowledged; changing the content/destination invalidates acknowledgement. Commits use the reviewed destination SHA. Existing post paths are preserved when titles change. Feature-branch commits no longer misidentify the base-branch editor as published.
+- Scheduling checks future dates and unused published destinations. The existing scheduler remains creation-only and refuses to overwrite published files.
+- Added a searchable read-only Repository files page with post/draft and media filters, editor links, and GitHub source links. GitHub tree truncation is disclosed; counts are separate from Forge database counts.
+- Replaced the partial front-matter parser/serializer with the existing YAML library. Nested values, quoted text, backslashes, and multiline values round-trip; malformed YAML is rejected.
+- Applied saved AI language while preserving structured output keys and code.
+- Missing folders become empty only after branch/repository access verification. Permission failures stay visible. GitHub file paths and branch references are encoded.
+- Theme/plugin config reads respect the selected branch and root path, parse YAML, and reject malformed existing config. Plugin edits preserve nested values and normalize YAML formatting (comments are not retained by the serializer). Theme identifiers are validated and stale remote_theme is removed when selecting a gem theme. Custom theme dependencies and setup still require theme-specific installation; config editing does not install gems.
+- Recording published content clears stale autosave fields, preventing old working copies from hiding the published text.
+
+### Blog build repair
+
+The failing cassie-marie build log identified invalid YAML in _config.yml. Commit ff421856ea545a48c1929030048a2e733a8a6ba7 fixes only the indentation of jekyll-sitemap. The configuration parses and the build stage now passes. A subsequent external Updated Config commit retained a valid YAML list. Both latest GitHub workflows subsequently completed successfully: runs 35512091548 and 35512090965. The public HTTPS homepage returned 200. The earlier repair run was superseded during deployment by the newer valid configuration commit.
+
+### Follow-up verification
+
+50 tests passed across 11 targeted suites (49 in the combined run plus the added save-ordering regression; the publishing suite was rerun successfully) covering recovery, publishing review, editor behavior, YAML round trips, GitHub authorization/error handling and pagination, post ownership, language preferences, and scheduler behavior. Final TypeScript/build/deployment and browser results are recorded below when complete.
+
+
+- Final TypeScript check, production build, and deployment configuration check passed. Existing large-chunk warning remains.
+- Deployed Worker version: 4f1913c0-98eb-4e8e-bb67-2acbce3d597e.
+- Live inventory loaded 79 files, including one Jekyll Markdown post and four media files. Searching amen returned the expected post and the editor link navigated correctly. This is a repository inventory, not a claim that HTML pages are editable Markdown posts.
+
+- Live editor opened the existing GitHub post with parsed metadata and recovery controls. Publish review loaded its exact repository, main branch, existing path, and before/after content; Publish remained disabled until review acknowledgement. No post was published or overwritten during UI verification.
+- Browser automation subsequently timed out before entering the recovery smoke draft, and a fresh test tab could not attach. Recovery after remount, workspace isolation, distinct new drafts, and storage failure/download behavior were covered by component tests; a final live recovery/navigation check was not completed. No user-entered keys or provider preferences changed.

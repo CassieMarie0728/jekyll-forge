@@ -1,3 +1,4 @@
+import { load, dump, JSON_SCHEMA } from "js-yaml";
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
@@ -47,6 +48,13 @@ export function githubApiErrorForStatus(status: number) {
         "GitHub denied this request. Check the connected account permissions and repository access.",
     });
   }
+
+  if (status === 409 || status === 422)
+    return new TRPCError({
+      code: "CONFLICT",
+      message:
+        "GitHub could not apply these changes. The file or branch may have changed, or the destination is invalid. Refresh the publishing review and check the branch name before retrying.",
+    });
 
   if (status === 404) {
     return new TRPCError({
@@ -200,7 +208,7 @@ export const githubRouter = router({
         try {
           await ghFetch(
             token,
-            `/repos/${input.owner}/${input.repo}/contents/${prefix}${path}?ref=${input.branch}`
+            `/repos/${input.owner}/${input.repo}/contents/${prefix}${path}?ref=${encodeURIComponent(input.branch)}`
           );
           return true;
         } catch {
@@ -240,7 +248,7 @@ export const githubRouter = router({
         try {
           const configFile = await ghFetch(
             token,
-            `/repos/${input.owner}/${input.repo}/contents/${prefix}_config.yml?ref=${input.branch}`
+            `/repos/${input.owner}/${input.repo}/contents/${prefix}_config.yml?ref=${encodeURIComponent(input.branch)}`
           );
           const content = Buffer.from(configFile.content, "base64").toString(
             "utf-8"
@@ -260,7 +268,7 @@ export const githubRouter = router({
       try {
         const workflows = await ghFetch(
           token,
-          `/repos/${input.owner}/${input.repo}/contents/.github/workflows?ref=${input.branch}`
+          `/repos/${input.owner}/${input.repo}/contents/.github/workflows?ref=${encodeURIComponent(input.branch)}`
         );
         if (Array.isArray(workflows) && workflows.length > 0)
           buildMethod = "github-actions";
@@ -332,11 +340,29 @@ export const githubRouter = router({
     )
     .query(async ({ ctx, input }) => {
       const token = await getGitHubToken(ctx.user.id, ctx.user.openId);
-      const pathPart = input.path ? `/${input.path}` : "";
-      return ghFetch<GitHubFile[]>(
-        token,
-        `/repos/${input.owner}/${input.repo}/contents${pathPart}?ref=${input.branch}`
-      );
+      const pathPart = input.path
+        ? `/${input.path.split("/").map(encodeURIComponent).join("/")}`
+        : "";
+      try {
+        const result = await ghFetch<GitHubFile[]>(
+          token,
+          `/repos/${input.owner}/${input.repo}/contents${pathPart}?ref=${encodeURIComponent(input.branch)}`
+        );
+        return Array.isArray(result) ? result : [];
+      } catch (error) {
+        if (
+          !(error instanceof TRPCError) ||
+          error.code !== "NOT_FOUND" ||
+          !input.path
+        )
+          throw error;
+        // A missing folder is empty only after verifying repository and branch access.
+        await ghFetch(
+          token,
+          `/repos/${input.owner}/${input.repo}/branches/${encodeURIComponent(input.branch)}`
+        );
+        return [];
+      }
     }),
 
   getFile: protectedProcedure
@@ -352,10 +378,67 @@ export const githubRouter = router({
       const token = await getGitHubToken(ctx.user.id, ctx.user.openId);
       const file = await ghFetch(
         token,
-        `/repos/${input.owner}/${input.repo}/contents/${input.path}?ref=${input.branch}`
+        `/repos/${input.owner}/${input.repo}/contents/${input.path.split("/").map(encodeURIComponent).join("/")}?ref=${encodeURIComponent(input.branch)}`
       );
       const content = Buffer.from(file.content, "base64").toString("utf-8");
       return { ...file, decodedContent: content };
+    }),
+
+  inventory: protectedProcedure
+    .input(
+      z.object({ owner: z.string(), repo: z.string(), branch: z.string() })
+    )
+    .query(async ({ ctx, input }) => {
+      const token = await getGitHubToken(ctx.user.id, ctx.user.openId);
+      const result = await ghFetch<{
+        truncated: boolean;
+        tree: { path: string; type: string; size?: number }[];
+      }>(
+        token,
+        `/repos/${input.owner}/${input.repo}/git/trees/${encodeURIComponent(input.branch)}?recursive=1`
+      );
+      return {
+        truncated: result.truncated,
+        files: result.tree
+          .filter(file => file.type === "blob")
+          .map(({ path, size }) => ({ path, size })),
+      };
+    }),
+
+  reviewFile: protectedProcedure
+    .input(
+      z.object({
+        owner: z.string(),
+        repo: z.string(),
+        path: z.string(),
+        branch: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const token = await getGitHubToken(ctx.user.id, ctx.user.openId);
+      try {
+        const file = await ghFetch(
+          token,
+          `/repos/${input.owner}/${input.repo}/contents/${input.path.split("/").map(encodeURIComponent).join("/")}?ref=${encodeURIComponent(input.branch)}`
+        );
+        if (file.type !== "file" || typeof file.content !== "string")
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Cannot review this destination as a text file.",
+          });
+        return {
+          sha: file.sha,
+          content: Buffer.from(file.content, "base64").toString("utf-8"),
+        };
+      } catch (error) {
+        if (!(error instanceof TRPCError) || error.code !== "NOT_FOUND")
+          throw error;
+        await ghFetch(
+          token,
+          `/repos/${input.owner}/${input.repo}/branches/${encodeURIComponent(input.branch)}`
+        );
+        return { sha: undefined, content: "" };
+      }
     }),
 
   commitFile: protectedProcedure
@@ -381,7 +464,7 @@ export const githubRouter = router({
       if (input.sha) body.sha = input.sha;
       return ghFetch<GitHubCommit>(
         token,
-        `/repos/${input.owner}/${input.repo}/contents/${input.path}`,
+        `/repos/${input.owner}/${input.repo}/contents/${input.path.split("/").map(encodeURIComponent).join("/")}`,
         {
           method: "PUT",
           body: JSON.stringify(body),
@@ -404,7 +487,7 @@ export const githubRouter = router({
       const token = await getGitHubToken(ctx.user.id, ctx.user.openId);
       return ghFetch(
         token,
-        `/repos/${input.owner}/${input.repo}/contents/${input.path}`,
+        `/repos/${input.owner}/${input.repo}/contents/${input.path.split("/").map(encodeURIComponent).join("/")}`,
         {
           method: "DELETE",
           body: JSON.stringify({
@@ -489,18 +572,41 @@ export const githubRouter = router({
       z.object({
         owner: z.string(),
         repo: z.string(),
+        rootPath: z.string().default(""),
         branch: z.string().default("main"),
         /** Set a new theme */
-        theme: z.string().optional(),
+        theme: z
+          .string()
+          .regex(/^[a-zA-Z0-9][a-zA-Z0-9_-]*$/)
+          .optional(),
         /** Add a plugin (appended to plugins list) */
-        addPlugin: z.string().optional(),
+        addPlugin: z
+          .string()
+          .regex(/^[a-zA-Z0-9][a-zA-Z0-9_-]*$/)
+          .optional(),
         /** Remove a plugin */
-        removePlugin: z.string().optional(),
+        removePlugin: z
+          .string()
+          .regex(/^[a-zA-Z0-9][a-zA-Z0-9_-]*$/)
+          .optional(),
         commitMessage: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
       const token = await getGitHubToken(ctx.user.id, ctx.user.openId);
+      const root = input.rootPath.replace(/^\/+|\/+$/g, "");
+      if (
+        root.split("/").some(part => part === ".." || part === ".") ||
+        /[?#\\]/.test(root)
+      )
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Invalid site root path.",
+        });
+      const configPath = [root, "_config.yml"]
+        .filter(Boolean)
+        .map(part => part.split("/").map(encodeURIComponent).join("/"))
+        .join("/");
 
       // Fetch current _config.yml
       let currentContent = "";
@@ -508,58 +614,61 @@ export const githubRouter = router({
       try {
         const file = await ghFetch(
           token,
-          `/repos/${input.owner}/${input.repo}/contents/_config.yml?ref=${input.branch}`
+          `/repos/${input.owner}/${input.repo}/contents/${configPath}?ref=${encodeURIComponent(input.branch)}`
         );
         currentContent = Buffer.from(file.content, "base64").toString("utf-8");
         sha = file.sha;
-      } catch {
-        // File doesn't exist yet — start with empty content
-        currentContent = "";
-      }
-
-      let updatedContent = currentContent;
-
-      // Update theme
-      if (input.theme) {
-        if (/^theme:/m.test(updatedContent)) {
-          updatedContent = updatedContent.replace(
-            /^theme:.*$/m,
-            `theme: ${input.theme}`
-          );
-        } else {
-          updatedContent = `theme: ${input.theme}\n` + updatedContent;
-        }
-      }
-
-      // Add plugin
-      if (input.addPlugin) {
-        const plugin = input.addPlugin;
-        if (!updatedContent.includes(plugin)) {
-          if (/^plugins:/m.test(updatedContent)) {
-            // Append to existing plugins list
-            updatedContent = updatedContent.replace(
-              /^(plugins:\s*\n(?:(?:\s+-\s+.+\n)*))/m,
-              match => match.trimEnd() + `\n  - ${plugin}\n`
-            );
-          } else {
-            // Add plugins section at end
-            updatedContent =
-              updatedContent.trimEnd() + `\n\nplugins:\n  - ${plugin}\n`;
-          }
-        }
-      }
-
-      // Remove plugin
-      if (input.removePlugin) {
-        const plugin = input.removePlugin;
-        updatedContent = updatedContent.replace(
-          new RegExp(
-            `^\\s*-\\s*${plugin.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&")}\\s*$`,
-            "gm"
-          ),
-          ""
+      } catch (error) {
+        if (!(error instanceof TRPCError) || error.code !== "NOT_FOUND")
+          throw error;
+        await ghFetch(
+          token,
+          `/repos/${input.owner}/${input.repo}/branches/${encodeURIComponent(input.branch)}`
         );
       }
+      let config: Record<string, unknown>;
+      try {
+        const parsed = load(currentContent, { schema: JSON_SCHEMA });
+        if (
+          parsed != null &&
+          (typeof parsed !== "object" || Array.isArray(parsed))
+        )
+          throw new Error();
+        config = (parsed || {}) as Record<string, unknown>;
+      } catch {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "The existing _config.yml contains invalid YAML. Fix it before changing themes or plugins.",
+        });
+      }
+      if (input.theme) {
+        config.theme = input.theme;
+        delete config.remote_theme;
+      }
+      if (input.addPlugin || input.removePlugin) {
+        if (
+          config.plugins != null &&
+          (!Array.isArray(config.plugins) ||
+            config.plugins.some(value => typeof value !== "string"))
+        )
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "The plugins field must be a YAML list of plugin names.",
+          });
+        const plugins = (config.plugins || []) as string[];
+        config.plugins = [
+          ...new Set([
+            ...plugins.filter(value => value !== input.removePlugin),
+            ...(input.addPlugin ? [input.addPlugin] : []),
+          ]),
+        ];
+      }
+      const updatedContent = dump(config, {
+        schema: JSON_SCHEMA,
+        noRefs: true,
+        lineWidth: -1,
+      });
 
       const commitMsg =
         input.commitMessage ||
@@ -579,7 +688,7 @@ export const githubRouter = router({
 
       await ghFetch(
         token,
-        `/repos/${input.owner}/${input.repo}/contents/_config.yml`,
+        `/repos/${input.owner}/${input.repo}/contents/${configPath}`,
         {
           method: "PUT",
           body: JSON.stringify(body),
@@ -594,34 +703,44 @@ export const githubRouter = router({
       z.object({
         owner: z.string(),
         repo: z.string(),
+        rootPath: z.string().default(""),
         branch: z.string().default("main"),
       })
     )
     .query(async ({ ctx, input }) => {
       const token = await getGitHubToken(ctx.user.id, ctx.user.openId);
+      const root = input.rootPath.replace(/^\/+|\/+$/g, "");
+      if (
+        root.split("/").some(part => part === ".." || part === ".") ||
+        /[?#\\]/.test(root)
+      )
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Invalid site root path.",
+        });
+      const configPath = [root, "_config.yml"]
+        .filter(Boolean)
+        .map(part => part.split("/").map(encodeURIComponent).join("/"))
+        .join("/");
       try {
         const file = await ghFetch(
           token,
-          `/repos/${input.owner}/${input.repo}/contents/_config.yml?ref=${input.branch}`
+          `/repos/${input.owner}/${input.repo}/contents/${configPath}?ref=${encodeURIComponent(input.branch)}`
         );
         const content = Buffer.from(file.content, "base64").toString("utf-8");
-        const config: Record<string, unknown> = {};
-        for (const line of content.split("\n")) {
-          const colonIdx = line.indexOf(":");
-          if (colonIdx === -1 || line.startsWith("#")) continue;
-          const key = line.slice(0, colonIdx).trim();
-          const val = line.slice(colonIdx + 1).trim();
-          if (!key) continue;
-          config[key] = val.replace(/^["']|["']$/g, "");
-        }
-        // Parse plugins array
-        const pluginMatches = Array.from(
-          content.matchAll(/^\s*-\s*(jekyll-[\w-]+)/gm)
-        );
-        config.plugins = pluginMatches.map(m => m[1]);
-        return config;
-      } catch {
-        return {};
+        const config = load(content, { schema: JSON_SCHEMA });
+        if (!config || typeof config !== "object" || Array.isArray(config))
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Invalid Jekyll YAML configuration.",
+          });
+        return config as Record<string, unknown>;
+      } catch (error) {
+        if (error instanceof TRPCError) throw error;
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Cannot parse _config.yml. Check its YAML formatting.",
+        });
       }
     }),
 
@@ -640,7 +759,7 @@ export const githubRouter = router({
 
 on:
   push:
-    branches: ["${input.branch}"]
+    branches: [${JSON.stringify(input.branch)}]
   workflow_dispatch:
 
 permissions:

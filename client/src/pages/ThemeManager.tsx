@@ -38,7 +38,7 @@ const POPULAR_THEMES = [
     url: "https://github.com/jekyll/minima",
   },
   {
-    name: "minimal-mistakes",
+    name: "minimal-mistakes-jekyll",
     displayName: "Minimal Mistakes",
     desc: "A flexible two-column Jekyll theme",
     stars: "12.1k",
@@ -52,7 +52,7 @@ const POPULAR_THEMES = [
     url: "https://github.com/just-the-docs/just-the-docs",
   },
   {
-    name: "chirpy",
+    name: "jekyll-theme-chirpy",
     displayName: "Chirpy",
     desc: "A minimal, responsive, and feature-rich Jekyll theme for technical writing",
     stars: "6.5k",
@@ -136,7 +136,12 @@ export default function ThemeManager() {
     isLoading: configLoading,
     error: configError,
   } = trpc.github.getJekyllConfig.useQuery(
-    { owner: site?.owner || "", repo: site?.repo || "" },
+    {
+      owner: site?.owner || "",
+      repo: site?.repo || "",
+      rootPath: site?.rootPath || "",
+      branch: site?.selectedBranch || site?.defaultBranch || "main",
+    },
     { enabled: !!site }
   );
 
@@ -179,6 +184,7 @@ export default function ThemeManager() {
       updateConfig.mutate({
         owner: site.owner,
         repo: site.repo,
+        rootPath: site.rootPath || "",
         branch,
         theme: selectedItem.name,
       });
@@ -188,6 +194,7 @@ export default function ThemeManager() {
         updateConfig.mutate({
           owner: site.owner,
           repo: site.repo,
+          rootPath: site.rootPath || "",
           branch,
           removePlugin: selectedItem.name,
         });
@@ -195,6 +202,7 @@ export default function ThemeManager() {
         updateConfig.mutate({
           owner: site.owner,
           repo: site.repo,
+          rootPath: site.rootPath || "",
           branch,
           addPlugin: selectedItem.name,
         });
@@ -226,7 +234,10 @@ export default function ThemeManager() {
         <div>
           <h1 className="font-display font-bold text-2xl">Themes & Plugins</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Manage your Jekyll theme and plugins
+            Manage your Jekyll theme and plugins. Configuration edits preserve
+            values but normalize YAML formatting and comments. Custom themes and
+            plugins may also require Gemfile dependencies or theme-specific
+            setup.
           </p>
         </div>
         <Button

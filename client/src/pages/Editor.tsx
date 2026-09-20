@@ -1,3 +1,4 @@
+import DraftRecovery from "@/components/DraftRecovery";
 import React, {
   lazy,
   Suspense,
@@ -216,6 +217,13 @@ export default function Editor() {
   const [autosaveTimer, setAutosaveTimer] = useState<ReturnType<
     typeof setTimeout
   > | null>(null);
+  const [saveState, setSaveState] = useState("No pending edits");
+  const [retrySave, setRetrySave] = useState(0);
+  const saveQueue = useRef<Promise<unknown>>(Promise.resolve());
+  const editVersion = useRef(0);
+  useEffect(() => {
+    editVersion.current++;
+  }, [markdown, frontMatter, selectedFile]);
   const [hasConflict, setHasConflict] = useState(false);
   const [remoteUpdated, setRemoteUpdated] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -243,6 +251,8 @@ export default function Editor() {
   );
   const loadedSelection = useRef<string | null>(null);
   const selectionKey = `${siteId}:${selectedFile}`;
+  const selectionRef = useRef(selectionKey);
+  selectionRef.current = selectionKey;
 
   const upsertPost = trpc.posts.upsert.useMutation();
   const autosaveMutation = trpc.posts.autosave.useMutation();
@@ -279,23 +289,29 @@ export default function Editor() {
       loadedSelection.current === selectionKey
     )
       return;
-    if (savedPost) {
-      const restored = restoreSavedPost(savedPost);
-      setFrontMatter(restored.frontMatter);
-      setMarkdown(restored.markdown);
-      setCurrentPostId(savedPost.id);
-      setCurrentSha(savedPost.sha || undefined);
-    } else if (getFileMutation.data) {
-      const parsed = parseMarkdownFrontMatter(
-        getFileMutation.data.decodedContent || ""
+    try {
+      if (savedPost) {
+        const restored = restoreSavedPost(savedPost);
+        setFrontMatter(restored.frontMatter);
+        setMarkdown(restored.markdown);
+        setCurrentPostId(savedPost.id);
+        setCurrentSha(savedPost.sha || undefined);
+      } else if (getFileMutation.data) {
+        const parsed = parseMarkdownFrontMatter(
+          getFileMutation.data.decodedContent || ""
+        );
+        setFrontMatter(parsed.frontMatter);
+        setMarkdown(parsed.markdown);
+        setCurrentSha(getFileMutation.data.sha);
+        setCurrentPostId(null);
+      } else return;
+      loadedSelection.current = selectionKey;
+      setIsDirty(false);
+    } catch {
+      toast.error(
+        "Invalid YAML front matter. Fix the source on GitHub before editing this post."
       );
-      setFrontMatter(parsed.frontMatter);
-      setMarkdown(parsed.markdown);
-      setCurrentSha(getFileMutation.data.sha);
-      setCurrentPostId(null);
-    } else return;
-    loadedSelection.current = selectionKey;
-    setIsDirty(false);
+    }
   }, [
     savedPost,
     getFileMutation.data,
@@ -314,24 +330,44 @@ export default function Editor() {
     return () => window.removeEventListener("beforeunload", warnBeforeUnload);
   }, [isDirty]);
 
-  // Autosave the current working draft to Forge storage.
+  // Browser recovery covers new drafts; existing drafts also sync to Forge.
   useEffect(() => {
-    if (!isDirty || !currentPostId) return;
-    if (autosaveTimer) clearTimeout(autosaveTimer);
+    if (!isDirty || showPublish) return;
+    setSaveState(
+      currentPostId
+        ? "Waiting to save in Forge…"
+        : "New draft — use Save to store it in Forge"
+    );
+    if (!currentPostId) return;
+    let active = true;
     const timer = setTimeout(async () => {
+      setSaveState("Saving in Forge…");
       try {
-        await autosaveMutation.mutateAsync({
-          id: currentPostId,
-          markdown,
-          frontMatter,
-        });
+        const request = saveQueue.current
+          .catch(() => {})
+          .then(() => {
+            if (!active) return;
+            return autosaveMutation.mutateAsync({
+              id: currentPostId,
+              markdown,
+              frontMatter,
+            });
+          });
+        saveQueue.current = request;
+        await request;
+        if (active) setSaveState("Working copy saved in Forge");
       } catch {
-        /* silent */
+        if (active)
+          setSaveState(
+            "Forge save failed — retry or download your recovery copy"
+          );
       }
     }, 3000);
-    setAutosaveTimer(timer);
-    return () => clearTimeout(timer);
-  }, [markdown, frontMatter, isDirty, currentPostId]);
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [markdown, frontMatter, isDirty, currentPostId, retrySave, showPublish]);
 
   // Poll for remote file changes (conflict detection)
   useEffect(() => {
@@ -433,32 +469,59 @@ export default function Editor() {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "");
-    const filename = `${format(new Date(), "yyyy-MM-dd")}-${slug}.md`;
+    const filename =
+      selectedFile && selectedFile !== "new"
+        ? selectedFile.split("/").pop()!
+        : `${format(new Date(), "yyyy-MM-dd")}-${slug || "untitled"}-${crypto.randomUUID().slice(0, 8)}.md`;
     const path =
       selectedFile && selectedFile !== "new"
         ? savedPost?.path || selectedFile
-        : `_drafts/${filename}`;
+        : `${site?.rootPath ? site.rootPath.replace(/^\/+|\/+$/g, "") + "/" : ""}_drafts/${filename}`;
 
+    const savingVersion = editVersion.current;
+    const savingSelection = selectionKey;
+    setSaveState("Saving in Forge…");
     try {
-      const id = await upsertPost.mutateAsync({
-        siteId: Number(siteId),
-        path,
-        filename,
-        slug,
-        title,
-        status: "draft",
-        frontMatter,
-        markdown,
-        sha: currentSha,
-      });
+      const request = saveQueue.current
+        .catch(() => {})
+        .then(() =>
+          upsertPost.mutateAsync({
+            siteId: Number(siteId),
+            path,
+            filename,
+            slug,
+            title,
+            status:
+              savedPost?.status === "published"
+                ? "modified"
+                : savedPost?.status || "draft",
+            frontMatter,
+            markdown,
+            sha: currentSha,
+          })
+        );
+      saveQueue.current = request;
+      const id = await request;
+      if (savingSelection !== selectionRef.current) {
+        await refetchPosts();
+        return;
+      }
       loadedSelection.current = `${siteId}:${path}`;
       setSelectedFile(path);
       setCurrentPostId(id);
-      setIsDirty(false);
+      if (savingVersion === editVersion.current) setIsDirty(false);
+      setSaveState(
+        savingVersion === editVersion.current
+          ? "Draft saved in Forge"
+          : "Newer edits waiting to save"
+      );
       toast.success("Draft saved in Forge");
       await refetchPosts();
     } catch (err) {
-      toast.error("Failed to save");
+      setSaveState("Forge save failed — retry or download your recovery copy");
+      toast.error(
+        "Failed to save. Check Recovery drafts or download your work."
+      );
     }
   };
 
@@ -571,431 +634,484 @@ export default function Editor() {
   const rt = readingTime(markdown);
 
   return (
-    <div className="flex h-full overflow-hidden flex-col md:flex-row">
-      {/* File Browser Sidebar - Hidden on mobile */}
-      {showFileBrowser && (
-        <div className="hidden md:flex w-56 flex-shrink-0 border-r border-border bg-card/30 flex-col">
-          <div className="flex items-center justify-between px-3 py-2.5 border-b border-border">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Posts
-            </span>
+    <div className="flex h-full min-h-0 flex-col">
+      <DraftRecovery
+        siteId={Number(siteId)}
+        path={selectedFile}
+        postId={currentPostId}
+        sha={currentSha}
+        markdown={markdown}
+        frontMatter={frontMatter}
+        dirty={isDirty}
+        onRestore={draft => {
+          if (
+            isDirty &&
+            !window.confirm(
+              "Replace the editor with this recovery copy? Your current recovery copy stays available."
+            )
+          )
+            return;
+          const path = draft.path || "new";
+          loadedSelection.current = `${siteId}:${path}`;
+          setSelectedFile(path);
+          setCurrentPostId(draft.postId);
+          setCurrentSha(draft.sha);
+          setMarkdown(draft.markdown);
+          setFrontMatter(draft.frontMatter);
+          setIsDirty(true);
+          toast.success(
+            "Recovery copy restored. Review it before saving or publishing."
+          );
+        }}
+      />
+      <div
+        className="flex items-center flex-wrap gap-2 px-3 py-1 text-xs"
+        role="status"
+      >
+        {saveState}
+        {saveState.includes("failed") && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() =>
+              currentPostId ? setRetrySave(n => n + 1) : handleSaveLocal()
+            }
+          >
+            Retry save
+          </Button>
+        )}
+      </div>
+      <div className="flex flex-1 min-h-0 overflow-hidden flex-col md:flex-row">
+        {/* File Browser Sidebar - Hidden on mobile */}
+        {showFileBrowser && (
+          <div className="hidden md:flex w-56 flex-shrink-0 border-r border-border bg-card/30 flex-col">
+            <div className="flex items-center justify-between px-3 py-2.5 border-b border-border">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Posts
+              </span>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                aria-label="Start a new post"
+                onClick={handleNewPost}
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+            <FileBrowser
+              siteId={Number(siteId)}
+              site={site}
+              onSelectFile={handleSelectFile}
+              selectedFile={selectedFile}
+              posts={(posts || []).map(p => ({
+                ...p,
+                status: p.status ?? "new",
+              }))}
+            />
+          </div>
+        )}
+
+        {/* Main Editor */}
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          {/* Editor Toolbar - Responsive */}
+          <div className="flex flex-wrap md:flex-nowrap items-center gap-1 md:gap-2 px-2 md:px-4 py-1.5 md:py-2 border-b border-border bg-card/30 flex-shrink-0 overflow-x-auto">
             <Button
               variant="ghost"
               size="icon"
-              className="h-6 w-6"
-              aria-label="Start a new post"
-              onClick={handleNewPost}
+              className="h-7 w-7"
+              aria-label="Toggle post browser"
+              onClick={() =>
+                window.matchMedia("(max-width: 767px)").matches
+                  ? setShowMobilePosts(true)
+                  : setShowFileBrowser(!showFileBrowser)
+              }
             >
-              <Plus className="w-3.5 h-3.5" />
+              <Layers className="w-3.5 h-3.5" />
             </Button>
-          </div>
-          <FileBrowser
-            siteId={Number(siteId)}
-            site={site}
-            onSelectFile={handleSelectFile}
-            selectedFile={selectedFile}
-            posts={(posts || []).map(p => ({
-              ...p,
-              status: p.status ?? "new",
-            }))}
-          />
-        </div>
-      )}
 
-      {/* Main Editor */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Editor Toolbar - Responsive */}
-        <div className="flex flex-wrap md:flex-nowrap items-center gap-1 md:gap-2 px-2 md:px-4 py-1.5 md:py-2 border-b border-border bg-card/30 flex-shrink-0 overflow-x-auto">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7"
-            aria-label="Toggle post browser"
-            onClick={() =>
-              window.matchMedia("(max-width: 767px)").matches
-                ? setShowMobilePosts(true)
-                : setShowFileBrowser(!showFileBrowser)
-            }
-          >
-            <Layers className="w-3.5 h-3.5" />
-          </Button>
-
-          <Separator orientation="vertical" className="h-5" />
-
-          {/* Mode Switcher - Hidden on mobile, shown on tablet+ */}
-          <div className="hidden sm:block">
-            <Tabs value={mode} onValueChange={v => setMode(v as EditorMode)}>
-              <TabsList className="h-7 bg-muted/50">
-                <TabsTrigger value="visual" className="h-5 text-xs px-2 gap-1">
-                  <Eye className="w-3 h-3" />
-                  <span className="hidden md:inline">Visual</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="markdown"
-                  className="h-5 text-xs px-2 gap-1"
-                >
-                  <Code2 className="w-3 h-3" />
-                  <span className="hidden md:inline">Markdown</span>
-                </TabsTrigger>
-                <TabsTrigger value="split" className="h-5 text-xs px-2 gap-1">
-                  <AlignLeft className="w-3 h-3" />
-                  <span className="hidden md:inline">Split</span>
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
             <Separator orientation="vertical" className="h-5" />
-          </div>
 
-          {/* Markdown Toolbar - Hidden on mobile */}
-          <div className="hidden sm:flex items-center gap-0.5 overflow-x-auto">
-            {TOOLBAR_ACTIONS.map(({ icon: Icon, label, action }) => (
-              <Button
-                key={label}
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6 flex-shrink-0"
-                title={label}
-                onClick={() => handleToolbarAction(action, label)}
-              >
-                <Icon className="w-3 h-3" />
-              </Button>
-            ))}
-          </div>
+            {/* Mode Switcher - Hidden on mobile, shown on tablet+ */}
+            <div className="hidden sm:block">
+              <Tabs value={mode} onValueChange={v => setMode(v as EditorMode)}>
+                <TabsList className="h-7 bg-muted/50">
+                  <TabsTrigger
+                    value="visual"
+                    className="h-5 text-xs px-2 gap-1"
+                  >
+                    <Eye className="w-3 h-3" />
+                    <span className="hidden md:inline">Visual</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="markdown"
+                    className="h-5 text-xs px-2 gap-1"
+                  >
+                    <Code2 className="w-3 h-3" />
+                    <span className="hidden md:inline">Markdown</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="split" className="h-5 text-xs px-2 gap-1">
+                    <AlignLeft className="w-3 h-3" />
+                    <span className="hidden md:inline">Split</span>
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+              <Separator orientation="vertical" className="h-5" />
+            </div>
 
-          <div className="flex-1" />
+            {/* Markdown Toolbar - Hidden on mobile */}
+            <div className="hidden sm:flex items-center gap-0.5 overflow-x-auto">
+              {TOOLBAR_ACTIONS.map(({ icon: Icon, label, action }) => (
+                <Button
+                  key={label}
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 flex-shrink-0"
+                  title={label}
+                  onClick={() => handleToolbarAction(action, label)}
+                >
+                  <Icon className="w-3 h-3" />
+                </Button>
+              ))}
+            </div>
 
-          {/* Stats - Hidden on mobile */}
-          <div className="hidden lg:flex items-center gap-3 text-xs text-muted-foreground">
-            <span>{wc} words</span>
-            <span>{rt} min read</span>
-            {isDirty && (
-              <Badge
-                variant="outline"
-                className="text-forge-amber border-forge-amber/30 text-[10px] px-1.5 py-0 h-4"
-              >
-                Unsaved
-              </Badge>
-            )}
-            {autosaveMutation.isPending && (
-              <span className="text-[10px]">Autosaving...</span>
-            )}
+            <div className="flex-1" />
+
+            {/* Stats - Hidden on mobile */}
+            <div className="hidden lg:flex items-center gap-3 text-xs text-muted-foreground">
+              <span>{wc} words</span>
+              <span>{rt} min read</span>
+              {isDirty && (
+                <Badge
+                  variant="outline"
+                  className="text-forge-amber border-forge-amber/30 text-[10px] px-1.5 py-0 h-4"
+                >
+                  Unpublished edits
+                </Badge>
+              )}
+              {autosaveMutation.isPending && (
+                <span className="text-[10px]">Autosaving...</span>
+              )}
+              {hasConflict && (
+                <Badge
+                  variant="destructive"
+                  className="text-[10px] px-1.5 py-0 h-4 animate-pulse"
+                >
+                  Conflict
+                </Badge>
+              )}
+              {remoteUpdated && !isDirty && (
+                <Badge
+                  variant="secondary"
+                  className="text-[10px] px-1.5 py-0 h-4"
+                >
+                  Updated
+                </Badge>
+              )}
+            </div>
+
+            <Separator orientation="vertical" className="h-5 hidden sm:block" />
+
+            {/* Action Buttons - Responsive */}
             {hasConflict && (
-              <Badge
+              <Button
                 variant="destructive"
-                className="text-[10px] px-1.5 py-0 h-4 animate-pulse"
+                size="sm"
+                className="h-7 text-xs gap-1 flex-shrink-0"
+                onClick={handleReloadFromRemote}
               >
-                Conflict
-              </Badge>
+                <AlertCircle className="w-3 h-3" />
+                <span className="hidden md:inline">Reload</span>
+              </Button>
             )}
-            {remoteUpdated && !isDirty && (
-              <Badge
-                variant="secondary"
-                className="text-[10px] px-1.5 py-0 h-4"
-              >
-                Updated
-              </Badge>
-            )}
-          </div>
-
-          <Separator orientation="vertical" className="h-5 hidden sm:block" />
-
-          {/* Action Buttons - Responsive */}
-          {hasConflict && (
             <Button
-              variant="destructive"
+              variant="ghost"
+              size="sm"
+              className="h-7 text-xs gap-1 flex-shrink-0 hidden sm:flex"
+              onClick={() => setShowSnapshots(true)}
+            >
+              <RotateCcw className="w-3 h-3" />
+              <span className="hidden md:inline">Snapshots</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 text-xs gap-1 flex-shrink-0 hidden sm:flex"
+              onClick={() => setShowAI(true)}
+            >
+              <Wand2 className="w-3 h-3 text-forge-violet" />
+              <span className="hidden md:inline">AI</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 text-xs gap-1 flex-shrink-0 hidden sm:flex"
+              onClick={() => {
+                if (!currentPostId) {
+                  toast.error("Save the post first");
+                  return;
+                }
+                setShowRepurposing(true);
+              }}
+            >
+              <Share2 className="w-3 h-3 text-forge-violet" />
+              <span className="hidden md:inline">Repurpose</span>
+            </Button>
+            <Button
+              variant="outline"
               size="sm"
               className="h-7 text-xs gap-1 flex-shrink-0"
-              onClick={handleReloadFromRemote}
+              aria-label="Save post"
+              onClick={handleSaveLocal}
             >
-              <AlertCircle className="w-3 h-3" />
-              <span className="hidden md:inline">Reload</span>
+              <Save className="w-3 h-3" />
+              <span className="hidden sm:inline">Save</span>
             </Button>
-          )}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 text-xs gap-1 flex-shrink-0 hidden sm:flex"
-            onClick={() => setShowSnapshots(true)}
+            <Button
+              size="sm"
+              aria-label="Publish post"
+              className="h-7 text-xs gap-1 flex-shrink-0"
+              onClick={() => {
+                if (!selectedFile && !currentPostId) {
+                  toast.error("Save the post first");
+                  return;
+                }
+                handleCreateSnapshot("before-publish").then(() =>
+                  setShowPublish(true)
+                );
+              }}
+            >
+              <Send className="w-3 h-3" aria-hidden="true" />
+              <span className="hidden sm:inline">Publish</span>
+            </Button>
+          </div>
+
+          <div
+            className="flex md:hidden flex-wrap gap-1 px-2 py-1 border-b border-border"
+            aria-label="Mobile editor tools"
           >
-            <RotateCcw className="w-3 h-3" />
-            <span className="hidden md:inline">Snapshots</span>
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 text-xs gap-1 flex-shrink-0 hidden sm:flex"
-            onClick={() => setShowAI(true)}
-          >
-            <Wand2 className="w-3 h-3 text-forge-violet" />
-            <span className="hidden md:inline">AI</span>
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 text-xs gap-1 flex-shrink-0 hidden sm:flex"
-            onClick={() => {
-              if (!currentPostId) {
-                toast.error("Save the post first");
-                return;
-              }
-              setShowRepurposing(true);
-            }}
-          >
-            <Share2 className="w-3 h-3 text-forge-violet" />
-            <span className="hidden md:inline">Repurpose</span>
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-7 text-xs gap-1 flex-shrink-0"
-            aria-label="Save post"
-            onClick={handleSaveLocal}
-          >
-            <Save className="w-3 h-3" />
-            <span className="hidden sm:inline">Save</span>
-          </Button>
-          <Button
-            size="sm"
-            aria-label="Publish post"
-            className="h-7 text-xs gap-1 flex-shrink-0"
-            onClick={() => {
-              if (!selectedFile && !currentPostId) {
-                toast.error("Save the post first");
-                return;
-              }
-              handleCreateSnapshot("before-publish").then(() =>
-                setShowPublish(true)
-              );
-            }}
-          >
-            <Send className="w-3 h-3" aria-hidden="true" />
-            <span className="hidden sm:inline">Publish</span>
-          </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setShowMobileDetails(true)}
+            >
+              Post details
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setMode(mode === "visual" ? "markdown" : "visual")}
+            >
+              {mode === "visual" ? "Write" : "Preview"}
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setShowAI(true)}>
+              AI
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setShowSnapshots(true)}
+            >
+              Snapshots
+            </Button>
+            {isDirty && (
+              <span className="text-xs text-muted-foreground self-center">
+                Unpublished edits
+              </span>
+            )}
+          </div>
+          {/* Editor Content - Responsive */}
+          <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+            {/* Front Matter Panel - Hidden on mobile, shown on tablet+ */}
+            <div className="hidden md:flex md:w-64 flex-shrink-0 border-r border-border bg-card/20 overflow-y-auto">
+              <FrontMatterEditor
+                frontMatter={frontMatter}
+                onChange={handleFrontMatterChange}
+                siteId={Number(siteId)}
+              />
+            </div>
+
+            {/* Editor / Preview - Responsive */}
+            <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+              {/* Markdown Editor - Full width on mobile, split on desktop */}
+              {(mode === "markdown" || mode === "split") && (
+                <div className="flex-1 flex flex-col overflow-hidden md:border-r border-border">
+                  <div className="flex-1 overflow-hidden">
+                    <Textarea
+                      ref={textareaRef}
+                      value={markdown}
+                      onChange={e => handleMarkdownChange(e.target.value)}
+                      placeholder="Start writing your post in Markdown..."
+                      className="h-full w-full resize-none border-0 rounded-none bg-transparent font-mono text-sm leading-relaxed p-4 focus-visible:ring-0 focus-visible:ring-offset-0"
+                      spellCheck
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Preview - Hidden on mobile in markdown mode */}
+              {(mode === "visual" || mode === "split") && (
+                <div
+                  className="flex-1 overflow-y-auto bg-background hidden md:block"
+                  style={{ display: mode === "visual" ? "block" : "" }}
+                >
+                  <div className="max-w-2xl mx-auto px-8 py-6">
+                    {frontMatter.title != null && (
+                      <h1 className="text-3xl font-display font-bold mb-2">
+                        {String(frontMatter.title)}
+                      </h1>
+                    )}
+                    {frontMatter.date != null && (
+                      <p className="text-sm text-muted-foreground mb-6">
+                        {String(frontMatter.date)}
+                      </p>
+                    )}
+                    <MarkdownPreview markdown={markdown} />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
-        <div
-          className="flex md:hidden flex-wrap gap-1 px-2 py-1 border-b border-border"
-          aria-label="Mobile editor tools"
-        >
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => setShowMobileDetails(true)}
+        <Sheet open={showMobileDetails} onOpenChange={setShowMobileDetails}>
+          <SheetContent
+            side="right"
+            className="w-full sm:max-w-md overflow-y-auto"
           >
-            Post details
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => setMode(mode === "visual" ? "markdown" : "visual")}
-          >
-            {mode === "visual" ? "Write" : "Preview"}
-          </Button>
-          <Button size="sm" variant="ghost" onClick={() => setShowAI(true)}>
-            AI
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => setShowSnapshots(true)}
-          >
-            Snapshots
-          </Button>
-          {isDirty && (
-            <span className="text-xs text-muted-foreground self-center">
-              Unsaved changes
-            </span>
-          )}
-        </div>
-        {/* Editor Content - Responsive */}
-        <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
-          {/* Front Matter Panel - Hidden on mobile, shown on tablet+ */}
-          <div className="hidden md:flex md:w-64 flex-shrink-0 border-r border-border bg-card/20 overflow-y-auto">
+            <SheetHeader>
+              <SheetTitle>Post details</SheetTitle>
+              <SheetDescription>
+                Edit the title, date, tags, and publishing fields.
+              </SheetDescription>
+            </SheetHeader>
             <FrontMatterEditor
               frontMatter={frontMatter}
               onChange={handleFrontMatterChange}
               siteId={Number(siteId)}
             />
-          </div>
-
-          {/* Editor / Preview - Responsive */}
-          <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
-            {/* Markdown Editor - Full width on mobile, split on desktop */}
-            {(mode === "markdown" || mode === "split") && (
-              <div className="flex-1 flex flex-col overflow-hidden md:border-r border-border">
-                <div className="flex-1 overflow-hidden">
-                  <Textarea
-                    ref={textareaRef}
-                    value={markdown}
-                    onChange={e => handleMarkdownChange(e.target.value)}
-                    placeholder="Start writing your post in Markdown..."
-                    className="h-full w-full resize-none border-0 rounded-none bg-transparent font-mono text-sm leading-relaxed p-4 focus-visible:ring-0 focus-visible:ring-offset-0"
-                    spellCheck
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Preview - Hidden on mobile in markdown mode */}
-            {(mode === "visual" || mode === "split") && (
-              <div
-                className="flex-1 overflow-y-auto bg-background hidden md:block"
-                style={{ display: mode === "visual" ? "block" : "" }}
-              >
-                <div className="max-w-2xl mx-auto px-8 py-6">
-                  {frontMatter.title != null && (
-                    <h1 className="text-3xl font-display font-bold mb-2">
-                      {String(frontMatter.title)}
-                    </h1>
-                  )}
-                  {frontMatter.date != null && (
-                    <p className="text-sm text-muted-foreground mb-6">
-                      {String(frontMatter.date)}
-                    </p>
-                  )}
-                  <MarkdownPreview markdown={markdown} />
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <Sheet open={showMobileDetails} onOpenChange={setShowMobileDetails}>
-        <SheetContent
-          side="right"
-          className="w-full sm:max-w-md overflow-y-auto"
-        >
-          <SheetHeader>
-            <SheetTitle>Post details</SheetTitle>
-            <SheetDescription>
-              Edit the title, date, tags, and publishing fields.
-            </SheetDescription>
-          </SheetHeader>
-          <FrontMatterEditor
-            frontMatter={frontMatter}
-            onChange={handleFrontMatterChange}
-            siteId={Number(siteId)}
-          />
-        </SheetContent>
-      </Sheet>
-      <Sheet open={showMobilePosts} onOpenChange={setShowMobilePosts}>
-        <SheetContent
-          side="left"
-          className="w-full sm:max-w-sm overflow-y-auto"
-        >
-          <SheetHeader>
-            <SheetTitle>Posts</SheetTitle>
-            <SheetDescription>
-              Open a saved draft or repository post.
-            </SheetDescription>
-          </SheetHeader>
-          <Button
-            variant="outline"
-            onClick={() => {
-              handleNewPost();
-              setShowMobilePosts(false);
-            }}
+          </SheetContent>
+        </Sheet>
+        <Sheet open={showMobilePosts} onOpenChange={setShowMobilePosts}>
+          <SheetContent
+            side="left"
+            className="w-full sm:max-w-sm overflow-y-auto"
           >
-            New post
-          </Button>
-          <FileBrowser
-            siteId={Number(siteId)}
-            site={site}
-            onSelectFile={async path => {
-              await handleSelectFile(path);
-              setShowMobilePosts(false);
-            }}
-            selectedFile={selectedFile}
-            posts={(posts || []).map(p => ({
-              ...p,
-              status: p.status ?? "new",
-            }))}
-          />
-        </SheetContent>
-      </Sheet>
-      {/* AI Assistant Sheet - Responsive width */}
-      <Sheet open={showAI} onOpenChange={setShowAI}>
-        <SheetContent side="right" className="w-full sm:w-[420px] p-0">
-          <SheetHeader className="sr-only">
-            <SheetTitle>AI writing assistant</SheetTitle>
-            <SheetDescription>
-              Generate and apply writing assistance for the current post.
-            </SheetDescription>
-          </SheetHeader>
-          {showAI && (
-            <Suspense
-              fallback={
-                <div className="p-6 text-sm text-muted-foreground">
-                  Loading AI assistant…
-                </div>
-              }
+            <SheetHeader>
+              <SheetTitle>Posts</SheetTitle>
+              <SheetDescription>
+                Open a saved draft or repository post.
+              </SheetDescription>
+            </SheetHeader>
+            <Button
+              variant="outline"
+              onClick={() => {
+                handleNewPost();
+                setShowMobilePosts(false);
+              }}
             >
-              <AIAssistant
-                markdown={markdown}
-                frontMatter={frontMatter}
-                siteId={Number(siteId)}
-                onInsert={handleAIInsert}
-                onFrontMatterUpdate={handleFrontMatterChange}
-                onCreateSnapshot={handleCreateSnapshot}
-              />
-            </Suspense>
-          )}
-        </SheetContent>
-      </Sheet>
+              New post
+            </Button>
+            <FileBrowser
+              siteId={Number(siteId)}
+              site={site}
+              onSelectFile={async path => {
+                await handleSelectFile(path);
+                setShowMobilePosts(false);
+              }}
+              selectedFile={selectedFile}
+              posts={(posts || []).map(p => ({
+                ...p,
+                status: p.status ?? "new",
+              }))}
+            />
+          </SheetContent>
+        </Sheet>
+        {/* AI Assistant Sheet - Responsive width */}
+        <Sheet open={showAI} onOpenChange={setShowAI}>
+          <SheetContent side="right" className="w-full sm:w-[420px] p-0">
+            <SheetHeader className="sr-only">
+              <SheetTitle>AI writing assistant</SheetTitle>
+              <SheetDescription>
+                Generate and apply writing assistance for the current post.
+              </SheetDescription>
+            </SheetHeader>
+            {showAI && (
+              <Suspense
+                fallback={
+                  <div className="p-6 text-sm text-muted-foreground">
+                    Loading AI assistant…
+                  </div>
+                }
+              >
+                <AIAssistant
+                  markdown={markdown}
+                  frontMatter={frontMatter}
+                  siteId={Number(siteId)}
+                  onInsert={handleAIInsert}
+                  onFrontMatterUpdate={handleFrontMatterChange}
+                  onCreateSnapshot={handleCreateSnapshot}
+                />
+              </Suspense>
+            )}
+          </SheetContent>
+        </Sheet>
 
-      {/* Repurposing Modal */}
-      {currentPostId && (
-        <RepurposingModal
-          open={showRepurposing}
-          onOpenChange={setShowRepurposing}
+        {/* Repurposing Modal */}
+        {currentPostId && (
+          <RepurposingModal
+            open={showRepurposing}
+            onOpenChange={setShowRepurposing}
+            postId={currentPostId}
+            siteId={Number(siteId)}
+            postTitle={String(frontMatter.title || "Untitled")}
+          />
+        )}
+
+        {/* Publish Dialog - Responsive */}
+        <PublishDialog
+          open={showPublish}
+          onOpenChange={setShowPublish}
+          site={site}
+          markdown={markdown}
+          frontMatter={frontMatter}
+          currentSha={currentSha}
+          postPath={selectedFile}
           postId={currentPostId}
           siteId={Number(siteId)}
-          postTitle={String(frontMatter.title || "Untitled")}
+          beforePublish={() => saveQueue.current.catch(() => {})}
+          onPublished={(sha, path) => {
+            loadedSelection.current = `${siteId}:${path}`;
+            setCurrentSha(sha);
+            setSelectedFile(path);
+            setIsDirty(false);
+            refetchPosts();
+          }}
         />
-      )}
 
-      {/* Publish Dialog - Responsive */}
-      <PublishDialog
-        open={showPublish}
-        onOpenChange={setShowPublish}
-        site={site}
-        markdown={markdown}
-        frontMatter={frontMatter}
-        currentSha={currentSha}
-        postPath={selectedFile}
-        postId={currentPostId}
-        siteId={Number(siteId)}
-        onPublished={(sha, path) => {
-          setCurrentSha(sha);
-          setSelectedFile(path);
-          setIsDirty(false);
-          refetchPosts();
-        }}
-      />
-
-      {/* Snapshots Dialog */}
-      <Dialog open={showSnapshots} onOpenChange={setShowSnapshots}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <RotateCcw className="w-4 h-4" />
-              Revision Snapshots
-            </DialogTitle>
-          </DialogHeader>
-          <SnapshotManager
-            siteId={Number(siteId)}
-            postPath={selectedFile || ""}
-            onRestore={(md, fm) => {
-              setMarkdown(md);
-              setFrontMatter(fm);
-              setIsDirty(true);
-              setShowSnapshots(false);
-              toast.success("Snapshot restored");
-            }}
-          />
-        </DialogContent>
-      </Dialog>
+        {/* Snapshots Dialog */}
+        <Dialog open={showSnapshots} onOpenChange={setShowSnapshots}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <RotateCcw className="w-4 h-4" />
+                Revision Snapshots
+              </DialogTitle>
+            </DialogHeader>
+            <SnapshotManager
+              siteId={Number(siteId)}
+              postPath={selectedFile || ""}
+              onRestore={(md, fm) => {
+                setMarkdown(md);
+                setFrontMatter(fm);
+                setIsDirty(true);
+                setShowSnapshots(false);
+                toast.success("Snapshot restored");
+              }}
+            />
+          </DialogContent>
+        </Dialog>
+      </div>
     </div>
   );
 }

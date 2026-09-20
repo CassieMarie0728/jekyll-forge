@@ -37,6 +37,29 @@ describe("post upsert site ownership", () => {
 
     await expect(createCaller().upsert(postInput)).resolves.toEqual({ id: 15 });
     expect(mocks.getSiteById).toHaveBeenCalledWith(9, 7);
-    expect(mocks.upsertPost).toHaveBeenCalledWith({ ...postInput, userId: 7 });
+    expect(mocks.upsertPost).toHaveBeenCalledWith({
+      ...postInput,
+      userId: 7,
+      autosaveContent: null,
+      autosaveFrontMatter: null,
+      lastAutosaveAt: null,
+    });
+  });
+});
+
+it("clears stale autosaves when published content is recorded", async () => {
+  await createCaller().update({
+    id: 15,
+    markdown: "Published body",
+    frontMatter: { title: "Final title" },
+    status: "published",
+  });
+  expect(mocks.updatePost).toHaveBeenCalledWith(15, 7, {
+    markdown: "Published body",
+    frontMatter: { title: "Final title" },
+    status: "published",
+    autosaveContent: null,
+    autosaveFrontMatter: null,
+    lastAutosaveAt: null,
   });
 });
