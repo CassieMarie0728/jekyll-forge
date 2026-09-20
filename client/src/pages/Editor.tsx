@@ -203,6 +203,8 @@ export default function Editor() {
   const [currentPostId, setCurrentPostId] = useState<number | null>(null);
   const [currentSha, setCurrentSha] = useState<string | undefined>();
   const [showAI, setShowAI] = useState(false);
+  const [showMobilePosts, setShowMobilePosts] = useState(false);
+  const [showMobileDetails, setShowMobileDetails] = useState(false);
   const [showPublish, setShowPublish] = useState(false);
   const [showSnapshots, setShowSnapshots] = useState(false);
   const [showRepurposing, setShowRepurposing] = useState(false);
@@ -302,6 +304,16 @@ export default function Editor() {
     selectionKey,
   ]);
 
+  useEffect(() => {
+    if (!isDirty) return;
+    const warnBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warnBeforeUnload);
+    return () => window.removeEventListener("beforeunload", warnBeforeUnload);
+  }, [isDirty]);
+
   // Autosave the current working draft to Forge storage.
   useEffect(() => {
     if (!isDirty || !currentPostId) return;
@@ -351,6 +363,11 @@ export default function Editor() {
   }, [site, selectedFile, currentSha, isDirty]);
 
   const handleNewPost = () => {
+    if (
+      isDirty &&
+      !window.confirm("You have unsaved changes. Start a new post anyway?")
+    )
+      return;
     loadedSelection.current = null;
     setSelectedFile("new");
     setMarkdown("");
@@ -365,6 +382,12 @@ export default function Editor() {
     setCurrentPostId(null);
     setIsDirty(false);
   };
+
+  useEffect(() => {
+    const startNew = () => handleNewPost();
+    window.addEventListener("forge:new-post", startNew);
+    return () => window.removeEventListener("forge:new-post", startNew);
+  }, [isDirty]);
 
   const handleReloadFromRemote = async () => {
     if (selectedFile && selectedFile !== "new") {
@@ -560,6 +583,7 @@ export default function Editor() {
               variant="ghost"
               size="icon"
               className="h-6 w-6"
+              aria-label="Start a new post"
               onClick={handleNewPost}
             >
               <Plus className="w-3.5 h-3.5" />
@@ -586,7 +610,12 @@ export default function Editor() {
             variant="ghost"
             size="icon"
             className="h-7 w-7"
-            onClick={() => setShowFileBrowser(!showFileBrowser)}
+            aria-label="Toggle post browser"
+            onClick={() =>
+              window.matchMedia("(max-width: 767px)").matches
+                ? setShowMobilePosts(true)
+                : setShowFileBrowser(!showFileBrowser)
+            }
           >
             <Layers className="w-3.5 h-3.5" />
           </Button>
@@ -719,6 +748,7 @@ export default function Editor() {
             variant="outline"
             size="sm"
             className="h-7 text-xs gap-1 flex-shrink-0"
+            aria-label="Save post"
             onClick={handleSaveLocal}
           >
             <Save className="w-3 h-3" />
@@ -726,6 +756,7 @@ export default function Editor() {
           </Button>
           <Button
             size="sm"
+            aria-label="Publish post"
             className="h-7 text-xs gap-1 flex-shrink-0"
             onClick={() => {
               if (!selectedFile && !currentPostId) {
@@ -737,11 +768,45 @@ export default function Editor() {
               );
             }}
           >
-            <Send className="w-3 h-3" />
+            <Send className="w-3 h-3" aria-hidden="true" />
             <span className="hidden sm:inline">Publish</span>
           </Button>
         </div>
 
+        <div
+          className="flex md:hidden flex-wrap gap-1 px-2 py-1 border-b border-border"
+          aria-label="Mobile editor tools"
+        >
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setShowMobileDetails(true)}
+          >
+            Post details
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setMode(mode === "visual" ? "markdown" : "visual")}
+          >
+            {mode === "visual" ? "Write" : "Preview"}
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => setShowAI(true)}>
+            AI
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setShowSnapshots(true)}
+          >
+            Snapshots
+          </Button>
+          {isDirty && (
+            <span className="text-xs text-muted-foreground self-center">
+              Unsaved changes
+            </span>
+          )}
+        </div>
         {/* Editor Content - Responsive */}
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
           {/* Front Matter Panel - Hidden on mobile, shown on tablet+ */}
@@ -796,6 +861,59 @@ export default function Editor() {
         </div>
       </div>
 
+      <Sheet open={showMobileDetails} onOpenChange={setShowMobileDetails}>
+        <SheetContent
+          side="right"
+          className="w-full sm:max-w-md overflow-y-auto"
+        >
+          <SheetHeader>
+            <SheetTitle>Post details</SheetTitle>
+            <SheetDescription>
+              Edit the title, date, tags, and publishing fields.
+            </SheetDescription>
+          </SheetHeader>
+          <FrontMatterEditor
+            frontMatter={frontMatter}
+            onChange={handleFrontMatterChange}
+            siteId={Number(siteId)}
+          />
+        </SheetContent>
+      </Sheet>
+      <Sheet open={showMobilePosts} onOpenChange={setShowMobilePosts}>
+        <SheetContent
+          side="left"
+          className="w-full sm:max-w-sm overflow-y-auto"
+        >
+          <SheetHeader>
+            <SheetTitle>Posts</SheetTitle>
+            <SheetDescription>
+              Open a saved draft or repository post.
+            </SheetDescription>
+          </SheetHeader>
+          <Button
+            variant="outline"
+            onClick={() => {
+              handleNewPost();
+              setShowMobilePosts(false);
+            }}
+          >
+            New post
+          </Button>
+          <FileBrowser
+            siteId={Number(siteId)}
+            site={site}
+            onSelectFile={async path => {
+              await handleSelectFile(path);
+              setShowMobilePosts(false);
+            }}
+            selectedFile={selectedFile}
+            posts={(posts || []).map(p => ({
+              ...p,
+              status: p.status ?? "new",
+            }))}
+          />
+        </SheetContent>
+      </Sheet>
       {/* AI Assistant Sheet - Responsive width */}
       <Sheet open={showAI} onOpenChange={setShowAI}>
         <SheetContent side="right" className="w-full sm:w-[420px] p-0">

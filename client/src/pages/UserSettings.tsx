@@ -98,15 +98,23 @@ export default function UserSettings() {
       <div className="max-w-6xl mx-auto px-6 py-8">
         <Tabs defaultValue="profile" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3 lg:w-auto">
-            <TabsTrigger value="profile" className="gap-2">
+            <TabsTrigger value="profile" aria-label="Profile" className="gap-2">
               <User className="w-4 h-4" />
               <span className="hidden sm:inline">Profile</span>
             </TabsTrigger>
-            <TabsTrigger value="accounts" className="gap-2">
+            <TabsTrigger
+              value="accounts"
+              aria-label="Connected Accounts"
+              className="gap-2"
+            >
               <Github className="w-4 h-4" />
               <span className="hidden sm:inline">Connected Accounts</span>
             </TabsTrigger>
-            <TabsTrigger value="security" className="gap-2">
+            <TabsTrigger
+              value="security"
+              aria-label="Security"
+              className="gap-2"
+            >
               <Lock className="w-4 h-4" />
               <span className="hidden sm:inline">Security</span>
             </TabsTrigger>

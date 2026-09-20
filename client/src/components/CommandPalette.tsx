@@ -1,7 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -46,7 +51,7 @@ export default function CommandPalette({
 }: Props) {
   const [query, setQuery] = useState("");
   const [selectedIdx, setSelectedIdx] = useState(0);
-  const [, navigate] = useLocation();
+  const [location, navigate] = useLocation();
 
   const { data: sites } = trpc.sites.list.useQuery();
 
@@ -89,7 +94,12 @@ export default function CommandPalette({
             label: "New Post",
             icon: Plus,
             category: "Editor",
-            action: () => go(`/editor/${activeSiteId}`),
+            action: () => {
+              if (location.startsWith(`/editor/${activeSiteId}`)) {
+                window.dispatchEvent(new Event("forge:new-post"));
+                onOpenChange(false);
+              } else go(`/editor/${activeSiteId}`);
+            },
             badge: "New",
           },
           {
@@ -204,6 +214,10 @@ export default function CommandPalette({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="p-0 gap-0 max-w-xl overflow-hidden">
+        <DialogTitle className="sr-only">Command palette</DialogTitle>
+        <DialogDescription className="sr-only">
+          Search pages and workspaces. Use arrow keys and Enter to choose.
+        </DialogDescription>
         {/* Search Input */}
         <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
           <Search className="w-4 h-4 text-muted-foreground flex-shrink-0" />

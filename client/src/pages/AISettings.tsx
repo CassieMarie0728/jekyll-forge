@@ -1,5 +1,5 @@
 import { WRITING_TONES, toneLabel } from "@shared/writingTones";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import {
   CheckCircle2,
@@ -46,7 +45,6 @@ export default function AISettings() {
   const [tone, setTone] = useState("professional");
   const [language, setLanguage] = useState("en");
   const [systemPrompt, setSystemPrompt] = useState("");
-  const [autoSnapshot, setAutoSnapshot] = useState(true);
   const [testPrompt, setTestPrompt] = useState(
     "Write a one-sentence blog post introduction about Jekyll."
   );
@@ -60,13 +58,21 @@ export default function AISettings() {
   const { data: providerSettings, isLoading: providersLoading } =
     trpc.aiProviders.getSettings.useQuery();
   const { data: aiSettings } = trpc.ai.getSettings.useQuery();
+  const providerSelectionInitialized = useRef(false);
+  useEffect(() => {
+    if (!providerSettings || providerSelectionInitialized.current) return;
+    providerSelectionInitialized.current = true;
+    setSelectedProvider(
+      (providerSettings.find(item => item.enabled)?.provider as ProviderId) ||
+        "openrouter"
+    );
+  }, [providerSettings]);
 
   useEffect(() => {
     if (!aiSettings) return;
     setTone(aiSettings.defaultTone || "professional");
     setLanguage(aiSettings.defaultLanguage || "en");
     setSystemPrompt(aiSettings.systemPrompt || "");
-    setAutoSnapshot(true);
   }, [aiSettings]);
 
   const selectedProviderDetails = useMemo(
@@ -134,7 +140,7 @@ export default function AISettings() {
     updateAiSettings.mutate({
       enabled: true,
       temperature: 70,
-      systemPrompt: systemPrompt || undefined,
+      systemPrompt,
       defaultLanguage: language,
       defaultTone: tone as (typeof WRITING_TONES)[number],
     });
@@ -236,6 +242,7 @@ export default function AISettings() {
                       key={provider.provider}
                       type="button"
                       onClick={() => {
+                        providerSelectionInitialized.current = true;
                         setSelectedProvider(provider.provider as ProviderId);
                         setApiKey("");
                         setAcknowledgeFreeTier(false);
@@ -402,9 +409,9 @@ export default function AISettings() {
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label>Default writing tone</Label>
+              <Label htmlFor="default-tone">Default writing tone</Label>
               <Select value={tone} onValueChange={setTone}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger id="default-tone"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {WRITING_TONES.map(item => (
                     <SelectItem key={item} value={item} >{toneLabel(item)}</SelectItem>
@@ -439,7 +446,7 @@ export default function AISettings() {
               <Label>Auto-snapshot before AI rewrites</Label>
               <p className="text-xs text-muted-foreground mt-1">Creates a safety snapshot before a rewrite operation.</p>
             </div>
-            <Switch checked={autoSnapshot} onCheckedChange={setAutoSnapshot} />
+            <Badge variant="secondary">Always on</Badge>
           </div>
           <Button variant="outline" onClick={saveDefaultBehavior} disabled={updateAiSettings.isPending}>
             Save writing behavior

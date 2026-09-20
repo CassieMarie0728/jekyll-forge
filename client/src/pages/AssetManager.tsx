@@ -1,5 +1,5 @@
 import { optimizeUpload, readBase64 } from "@/lib/optimizeUpload";
-import { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import { useParams } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -103,8 +103,20 @@ export default function AssetManager() {
       toast.success("Removed from library; GitHub file preserved");
     },
   });
+  const updateAsset = trpc.assets.update.useMutation({
+    onSuccess: () => {
+      refetch();
+      toast.success("Alt text saved");
+    },
+    onError: error => toast.error(error.message),
+  });
   const generateAltText = trpc.assets.generateAltText.useMutation({
-    onSuccess: data => {
+    onSuccess: (data, variables) => {
+      setSelectedAsset(current =>
+        current?.id === variables.assetId
+          ? { ...current, alt: data.altText }
+          : current
+      );
       toast.success(`Alt text generated: "${data.altText}"`);
       refetch();
     },
@@ -517,6 +529,7 @@ export default function AssetManager() {
                           alt: e.target.value,
                         })
                       }
+                      aria-label="Image alt text"
                       placeholder="Describe this image..."
                       className="h-7 text-xs flex-1"
                     />
@@ -539,6 +552,26 @@ export default function AssetManager() {
                       AI
                     </Button>
                   </div>
+                  <Button
+                    className="mt-2"
+                    size="sm"
+                    variant="outline"
+                    disabled={
+                      updateAsset.isPending || generateAltText.isPending
+                    }
+                    onClick={() =>
+                      updateAsset.mutate({
+                        id: selectedAsset.id,
+                        alt: selectedAsset.alt || "",
+                      })
+                    }
+                  >
+                    Save alt text
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    AI suggestions use the filename, not image recognition.
+                    Review the description before using it.
+                  </p>
                 </div>
                 <div>
                   <Label className="text-xs text-muted-foreground mb-1 block">

@@ -77,7 +77,7 @@ export default function Scheduler() {
   const history = scheduled?.filter(s => s.status !== "pending") || [];
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
         <div>
           <h1 className="font-display font-bold text-2xl">Scheduler</h1>
           <p className="text-sm text-muted-foreground mt-0.5">

@@ -107,7 +107,9 @@ describe("editor markdown utilities", () => {
       screen.getByPlaceholderText("Start writing your post in Markdown...")
     ).toBeInTheDocument();
     expect(screen.getByText("Front matter")).toBeInTheDocument();
-    expect(screen.getByText("Preview")).toBeInTheDocument();
+    expect(
+      screen.getByText("Preview", { selector: "div" })
+    ).toBeInTheDocument();
   });
 
   it("formats the current heading line without inserting descriptions or stacking markers", async () => {
@@ -152,12 +154,42 @@ describe("editor markdown utilities", () => {
     await waitFor(() => expect(body.selectionStart).toBe(2));
   });
 
+  it("opens mobile post details without replacing the draft", () => {
+    render(<Editor />);
+    const body = screen.getByPlaceholderText(
+      "Start writing your post in Markdown..."
+    );
+    fireEvent.change(body, { target: { value: "Keep this draft" } });
+    fireEvent.click(
+      screen.getByRole("button", { name: "Post details" })
+    );
+    expect(
+      screen.getByRole("dialog", { name: "Post details" })
+    ).toBeInTheDocument();
+    expect(body).toHaveValue("Keep this draft");
+  });
+
+  it("honors cancellation when New Post would replace unsaved work", () => {
+    render(<Editor />);
+    const body = screen.getByPlaceholderText(
+      "Start writing your post in Markdown..."
+    );
+    fireEvent.change(body, { target: { value: "Do not lose this" } });
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);
+    fireEvent(window, new Event("forge:new-post"));
+    expect(confirm).toHaveBeenCalled();
+    expect(body).toHaveValue("Do not lose this");
+    confirm.mockRestore();
+  });
+
   it("loads the AI assistant only after the editor AI control is opened", async () => {
     render(<Editor />);
 
     expect(screen.queryByText("AI Assistant loaded")).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "AI" }));
+    fireEvent.click(
+      screen.getAllByRole("button", { name: "AI" })[0]
+    );
 
     await waitFor(() => {
       expect(screen.getByText("AI Assistant loaded")).toBeInTheDocument();

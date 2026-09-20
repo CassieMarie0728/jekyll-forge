@@ -131,13 +131,23 @@ export default function ThemeManager() {
     { id: Number(siteId) },
     { enabled: !!siteId }
   );
-  const { data: config } = trpc.github.getJekyllConfig.useQuery(
+  const {
+    data: config,
+    isLoading: configLoading,
+    error: configError,
+  } = trpc.github.getJekyllConfig.useQuery(
     { owner: site?.owner || "", repo: site?.repo || "" },
     { enabled: !!site }
   );
 
   const currentTheme =
-    ((config as Record<string, unknown>)?.theme as string) || "minima";
+    ((config as Record<string, unknown>)?.remote_theme as string) ||
+    ((config as Record<string, unknown>)?.theme as string) ||
+    (configLoading
+      ? "Loading…"
+      : configError
+        ? "Unavailable"
+        : "Not configured");
   const currentPlugins =
     ((config as Record<string, unknown>)?.plugins as string[]) || [];
 
@@ -212,7 +222,7 @@ export default function ThemeManager() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
         <div>
           <h1 className="font-display font-bold text-2xl">Themes & Plugins</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
@@ -346,7 +356,9 @@ export default function ThemeManager() {
                     size="sm"
                     className="h-7 text-xs flex-1 gap-1"
                     onClick={() => handleApply(theme.name, "theme")}
-                    disabled={currentTheme === theme.name}
+                    disabled={
+                      !config || !!configError || currentTheme === theme.name
+                    }
                   >
                     {currentTheme === theme.name ? (
                       <>

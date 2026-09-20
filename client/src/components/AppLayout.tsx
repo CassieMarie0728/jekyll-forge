@@ -94,7 +94,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated, loading, logout } = useAuth({
     redirectOnUnauthenticated: true,
   });
-  const { activeSite } = useWorkspace();
+  const { activeSite, setActiveSite } = useWorkspace();
   const { theme, toggleTheme } = useTheme();
 
   const { data: githubStatus } = trpc.github.status.useQuery(undefined, {
@@ -104,8 +104,24 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     enabled: isAuthenticated,
   });
 
+  const routeSiteId = location.match(
+    /^\/(?:dashboard|editor|assets|scheduler|themes|health|ai-settings|social-analytics)\/(\d+)(?:\/|$)/
+  )?.[1];
   const siteId =
-    activeSite?.id?.toString() || sites?.[0]?.id?.toString() || "0";
+    routeSiteId ||
+    activeSite?.id?.toString() ||
+    sites?.[0]?.id?.toString() ||
+    "0";
+  const currentSite =
+    sites?.find(site => String(site.id) === siteId) ||
+    (String(activeSite?.id) === siteId ? activeSite : null);
+  useEffect(() => {
+    if (currentSite && currentSite.id !== activeSite?.id)
+      setActiveSite(currentSite);
+  }, [currentSite, activeSite?.id, setActiveSite]);
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location]);
 
   // Cmd+K command palette
   useEffect(() => {
@@ -365,8 +381,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </button>
 
           {/* New Post Button */}
-          {activeSite && (
-            <Link href={`/editor/${activeSite.id}`}>
+          {currentSite && (
+            <Link
+              href={`/editor/${siteId}`}
+              onClick={event => {
+                if (location.startsWith(`/editor/${siteId}`)) {
+                  event.preventDefault();
+                  window.dispatchEvent(new Event("forge:new-post"));
+                }
+              }}
+            >
               <Button size="sm" className="h-7 text-xs gap-1">
                 <Plus className="w-3 h-3" />
                 New Post
@@ -381,7 +405,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <CommandPalette
         open={cmdOpen}
         onOpenChange={setCmdOpen}
-        activeSiteId={activeSite?.id}
+        activeSiteId={Number(siteId) || undefined}
       />
     </div>
   );

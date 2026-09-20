@@ -89,10 +89,10 @@ export default function Dashboard() {
   return (
     <div className="p-6 max-w-6xl mx-auto">
       {/* Site Header */}
-      <div className="flex items-start justify-between mb-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-8">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h1 className="font-display font-bold text-2xl">
+          <div className="flex flex-wrap items-center gap-2 mb-1">
+            <h1 className="font-display font-bold text-2xl break-all">
               {site.owner}/{site.repo}
             </h1>
             {site.isJekyll && (
@@ -129,6 +129,10 @@ export default function Dashboard() {
         </Link>
       </div>
 
+      <p className="text-xs text-muted-foreground mb-3">
+        Counts show content saved or uploaded through Forge, not a full
+        inventory of your GitHub repository.
+      </p>
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {[
