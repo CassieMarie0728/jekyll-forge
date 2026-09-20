@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { mergePostFiles } from "@/lib/savedPosts";
 import { trpc } from "@/lib/trpc";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -81,20 +82,23 @@ export default function FileBrowser({
       { enabled: !!site, retry: false }
     );
 
-  const allFiles = [
-    ...(Array.isArray(ghDrafts)
-      ? ghDrafts.map((f: { name: string; path: string; sha: string }) => ({
-          ...f,
-          folder: "_drafts",
-        }))
-      : []),
-    ...(Array.isArray(ghPosts)
-      ? ghPosts.map((f: { name: string; path: string; sha: string }) => ({
-          ...f,
-          folder: "_posts",
-        }))
-      : []),
-  ];
+  const allFiles = mergePostFiles(
+    [
+      ...(Array.isArray(ghDrafts)
+        ? ghDrafts.map((f: { name: string; path: string; sha: string }) => ({
+            ...f,
+            folder: "_drafts",
+          }))
+        : []),
+      ...(Array.isArray(ghPosts)
+        ? ghPosts.map((f: { name: string; path: string; sha: string }) => ({
+            ...f,
+            folder: "_posts",
+          }))
+        : []),
+    ],
+    posts
+  );
 
   const filtered = allFiles.filter(
     f => !search || f.name.toLowerCase().includes(search.toLowerCase())
@@ -176,7 +180,7 @@ export default function FileBrowser({
           </button>
           {showDrafts && (
             <div>
-              {draftsLoading ? (
+              {draftsLoading && drafts.length === 0 ? (
                 <div className="px-3 space-y-1">
                   {Array.from({ length: 3 }).map((_, i) => (
                     <Skeleton key={i} className="h-8 rounded" />
@@ -213,7 +217,7 @@ export default function FileBrowser({
           </button>
           {showPosts && (
             <div>
-              {postsLoading ? (
+              {postsLoading && publishedPosts.length === 0 ? (
                 <div className="px-3 space-y-1">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Skeleton key={i} className="h-8 rounded" />

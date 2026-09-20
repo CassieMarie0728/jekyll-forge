@@ -50,7 +50,13 @@ export const postsRouter = router({
       if (!site) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Site not found" });
       }
-      return upsertPost({ ...input, userId: ctx.user.id });
+      return upsertPost({
+        ...input,
+        userId: ctx.user.id,
+        autosaveContent: null,
+        autosaveFrontMatter: null,
+        lastAutosaveAt: null,
+      });
     }),
 
   update: protectedProcedure

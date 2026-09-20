@@ -8,11 +8,13 @@ import {
   wordCount,
 } from "@/lib/editorMarkdown";
 import Editor from "./Editor";
+import { useParams } from "wouter";
+import { trpc } from "@/lib/trpc";
 
 vi.mock("wouter", () => ({
   Link: ({ children }: { children: React.ReactNode }) => <a>{children}</a>,
   useLocation: () => ["/", vi.fn()],
-  useParams: () => ({ siteId: "1" }),
+  useParams: vi.fn(() => ({ siteId: "1" })),
 }));
 
 vi.mock("@/contexts/WorkspaceContext", () => ({
@@ -118,5 +120,42 @@ describe("editor markdown utilities", () => {
     await waitFor(() => {
       expect(screen.getByText("AI Assistant loaded")).toBeInTheDocument();
     });
+  });
+});
+
+describe("saved Forge drafts", () => {
+  it("restores a database draft without requesting a nonexistent GitHub file and preserves typing on refetch", async () => {
+    vi.mocked(useParams).mockReturnValue({
+      siteId: "1",
+      postPath: "_drafts/smoke.md",
+    });
+    const draft = {
+      id: 5,
+      path: "_drafts/smoke.md",
+      markdown: "Saved draft body",
+      frontMatter: { title: "Smoke test" },
+      sha: null,
+    };
+    vi.mocked(trpc.posts.list.useQuery).mockReturnValue({
+      data: [draft],
+      isSuccess: true,
+      refetch: vi.fn(),
+    } as any);
+    const view = render(<Editor />);
+    const body = screen.getByPlaceholderText(
+      "Start writing your post in Markdown..."
+    );
+    await waitFor(() => expect(body).toHaveValue("Saved draft body"));
+    expect(
+      vi.mocked(trpc.github.getFile.useQuery).mock.lastCall?.[1]
+    ).toMatchObject({ enabled: false });
+    fireEvent.change(body, { target: { value: "Still typing" } });
+    vi.mocked(trpc.posts.list.useQuery).mockReturnValue({
+      data: [{ ...draft }],
+      isSuccess: true,
+      refetch: vi.fn(),
+    } as any);
+    view.rerender(<Editor />);
+    expect(body).toHaveValue("Still typing");
   });
 });

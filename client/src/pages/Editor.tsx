@@ -102,6 +102,8 @@ import FileBrowser from "@/components/FileBrowser";
 import { RepurposingModal } from "@/components/RepurposingModal";
 import { Link } from "wouter";
 
+import { restoreSavedPost } from "@/lib/savedPosts";
+
 const AIAssistant = lazy(() => import("@/components/AIAssistant"));
 
 type EditorMode = "visual" | "markdown" | "split";
@@ -211,10 +213,22 @@ export default function Editor() {
     { id: Number(siteId) },
     { enabled: !!siteId }
   );
-  const { data: posts, refetch: refetchPosts } = trpc.posts.list.useQuery(
+  const {
+    data: posts,
+    refetch: refetchPosts,
+    isSuccess: postsLoaded,
+  } = trpc.posts.list.useQuery(
     { siteId: Number(siteId) },
     { enabled: !!siteId }
   );
+
+  const savedPost = posts?.find(
+    post =>
+      post.path === selectedFile ||
+      encodeURIComponent(post.path) === selectedFile
+  );
+  const loadedSelection = useRef<string | null>(null);
+  const selectionKey = `${siteId}:${selectedFile}`;
 
   const upsertPost = trpc.posts.upsert.useMutation();
   const autosaveMutation = trpc.posts.autosave.useMutation();
@@ -227,7 +241,12 @@ export default function Editor() {
       branch: site?.selectedBranch || "main",
     },
     {
-      enabled: !!site && !!selectedFile && selectedFile !== "new",
+      enabled:
+        !!site &&
+        postsLoaded &&
+        !savedPost &&
+        !!selectedFile &&
+        selectedFile !== "new",
       refetchOnWindowFocus: false,
     }
   );
@@ -237,19 +256,41 @@ export default function Editor() {
       setActiveSite(site as Parameters<typeof setActiveSite>[0]);
   }, [site, activeSite, setActiveSite]);
 
-  // Load file from GitHub
+  // Hydrate once per selection, so background refreshes cannot erase edits.
   useEffect(() => {
-    if (getFileMutation.data && selectedFile) {
-      const raw = getFileMutation.data.decodedContent || "";
-      const { frontMatter: fm, markdown: md } = parseMarkdownFrontMatter(raw);
-      setFrontMatter(fm);
-      setMarkdown(md);
+    if (
+      !selectedFile ||
+      selectedFile === "new" ||
+      !postsLoaded ||
+      loadedSelection.current === selectionKey
+    )
+      return;
+    if (savedPost) {
+      const restored = restoreSavedPost(savedPost);
+      setFrontMatter(restored.frontMatter);
+      setMarkdown(restored.markdown);
+      setCurrentPostId(savedPost.id);
+      setCurrentSha(savedPost.sha || undefined);
+    } else if (getFileMutation.data) {
+      const parsed = parseMarkdownFrontMatter(
+        getFileMutation.data.decodedContent || ""
+      );
+      setFrontMatter(parsed.frontMatter);
+      setMarkdown(parsed.markdown);
       setCurrentSha(getFileMutation.data.sha);
-      setIsDirty(false);
-    }
-  }, [getFileMutation.data, selectedFile]);
+      setCurrentPostId(null);
+    } else return;
+    loadedSelection.current = selectionKey;
+    setIsDirty(false);
+  }, [
+    savedPost,
+    getFileMutation.data,
+    selectedFile,
+    postsLoaded,
+    selectionKey,
+  ]);
 
-  // Autosave to IndexedDB (simulated via server autosave)
+  // Autosave the current working draft to Forge storage.
   useEffect(() => {
     if (!isDirty || !currentPostId) return;
     if (autosaveTimer) clearTimeout(autosaveTimer);
@@ -298,6 +339,7 @@ export default function Editor() {
   }, [site, selectedFile, currentSha, isDirty]);
 
   const handleNewPost = () => {
+    loadedSelection.current = null;
     setSelectedFile("new");
     setMarkdown("");
     setFrontMatter({
@@ -314,7 +356,15 @@ export default function Editor() {
 
   const handleReloadFromRemote = async () => {
     if (selectedFile && selectedFile !== "new") {
-      await getFileMutation.refetch();
+      const result = await getFileMutation.refetch();
+      if (!result.data || result.error) {
+        toast.error("Could not reload from GitHub");
+        return;
+      }
+      const parsed = parseMarkdownFrontMatter(result.data.decodedContent || "");
+      setFrontMatter(parsed.frontMatter);
+      setMarkdown(parsed.markdown);
+      setCurrentSha(result.data.sha);
       setHasConflict(false);
       setIsDirty(false);
       toast.success("Reloaded from remote");
@@ -322,14 +372,27 @@ export default function Editor() {
   };
 
   const handleSelectFile = async (path: string) => {
+    if (path === selectedFile) return;
     if (isDirty) {
       const ok = confirm("You have unsaved changes. Load this file anyway?");
       if (!ok) return;
     }
+    loadedSelection.current = null;
+    setCurrentPostId(null);
+    setCurrentSha(undefined);
+    setIsDirty(false);
     setSelectedFile(path);
   };
 
   const handleSaveLocal = async () => {
+    if (
+      selectedFile &&
+      selectedFile !== "new" &&
+      loadedSelection.current !== selectionKey
+    ) {
+      toast.error("Wait for this post to finish loading before saving.");
+      return;
+    }
     const title = String(frontMatter.title || "").trim() || "Untitled Post";
     const slug = title
       .toLowerCase()
@@ -338,7 +401,7 @@ export default function Editor() {
     const filename = `${format(new Date(), "yyyy-MM-dd")}-${slug}.md`;
     const path =
       selectedFile && selectedFile !== "new"
-        ? selectedFile
+        ? savedPost?.path || selectedFile
         : `_drafts/${filename}`;
 
     try {
@@ -353,10 +416,12 @@ export default function Editor() {
         markdown,
         sha: currentSha,
       });
+      loadedSelection.current = `${siteId}:${path}`;
+      setSelectedFile(path);
       setCurrentPostId(id);
       setIsDirty(false);
-      toast.success("Saved locally");
-      refetchPosts();
+      toast.success("Draft saved in Forge");
+      await refetchPosts();
     } catch (err) {
       toast.error("Failed to save");
     }
