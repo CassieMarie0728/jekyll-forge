@@ -43,7 +43,10 @@ export default function RepoPicker() {
   const { setActiveSite } = useWorkspace();
 
   const [search, setSearch] = useState("");
-  const [showConnect, setShowConnect] = useState(false);
+  const [showConnect, setShowConnect] = useState(
+    () =>
+      new URLSearchParams(window.location.search).get("connection") === "github"
+  );
   const [token, setToken] = useState("");
   const [connecting, setConnecting] = useState(false);
   const [detectingRepo, setDetectingRepo] = useState<string | null>(null);
@@ -64,12 +67,15 @@ export default function RepoPicker() {
   );
 
   const connectMutation = trpc.github.connect.useMutation({
-    onSuccess: data => {
+    onSuccess: async data => {
       toast.success(`Connected as @${data.login}`);
       setShowConnect(false);
       setToken("");
-      refetchStatus();
-      refetchRepos();
+      await Promise.all([
+        utils.github.invalidate(),
+        utils.auth.me.invalidate(),
+      ]);
+      navigate("/repos", { replace: true });
     },
     onError: err => toast.error(err.message),
   });
@@ -82,7 +88,10 @@ export default function RepoPicker() {
     setConnecting(true);
     try {
       await connectMutation.mutateAsync({ token: token.trim() });
+    } catch {
+      // The mutation displays the safe server error; retain the current connection.
     } finally {
+      setToken("");
       setConnecting(false);
     }
   };
@@ -154,7 +163,7 @@ export default function RepoPicker() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="border-b border-border bg-card/30">
-        <div className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-6 py-5 flex flex-wrap gap-4 items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
               <Zap className="w-4 h-4 text-primary-foreground" />
@@ -167,7 +176,7 @@ export default function RepoPicker() {
             </div>
           </div>
           {githubStatus?.connected && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
               <Github className="w-4 h-4" />
               <span>@{githubStatus.login}</span>
               <Badge
@@ -176,6 +185,13 @@ export default function RepoPicker() {
               >
                 Connected
               </Badge>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowConnect(true)}
+              >
+                Change GitHub token
+              </Button>
             </div>
           )}
         </div>
@@ -356,17 +372,32 @@ export default function RepoPicker() {
       </div>
 
       {/* GitHub Connect Dialog */}
-      <Dialog open={showConnect} onOpenChange={setShowConnect}>
+      <Dialog
+        open={showConnect}
+        onOpenChange={open => {
+          if (connecting) return;
+          setShowConnect(open);
+          if (!open) {
+            setToken("");
+            navigate("/repos", { replace: true });
+          }
+        }}
+      >
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Github className="w-5 h-5" />
-              Connect GitHub
+              {githubStatus?.connected
+                ? "Change GitHub token"
+                : "Connect GitHub"}
             </DialogTitle>
             <DialogDescription>
-              Create a Personal Access Token with{" "}
-              <code className="bg-muted px-1 rounded text-xs">repo</code> scope
-              and paste it below.
+              {githubStatus?.connected
+                ? "Replace the token used to access your repositories. Your current token stays active until GitHub accepts the replacement."
+                : "Add a GitHub Personal Access Token to access your repositories."}{" "}
+              This does not change your Jekyll Forge sign-in account. Saved
+              sites and drafts stay in place; repository access follows the new
+              token.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-2">
@@ -374,30 +405,50 @@ export default function RepoPicker() {
               <p className="font-medium text-foreground">
                 How to create a token:
               </p>
-              <p>1. Go to GitHub → Settings → Developer settings</p>
-              <p>2. Personal access tokens → Tokens (classic)</p>
               <p>
-                3. Generate new token with <strong>repo</strong> scope
+                Choose a fine-grained token for the repositories you want to
+                manage.
               </p>
-              <p>4. Copy and paste it below</p>
+              <p>
+                Give it Contents read and write access to save and publish
+                posts.
+              </p>
+              <p>
+                If you only changed access on your existing token, close this
+                dialog and refresh the repository list.
+              </p>
             </div>
             <div>
-              <Label className="text-xs mb-1.5 block">
+              <Label
+                htmlFor="github-access-token"
+                className="text-xs mb-1.5 block"
+              >
                 Personal Access Token
               </Label>
               <Input
+                id="github-access-token"
                 type="password"
-                placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+                autoComplete="off"
+                spellCheck={false}
+                disabled={connecting}
+                placeholder="Paste your new GitHub token"
                 value={token}
                 onChange={e => setToken(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && handleConnect()}
+                onKeyDown={e =>
+                  e.key === "Enter" && !connecting && handleConnect()
+                }
                 className="font-mono text-sm"
               />
             </div>
             <div className="flex gap-2">
               <Button
                 variant="outline"
-                onClick={() => setShowConnect(false)}
+                disabled={connecting}
+                onClick={() => {
+                  setShowConnect(false);
+                  setToken("");
+                  navigate("/repos", { replace: true });
+                }}
                 className="flex-1"
               >
                 Cancel
@@ -412,11 +463,15 @@ export default function RepoPicker() {
                 ) : (
                   <Github className="w-4 h-4" />
                 )}
-                Connect
+                {connecting
+                  ? "Checking token..."
+                  : githubStatus?.connected
+                    ? "Replace token"
+                    : "Connect"}
               </Button>
             </div>
             <a
-              href="https://github.com/settings/tokens/new"
+              href="https://github.com/settings/personal-access-tokens/new"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1 text-xs text-primary hover:underline"

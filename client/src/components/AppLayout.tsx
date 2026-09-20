@@ -71,6 +71,11 @@ const NAV_ITEMS = [
 
 const BOTTOM_NAV = [
   {
+    icon: Settings,
+    label: "GitHub connection",
+    href: (_id: string) => "/repos?connection=github",
+  },
+  {
     icon: Wand2,
     label: "AI Settings",
     href: (id: string) => `/ai-settings/${id}`,
