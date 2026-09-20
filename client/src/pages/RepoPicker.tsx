@@ -54,12 +54,52 @@ export default function RepoPicker() {
   const { data: githubStatus, refetch: refetchStatus } =
     trpc.github.status.useQuery(undefined, { enabled: isAuthenticated });
   const {
-    data: repos,
+    data: repoPages,
     isLoading: reposLoading,
     refetch: refetchRepos,
-  } = trpc.github.listRepos.useQuery(
-    { search: search || undefined },
-    { enabled: !!githubStatus?.connected, refetchOnWindowFocus: false }
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isFetchNextPageError,
+    error: reposError,
+  } = trpc.github.repositories.useInfiniteQuery(
+    {},
+    {
+      enabled: !!githubStatus?.connected,
+      refetchOnWindowFocus: false,
+      getNextPageParam: lastPage => lastPage.nextCursor,
+    }
+  );
+  useEffect(() => {
+    if (
+      githubStatus?.connected &&
+      hasNextPage &&
+      !isFetchingNextPage &&
+      !reposError
+    ) {
+      void fetchNextPage();
+    }
+  }, [
+    githubStatus?.connected,
+    hasNextPage,
+    isFetchingNextPage,
+    reposError,
+    fetchNextPage,
+  ]);
+  const allRepos = Array.from(
+    new Map(
+      (repoPages?.pages.flatMap(page => page.items) ?? []).map(repo => [
+        repo.id,
+        repo,
+      ])
+    ).values()
+  );
+  const query = search.trim().toLowerCase();
+  const repos = allRepos.filter(
+    repo =>
+      !query ||
+      repo.full_name.toLowerCase().includes(query) ||
+      repo.description?.toLowerCase().includes(query)
   );
   const { data: savedSites, refetch: refetchSites } = trpc.sites.list.useQuery(
     undefined,
@@ -295,6 +335,33 @@ export default function RepoPicker() {
               />
             </div>
 
+            {reposError && (
+              <div
+                role="alert"
+                className="mb-4 rounded-lg border border-destructive/40 p-3 text-sm"
+              >
+                <p>{reposError.message}</p>
+                <p>
+                  The repository list is incomplete. Retry loading before
+                  changing permissions.
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    isFetchNextPageError ? fetchNextPage() : refetchRepos()
+                  }
+                >
+                  Retry loading repositories
+                </Button>
+              </div>
+            )}
+            {hasNextPage && !reposError && (
+              <p role="status" className="mb-4 text-sm text-muted-foreground">
+                Loading all repositories… {allRepos.length} loaded. Search
+                results update as they arrive.
+              </p>
+            )}
             {reposLoading ? (
               <div className="space-y-2">
                 {Array.from({ length: 6 }).map((_, i) => (
@@ -359,7 +426,7 @@ export default function RepoPicker() {
                     </button>
                   )
                 )}
-                {repos?.length === 0 && (
+                {repos.length === 0 && !hasNextPage && !reposError && (
                   <div className="text-center py-12 text-muted-foreground">
                     <Search className="w-8 h-8 mx-auto mb-3 opacity-40" />
                     <p className="text-sm">No repositories found</p>

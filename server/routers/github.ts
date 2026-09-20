@@ -141,6 +141,20 @@ export const githubRouter = router({
     };
   }),
 
+  // Cursor pages let the picker search every accessible repository without
+  // collecting an unbounded number of GitHub requests in one Worker invocation.
+  repositories: protectedProcedure
+    .input(z.object({ cursor: z.number().int().min(1).nullish() }))
+    .query(async ({ ctx, input }) => {
+      const token = await getGitHubToken(ctx.user.id, ctx.user.openId);
+      const page = input.cursor ?? 1;
+      const items = await ghFetch<GitHubRepo[]>(
+        token,
+        `/user/repos?sort=full_name&direction=asc&per_page=100&page=${page}&affiliation=owner,collaborator,organization_member`
+      );
+      return { items, nextCursor: items.length === 100 ? page + 1 : undefined };
+    }),
+
   listRepos: protectedProcedure
     .input(
       z.object({
