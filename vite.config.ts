@@ -1,9 +1,53 @@
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import path from "node:path";
+import { readFileSync } from "node:fs";
 import { defineConfig } from "vite";
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    {
+      name: "forge-public-welcome",
+      generateBundle() {
+        for (const file of ["index.html", "forge.css", "favicon.svg"]) {
+          this.emitFile({
+            type: "asset",
+            fileName: `welcome/${file}`,
+            source: readFileSync(
+              path.resolve(import.meta.dirname, "landing", file)
+            ),
+          });
+        }
+      },
+      configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+          const pathname = req.url?.split("?")[0];
+          const file =
+            pathname === "/welcome/" || pathname === "/welcome"
+              ? "index.html"
+              : pathname?.replace(/^\/welcome\//, "");
+          if (
+            !pathname?.startsWith("/welcome") ||
+            !file ||
+            !["index.html", "forge.css", "favicon.svg"].includes(file)
+          )
+            return next();
+          res.setHeader(
+            "Content-Type",
+            file.endsWith("css")
+              ? "text/css"
+              : file.endsWith("svg")
+                ? "image/svg+xml"
+                : "text/html; charset=utf-8"
+          );
+          res.end(
+            readFileSync(path.resolve(import.meta.dirname, "landing", file))
+          );
+        });
+      },
+    },
+  ],
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client/src"),
