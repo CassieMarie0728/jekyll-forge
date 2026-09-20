@@ -38,7 +38,7 @@ function Router() {
           )}
         />
         <Route
-          path="/editor/:siteId/:postPath*"
+          path={/^\/editor\/(?<siteId>[^/]+)\/(?<postPath>.+)$/}
           component={() => (
             <AppLayout>
               <Editor />

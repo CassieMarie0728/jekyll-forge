@@ -196,7 +196,7 @@ export default function Editor() {
   const [showRepurposing, setShowRepurposing] = useState(false);
   const [showFileBrowser, setShowFileBrowser] = useState(true);
   const [selectedFile, setSelectedFile] = useState<string | null>(
-    postPath || null
+    postPath ? decodeURIComponent(postPath) : null
   );
   const [isLoadingFile, setIsLoadingFile] = useState(false);
   const [autosaveTimer, setAutosaveTimer] = useState<ReturnType<
