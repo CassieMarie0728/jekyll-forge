@@ -1,8 +1,23 @@
 # Independent hosting: Cloudflare Workers + D1
 
-This migration is prepared for review. It is **not deployed**. The old Manus
-app and all existing GitHub content are untouched. The database starts empty.
-The landing page continues to show a migration notice until a live app URL is verified.
+The Cloudflare app was deployed on September 20, 2026 at
+https://jekyll-forge.c728.workers.dev. Version:
+`793f4077-2f05-4203-b32d-4938475a731a`.
+The old Manus app and existing GitHub content are untouched. A fresh dedicated
+D1 database has all three migrations applied. The owner supplied dashboard
+usage evidence consistent with Workers Free; no paid plan was enabled.
+
+Live HTTP checks passed for the homepage (200), health API (200), GitHub OAuth
+start (302 to GitHub with the configured callback and a Secure state cookie),
+and unauthenticated asset protection (401). Python's default HTTP client was
+rejected by Cloudflare's edge with error 1010; Node fetch passed these checks.
+Full browser sign-in, repository writes, image uploads, AI generation, and
+scheduled publication still require acceptance testing. The landing page
+continues to show a migration notice pending that acceptance.
+
+Production secrets are stored in Cloudflare; encrypted recovery copies are
+kept outside Git under the operator's Windows account. Secret values are never
+included in this document.
 
 ## Local development
 
@@ -29,8 +44,8 @@ the configured origin. `/api/oauth/start` returns 503 until login is configured.
 
 ## Production setup
 
-1. Reconnect the Cloudflare CLI with `pnpm exec wrangler login`. The previously
-   available CLI login was expired when this migration was prepared.
+1. Connect the Cloudflare CLI with `pnpm exec wrangler login`. The project account
+   was reconnected on September 20, 2026.
 2. Verify the chosen account uses **Workers Free**, including its current usage.
    Do not enable Workers Paid, R2, or paid AI fallbacks. Free quotas are finite;
    live CPU consumption still needs measurement on the deployed application.
