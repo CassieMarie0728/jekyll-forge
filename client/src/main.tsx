@@ -8,6 +8,9 @@ import App from "./App";
 import { getLoginUrl } from "./const";
 import "./index.css";
 
+import { applyDisplayMode, getDisplayMode } from "./lib/displayMode";
+
+applyDisplayMode(getDisplayMode());
 const queryClient = new QueryClient();
 
 const redirectToLoginIfUnauthorized = (error: unknown) => {

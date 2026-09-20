@@ -30,7 +30,10 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+import { useDisplayMode } from "@/lib/displayMode";
+
 export default function UserSettings() {
+  const [displayMode, setDisplayMode] = useDisplayMode();
   const { user, isAuthenticated } = useAuth();
   const [showConnectionFlow, setShowConnectionFlow] = useState(false);
 
@@ -111,6 +114,42 @@ export default function UserSettings() {
 
           {/* Profile Tab */}
           <TabsContent value="profile" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Display layout</CardTitle>
+                <CardDescription>
+                  Choose how Forge fits this browser. Your choice is remembered
+                  on this device.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div
+                  className="flex flex-wrap gap-2"
+                  role="group"
+                  aria-label="Display layout"
+                >
+                  <Button
+                    variant={displayMode === "auto" ? "default" : "outline"}
+                    aria-pressed={displayMode === "auto"}
+                    onClick={() => setDisplayMode("auto")}
+                  >
+                    Automatic / mobile
+                  </Button>
+                  <Button
+                    variant={displayMode === "desktop" ? "default" : "outline"}
+                    aria-pressed={displayMode === "desktop"}
+                    onClick={() => setDisplayMode("desktop")}
+                  >
+                    Desktop layout
+                  </Button>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Desktop layout shows the full workspace on phones with smaller
+                  text. Pinch to zoom. Switch back to Automatic / mobile here or
+                  from your user menu.
+                </p>
+              </CardContent>
+            </Card>
             <Card>
               <CardHeader>
                 <CardTitle>Profile Information</CardTitle>

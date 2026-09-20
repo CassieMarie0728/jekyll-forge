@@ -48,6 +48,8 @@ import { cn } from "@/lib/utils";
 import { useTheme } from "@/contexts/ThemeContext";
 import { toast } from "sonner";
 
+import { useDisplayMode } from "@/lib/displayMode";
+
 const NAV_ITEMS = [
   {
     icon: LayoutDashboard,
@@ -70,6 +72,7 @@ const NAV_ITEMS = [
 ];
 
 const BOTTOM_NAV = [
+  { icon: User, label: "Settings", href: (_id: string) => "/settings" },
   {
     icon: Settings,
     label: "GitHub connection",
@@ -83,6 +86,7 @@ const BOTTOM_NAV = [
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
+  const [displayMode, setDisplayMode] = useDisplayMode();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
@@ -266,6 +270,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem
+              onClick={() =>
+                setDisplayMode(displayMode === "desktop" ? "auto" : "desktop")
+              }
+            >
+              {displayMode === "desktop"
+                ? "Use automatic / mobile layout"
+                : "Use desktop layout"}
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={toggleTheme}>
               {theme === "dark" ? (
                 <Sun className="w-4 h-4 mr-2" />
