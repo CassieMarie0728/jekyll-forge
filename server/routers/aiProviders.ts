@@ -12,34 +12,56 @@ import {
   SUPPORTED_AI_PROVIDERS,
   assertFreeModelAllowed,
   encryptProviderApiKey,
-  freeAiProviderRateLimiter,
   testProviderApiKey,
 } from "../ai/freeProvider";
+import { readLimit } from "../_core/limits";
 
 const providerSchema = z.enum(SUPPORTED_AI_PROVIDERS);
 
-function toPublicProviderSettings(
+async function toPublicProviderSettings(
   userId: number,
   configured: Awaited<ReturnType<typeof getUserAiProviders>>
 ) {
-  return SUPPORTED_AI_PROVIDERS.map(provider => {
-    const saved = configured.find(item => item.provider === provider);
-    const catalog = PROVIDER_CATALOG[provider];
-    return {
-      provider,
-      label: catalog.label,
-      available: catalog.available,
-      setupUrl: catalog.setupUrl,
-      disclosure: catalog.disclosure,
-      models: catalog.models,
-      configured: Boolean(saved),
-      enabled: saved?.enabled ?? false,
-      selectedModel: saved?.selectedModel ?? null,
-      updatedAt: saved?.updatedAt ?? null,
-      rateLimit: catalog.rateLimit,
-      usage: freeAiProviderRateLimiter.getStatus(userId, provider),
-    };
-  });
+  return Promise.all(
+    SUPPORTED_AI_PROVIDERS.map(async provider => {
+      const saved = configured.find(item => item.provider === provider);
+      const catalog = PROVIDER_CATALOG[provider];
+      const minute = catalog.rateLimit
+        ? await readLimit(
+            `ai-minute:${userId}:${provider}`,
+            catalog.rateLimit.requestsPerMinute,
+            60
+          )
+        : null;
+      const day = catalog.rateLimit
+        ? await readLimit(
+            `ai-day:${userId}:${provider}`,
+            catalog.rateLimit.requestsPerDay,
+            86400
+          )
+        : null;
+      return {
+        provider,
+        label: catalog.label,
+        available: catalog.available,
+        setupUrl: catalog.setupUrl,
+        disclosure: catalog.disclosure,
+        models: catalog.models,
+        configured: Boolean(saved),
+        enabled: saved?.enabled ?? false,
+        selectedModel: saved?.selectedModel ?? null,
+        updatedAt: saved?.updatedAt ?? null,
+        rateLimit: catalog.rateLimit,
+        usage: {
+          provider,
+          minuteRemaining: minute?.remaining ?? null,
+          dailyRemaining: day?.remaining ?? null,
+          minuteResetAt: minute?.resetAt ?? null,
+          dailyResetAt: day?.resetAt ?? null,
+        },
+      };
+    })
+  );
 }
 
 export const aiProvidersRouter = router({
@@ -54,6 +76,7 @@ export const aiProvidersRouter = router({
         provider: providerSchema,
         model: z.string().min(1).max(160),
         apiKey: z.string().trim().min(8).max(1024),
+        // Retain the wire name for existing clients; acknowledges the displayed account billing policy.
         acknowledgeFreeTier: z.literal(true),
       })
     )

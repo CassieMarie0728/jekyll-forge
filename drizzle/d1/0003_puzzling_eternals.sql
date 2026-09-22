@@ -1,0 +1,1 @@
+ALTER TABLE `ai_settings` ADD `defaultTone` text DEFAULT 'professional';

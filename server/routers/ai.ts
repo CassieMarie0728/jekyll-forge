@@ -1,3 +1,7 @@
+import {
+  WRITING_TONES,
+  writingToneInstructions,
+} from "../../shared/writingTones";
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import { getAiSettings, upsertAiSettings } from "../db";
@@ -48,8 +52,8 @@ const AI_TASK_PROMPTS: Record<string, string> = {
 };
 
 export const aiRouter = router({
-  getSettings: protectedProcedure.query(({ ctx }) =>
-    getAiSettings(ctx.user.id)
+  getSettings: protectedProcedure.query(
+    async ({ ctx }) => (await getAiSettings(ctx.user.id)) ?? null
   ),
 
   updateSettings: protectedProcedure
@@ -63,6 +67,7 @@ export const aiRouter = router({
         safetyPrompt: z.string().optional(),
         streaming: z.boolean().optional(),
         defaultLanguage: z.string().optional(),
+        defaultTone: z.enum(WRITING_TONES).optional(),
         budgetLimitCents: z.number().optional().nullable(),
       })
     )
@@ -101,7 +106,9 @@ export const aiRouter = router({
         "You are a professional blog writing assistant specializing in Jekyll and static site content.";
       if (settings?.brandVoicePrompt)
         systemPrompt += `\n\nBrand voice: ${settings.brandVoicePrompt}`;
-      if (input.tone) systemPrompt += `\n\nTone: ${input.tone}`;
+      systemPrompt += `\n\n${writingToneInstructions(input.tone || settings?.defaultTone || "professional")}`;
+
+      systemPrompt += `\n\nWrite human-readable content in ${settings?.defaultLanguage || "English"}. Preserve required JSON keys, code, URLs, front-matter field names, and the requested output structure. An explicit translation target in the request takes precedence.`;
 
       // Build user message
       const parts: string[] = [taskPrompt];

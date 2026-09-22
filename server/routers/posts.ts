@@ -50,13 +50,20 @@ export const postsRouter = router({
       if (!site) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Site not found" });
       }
-      return upsertPost({ ...input, userId: ctx.user.id });
+      return upsertPost({
+        ...input,
+        userId: ctx.user.id,
+        autosaveContent: null,
+        autosaveFrontMatter: null,
+        lastAutosaveAt: null,
+      });
     }),
 
   update: protectedProcedure
     .input(
       z.object({
         id: z.number(),
+        path: z.string().optional(),
         title: z.string().optional(),
         slug: z.string().optional(),
         status: z
@@ -77,7 +84,16 @@ export const postsRouter = router({
     )
     .mutation(({ ctx, input }) => {
       const { id, ...data } = input;
-      return updatePost(id, ctx.user.id, data);
+      return updatePost(id, ctx.user.id, {
+        ...data,
+        ...(data.markdown !== undefined
+          ? {
+              autosaveContent: null,
+              autosaveFrontMatter: null,
+              lastAutosaveAt: null,
+            }
+          : {}),
+      });
     }),
 
   delete: protectedProcedure

@@ -78,38 +78,14 @@ describe("asset re-optimization ownership", () => {
     expect(mocks.createAsset).not.toHaveBeenCalled();
   });
 
-  it("fetches only the caller-owned persisted storage URL", async () => {
-    mocks.getAssetById.mockResolvedValueOnce({
-      id: 42,
-      userId: 7,
-      siteId: 9,
-      storageUrl: "https://storage.example.test/owned-image.png",
-    });
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      arrayBuffer: async () => new Uint8Array([1, 2, 3]).buffer,
-    });
+  it("preserves existing GitHub images and directs optimization to a new upload", async () => {
+    mocks.getAssetById.mockResolvedValueOnce({ id: 42, userId: 7, siteId: 9 });
+    const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
-    mocks.optimizeImage.mockResolvedValueOnce({
-      data: Buffer.from("optimized"),
-      mimeType: "image/webp",
-      size: 9,
-      width: 100,
-      height: 80,
-    });
-    mocks.storagePut.mockResolvedValueOnce({
-      url: "/manus-storage/optimized.webp",
-    });
-
-    await createCaller().reoptimize({ id: 42, outputFormat: "webp" });
-
-    expect(fetchMock).toHaveBeenCalledWith(
-      "https://storage.example.test/owned-image.png"
-    );
-    expect(mocks.storagePut).toHaveBeenCalledWith(
-      expect.stringMatching(/^assets\/7\/9\//),
-      expect.any(Buffer),
-      "image/webp"
-    );
+    await expect(
+      createCaller().reoptimize({ id: 42, outputFormat: "webp" })
+    ).rejects.toThrow("Existing GitHub images are preserved");
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(mocks.updateAsset).not.toHaveBeenCalled();
   });
 });

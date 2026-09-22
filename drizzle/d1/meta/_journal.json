@@ -1,0 +1,34 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1789877001286,
+      "tag": "0000_massive_silver_sable",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1789877736413,
+      "tag": "0001_wonderful_blob",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1789878678628,
+      "tag": "0002_friendly_thaddeus_ross",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1789886760827,
+      "tag": "0003_puzzling_eternals",
+      "breakpoints": true
+    }
+  ]
+}

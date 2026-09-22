@@ -132,7 +132,7 @@ export default function SiteHealth() {
             : "fail",
       detail:
         postsWithoutDesc.length === 0
-          ? "All posts have descriptions"
+          ? "All tracked posts have descriptions"
           : `${postsWithoutDesc.length} posts missing description`,
       icon: Search,
     },
@@ -146,7 +146,7 @@ export default function SiteHealth() {
             : "fail",
       detail:
         assetsWithoutAlt.length === 0
-          ? "All images have alt text"
+          ? "All tracked images have alt text"
           : `${assetsWithoutAlt.length} images missing alt text`,
       icon: Accessibility,
     },
@@ -173,7 +173,7 @@ export default function SiteHealth() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
         <div>
           <h1 className="font-display font-bold text-2xl">Site Health</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
@@ -194,11 +194,15 @@ export default function SiteHealth() {
         )}
       </div>
 
+      <p className="text-xs text-muted-foreground mb-4">
+        These checks cover Forge-tracked content and GitHub configuration. They
+        are not a live-site SEO or accessibility audit.
+      </p>
       {/* Score Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {[
           {
-            label: "SEO Score",
+            label: "Setup checks",
             value: seoScore,
             unit: "%",
             color:

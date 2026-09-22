@@ -1,3 +1,5 @@
+import { getRuntimeEnv } from "../_core/runtime";
+import { consumeLimit } from "../_core/limits";
 import { TRPCError } from "@trpc/server";
 import {
   createCipheriv,
@@ -84,12 +86,15 @@ export const PROVIDER_CATALOG: Record<
   mistral: {
     id: "mistral",
     label: "Mistral",
-    available: false,
+    available: true,
     setupUrl: "https://console.mistral.ai/api-keys/",
     disclosure:
-      "Mistral is not enabled yet. Its public documentation describes included free usage that can extend into pay-as-you-go, but does not currently identify a compatible permanently no-cost text endpoint for Jekyll Forge's strict policy.",
-    models: [],
-    rateLimit: null,
+      "Optional: use your own Mistral key. Free mode includes limited usage; accounts with paid billing can incur charges. Your Mistral account controls billing. Forge never switches providers automatically.",
+    models: [
+      { id: "mistral-small-latest", label: "Mistral Small" },
+      { id: "mistral-large-latest", label: "Mistral Large" },
+    ],
+    rateLimit: { requestsPerMinute: 5, requestsPerDay: 100 },
   },
 };
 
@@ -120,7 +125,7 @@ export function assertFreeModelAllowed(
   if (!catalog.available) {
     throw new TRPCError({
       code: "BAD_REQUEST",
-      message: `${catalog.label} is temporarily unavailable under the strict free-only policy.`,
+      message: `${catalog.label} is temporarily unavailable for AI requests.`,
     });
   }
 
@@ -131,7 +136,7 @@ export function assertFreeModelAllowed(
   if (!allowed) {
     throw new TRPCError({
       code: "BAD_REQUEST",
-      message: "That model is not approved for Jekyll Forge's free-only AI policy.",
+      message: "That model is not supported by Jekyll Forge for this provider.",
     });
   }
   return { provider, model };
@@ -139,7 +144,7 @@ export function assertFreeModelAllowed(
 
 // prettier-ignore
 function getEncryptionKey(): Buffer {
-  const secret = process.env.JWT_SECRET;
+  const secret = getRuntimeEnv().JWT_SECRET;
   if (!secret) {
     throw new Error("JWT_SECRET is required to encrypt user-owned AI provider keys.");
   }
@@ -336,12 +341,18 @@ export async function testProviderApiKey(
   if (!PROVIDER_CATALOG[provider].available) {
     throw new TRPCError({
       code: "BAD_REQUEST",
-      message: `${PROVIDER_CATALOG[provider].label} is not available under the strict free-only policy.`,
+      message: `${PROVIDER_CATALOG[provider].label} is not available for AI requests.`,
     });
   }
 
   if (provider === "openrouter") {
     await providerFetch(provider, "https://openrouter.ai/api/v1/key", {
+      headers: { Authorization: `Bearer ${apiKey}` },
+    });
+    return;
+  }
+  if (provider === "mistral") {
+    await providerFetch(provider, "https://api.mistral.ai/v1/models", {
       headers: { Authorization: `Bearer ${apiKey}` },
     });
     return;
@@ -407,7 +418,7 @@ export async function invokeUserOwnedFreeAi(input: {
   if (!configured || !configured.enabled) {
     throw new TRPCError({
       code: "PRECONDITION_FAILED",
-      message: "Configure and enable a free AI provider in AI Settings before using AI tools.",
+      message: "Configure and enable an AI provider in AI Settings before using AI tools.",
     });
   }
 
@@ -415,7 +426,11 @@ export async function invokeUserOwnedFreeAi(input: {
     configured.provider,
     configured.selectedModel
   );
-  freeAiProviderRateLimiter.consume(input.userId, provider);
+  const limits = PROVIDER_CATALOG[provider].rateLimit;
+  if (limits && (!await consumeLimit(`ai-minute:${input.userId}:${provider}`, limits.requestsPerMinute, 60) ||
+      !await consumeLimit(`ai-day:${input.userId}:${provider}`, limits.requestsPerDay, 86400))) {
+    throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "Jekyll Forge AI request limit reached. Try again after the limit resets." });
+  }
   const apiKey = decryptProviderApiKey(configured.encryptedApiKey);
   const maxTokens = Math.min(
     Math.max(input.maxOutputTokens ?? FREE_AI_MAX_OUTPUT_TOKENS, 64),
@@ -453,7 +468,9 @@ export async function invokeUserOwnedFreeAi(input: {
     const url =
       provider === "openrouter"
         ? "https://openrouter.ai/api/v1/chat/completions"
-        : "https://api.groq.com/openai/v1/chat/completions";
+        : provider === "mistral"
+          ? "https://api.mistral.ai/v1/chat/completions"
+          : "https://api.groq.com/openai/v1/chat/completions";
     const response = await providerFetch(provider, url, {
       method: "POST",
       headers: {

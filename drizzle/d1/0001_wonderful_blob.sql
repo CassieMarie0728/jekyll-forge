@@ -1,0 +1,24 @@
+CREATE INDEX `ab_test_results_user` ON `ab_test_results` (`userId`);--> statement-breakpoint
+CREATE INDEX `ab_test_summary_user` ON `ab_test_summary` (`userId`);--> statement-breakpoint
+CREATE INDEX `ai_settings_user` ON `ai_settings` (`userId`);--> statement-breakpoint
+CREATE INDEX `assets_user` ON `assets` (`userId`);--> statement-breakpoint
+CREATE INDEX `assets_site_user` ON `assets` (`siteId`,`userId`);--> statement-breakpoint
+CREATE INDEX `content_analytics_user` ON `content_analytics` (`userId`);--> statement-breakpoint
+CREATE INDEX `content_variations_user` ON `content_variations` (`userId`);--> statement-breakpoint
+CREATE INDEX `front_matter_templates_user` ON `front_matter_templates` (`userId`);--> statement-breakpoint
+CREATE INDEX `mobile_auth_codes_user` ON `mobile_auth_codes` (`userId`);--> statement-breakpoint
+CREATE INDEX `mobile_auth_codes_expiry` ON `mobile_auth_codes` (`expiresAt`);--> statement-breakpoint
+CREATE INDEX `mobile_device_tokens_user` ON `mobile_device_tokens` (`userId`);--> statement-breakpoint
+CREATE INDEX `posts_user` ON `posts` (`userId`);--> statement-breakpoint
+CREATE INDEX `posts_site_user` ON `posts` (`siteId`,`userId`);--> statement-breakpoint
+CREATE INDEX `repurposed_content_user` ON `repurposed_content` (`userId`);--> statement-breakpoint
+CREATE INDEX `repurposed_content_site_user` ON `repurposed_content` (`siteId`,`userId`);--> statement-breakpoint
+CREATE INDEX `reusable_blocks_user` ON `reusable_blocks` (`userId`);--> statement-breakpoint
+CREATE INDEX `scheduled_posts_user` ON `scheduled_posts` (`userId`);--> statement-breakpoint
+CREATE INDEX `scheduled_posts_due` ON `scheduled_posts` (`status`,`scheduledAt`);--> statement-breakpoint
+CREATE INDEX `scheduled_social_posts_user` ON `scheduled_social_posts` (`userId`);--> statement-breakpoint
+CREATE INDEX `scheduled_social_posts_due` ON `scheduled_social_posts` (`status`,`scheduledAt`);--> statement-breakpoint
+CREATE INDEX `sites_user` ON `sites` (`userId`);--> statement-breakpoint
+CREATE INDEX `snapshots_user` ON `snapshots` (`userId`);--> statement-breakpoint
+CREATE INDEX `snapshots_site_user` ON `snapshots` (`siteId`,`userId`);--> statement-breakpoint
+CREATE INDEX `social_media_accounts_user` ON `social_media_accounts` (`userId`);

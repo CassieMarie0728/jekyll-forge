@@ -1,6 +1,7 @@
+import { getRuntimeEnv } from "./_core/runtime";
 import { eq, and, desc, asc, lt, inArray, gt, isNull } from "drizzle-orm";
 import { createHash } from "crypto";
-import { drizzle } from "drizzle-orm/mysql2";
+import { drizzle } from "drizzle-orm/d1";
 import {
   InsertUser,
   users,
@@ -46,18 +47,9 @@ import {
   UserAiProvider,
 } from "../drizzle/schema";
 
-let _db: ReturnType<typeof drizzle> | null = null;
-
 export async function getDb() {
-  if (!_db && process.env.DATABASE_URL) {
-    try {
-      _db = drizzle(process.env.DATABASE_URL);
-    } catch (error) {
-      console.warn("[Database] Failed to connect:", error);
-      _db = null;
-    }
-  }
-  return _db;
+  const env = getRuntimeEnv();
+  return drizzle(env.DB);
 }
 
 const hashMobileAuthCode = (code: string) =>
@@ -106,7 +98,7 @@ export async function consumeMobileAuthCode(code: string) {
       and(eq(mobileAuthCodes.id, record.id), isNull(mobileAuthCodes.usedAt))
     );
 
-  if (updateResult[0]?.affectedRows !== 1) return null;
+  if (updateResult.meta.changes !== 1) return null;
 
   const usersFound = await database
     .select()
@@ -167,7 +159,7 @@ export async function createRepurposedContent(
   const db = await getDb();
   if (!db) throw new Error("DB not available");
   const result = await db.insert(repurposedContent).values(data);
-  return result[0].insertId as number;
+  return Number(result.meta.last_row_id);
 }
 
 export async function getRepurposedContentByPostId(
@@ -264,7 +256,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
   await db
     .insert(users)
     .values(values)
-    .onDuplicateKeyUpdate({ set: updateSet });
+    .onConflictDoUpdate({ target: users.openId, set: updateSet });
 }
 
 export async function getUserByOpenId(openId: string) {
@@ -327,7 +319,7 @@ export async function upsertSite(data: InsertSite): Promise<number> {
   const result = await db
     .insert(sites)
     .values({ ...data, lastAccessedAt: new Date() });
-  return Number((result as unknown as { insertId: number }).insertId);
+  return Number(result.meta.last_row_id);
 }
 
 export async function updateSite(
@@ -404,7 +396,7 @@ export async function upsertPost(data: InsertPost): Promise<number> {
     return existing[0].id;
   }
   const result = await db.insert(posts).values(data);
-  return Number((result as unknown as { insertId: number }).insertId);
+  return Number(result.meta.last_row_id);
 }
 
 export async function updatePost(
@@ -449,7 +441,7 @@ export async function createSnapshot(data: InsertSnapshot): Promise<number> {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
   const result = await db.insert(snapshots).values(data);
-  return Number((result as unknown as { insertId: number }).insertId);
+  return Number(result.meta.last_row_id);
 }
 
 export async function getSnapshotsByPost(
@@ -510,7 +502,7 @@ export async function createAsset(data: InsertAsset): Promise<number> {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
   const result = await db.insert(assets).values(data);
-  return Number((result as unknown as { insertId: number }).insertId);
+  return Number(result.meta.last_row_id);
 }
 
 export async function updateAsset(
@@ -571,7 +563,10 @@ export async function upsertAiSettings(data: InsertAiSetting): Promise<void> {
   const db = await getDb();
   if (!db) return;
   const { userId, ...rest } = data;
-  await db.insert(aiSettings).values(data).onDuplicateKeyUpdate({ set: rest });
+  await db
+    .insert(aiSettings)
+    .values(data)
+    .onConflictDoUpdate({ target: aiSettings.userId, set: rest });
 }
 
 export async function incrementAiUsage(
@@ -635,7 +630,8 @@ export async function upsertUserAiProvider(
   await db
     .insert(userAiProviders)
     .values(data)
-    .onDuplicateKeyUpdate({
+    .onConflictDoUpdate({
+      target: [userAiProviders.userId, userAiProviders.provider],
       set: { ...updateValues, updatedAt: new Date() },
     });
 }
@@ -716,7 +712,7 @@ export async function createScheduledPost(
   const db = await getDb();
   if (!db) throw new Error("DB not available");
   const result = await db.insert(scheduledPosts).values(data);
-  return Number((result as unknown as { insertId: number }).insertId);
+  return Number(result.meta.last_row_id);
 }
 
 export async function updateScheduledPost(
@@ -761,7 +757,7 @@ export async function createScheduledSocialPost(
   const db = await getDb();
   if (!db) throw new Error("DB not available");
   const result = await db.insert(scheduledSocialPosts).values(data);
-  return Number((result as unknown as { insertId: number }).insertId);
+  return Number(result.meta.last_row_id);
 }
 
 export async function getScheduledSocialPostById(
@@ -852,7 +848,7 @@ export async function createReusableBlock(
   const db = await getDb();
   if (!db) throw new Error("DB not available");
   const result = await db.insert(reusableBlocks).values(data);
-  return Number((result as unknown as { insertId: number }).insertId);
+  return Number(result.meta.last_row_id);
 }
 
 export async function updateReusableBlock(
@@ -925,7 +921,7 @@ export async function createSocialMediaAccount(
   const db = await getDb();
   if (!db) throw new Error("DB not available");
   const result = await db.insert(socialMediaAccounts).values(data);
-  return result[0].insertId as number;
+  return Number(result.meta.last_row_id);
 }
 
 export async function getSocialMediaAccountsByUserId(
@@ -1000,7 +996,7 @@ export async function createContentAnalytics(
   const db = await getDb();
   if (!db) throw new Error("DB not available");
   const result = await db.insert(contentAnalytics).values(data);
-  return result[0].insertId as number;
+  return Number(result.meta.last_row_id);
 }
 
 export async function getContentAnalyticsByRepurposedId(

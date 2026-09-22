@@ -38,7 +38,7 @@ const POPULAR_THEMES = [
     url: "https://github.com/jekyll/minima",
   },
   {
-    name: "minimal-mistakes",
+    name: "minimal-mistakes-jekyll",
     displayName: "Minimal Mistakes",
     desc: "A flexible two-column Jekyll theme",
     stars: "12.1k",
@@ -52,7 +52,7 @@ const POPULAR_THEMES = [
     url: "https://github.com/just-the-docs/just-the-docs",
   },
   {
-    name: "chirpy",
+    name: "jekyll-theme-chirpy",
     displayName: "Chirpy",
     desc: "A minimal, responsive, and feature-rich Jekyll theme for technical writing",
     stars: "6.5k",
@@ -131,13 +131,28 @@ export default function ThemeManager() {
     { id: Number(siteId) },
     { enabled: !!siteId }
   );
-  const { data: config } = trpc.github.getJekyllConfig.useQuery(
-    { owner: site?.owner || "", repo: site?.repo || "" },
+  const {
+    data: config,
+    isLoading: configLoading,
+    error: configError,
+  } = trpc.github.getJekyllConfig.useQuery(
+    {
+      owner: site?.owner || "",
+      repo: site?.repo || "",
+      rootPath: site?.rootPath || "",
+      branch: site?.selectedBranch || site?.defaultBranch || "main",
+    },
     { enabled: !!site }
   );
 
   const currentTheme =
-    ((config as Record<string, unknown>)?.theme as string) || "minima";
+    ((config as Record<string, unknown>)?.remote_theme as string) ||
+    ((config as Record<string, unknown>)?.theme as string) ||
+    (configLoading
+      ? "Loading…"
+      : configError
+        ? "Unavailable"
+        : "Not configured");
   const currentPlugins =
     ((config as Record<string, unknown>)?.plugins as string[]) || [];
 
@@ -169,6 +184,7 @@ export default function ThemeManager() {
       updateConfig.mutate({
         owner: site.owner,
         repo: site.repo,
+        rootPath: site.rootPath || "",
         branch,
         theme: selectedItem.name,
       });
@@ -178,6 +194,7 @@ export default function ThemeManager() {
         updateConfig.mutate({
           owner: site.owner,
           repo: site.repo,
+          rootPath: site.rootPath || "",
           branch,
           removePlugin: selectedItem.name,
         });
@@ -185,6 +202,7 @@ export default function ThemeManager() {
         updateConfig.mutate({
           owner: site.owner,
           repo: site.repo,
+          rootPath: site.rootPath || "",
           branch,
           addPlugin: selectedItem.name,
         });
@@ -212,11 +230,14 @@ export default function ThemeManager() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
         <div>
           <h1 className="font-display font-bold text-2xl">Themes & Plugins</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Manage your Jekyll theme and plugins
+            Manage your Jekyll theme and plugins. Configuration edits preserve
+            values but normalize YAML formatting and comments. Custom themes and
+            plugins may also require Gemfile dependencies or theme-specific
+            setup.
           </p>
         </div>
         <Button
@@ -346,7 +367,9 @@ export default function ThemeManager() {
                     size="sm"
                     className="h-7 text-xs flex-1 gap-1"
                     onClick={() => handleApply(theme.name, "theme")}
-                    disabled={currentTheme === theme.name}
+                    disabled={
+                      !config || !!configError || currentTheme === theme.name
+                    }
                   >
                     {currentTheme === theme.name ? (
                       <>

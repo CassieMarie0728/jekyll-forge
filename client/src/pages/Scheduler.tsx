@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 import { format, formatDistanceToNow } from "date-fns";
 
 const STATUS_CONFIG = {
+  processing: { color: "text-forge-amber", icon: Clock, label: "Publishing" },
   pending: {
     color: "text-forge-amber border-forge-amber/30 bg-forge-amber/10",
     icon: Clock,
@@ -74,13 +75,9 @@ export default function Scheduler() {
 
   const pending = scheduled?.filter(s => s.status === "pending") || [];
   const history = scheduled?.filter(s => s.status !== "pending") || [];
-  // Check if any pending posts have no heartbeat job (site not deployed)
-  const pendingWithoutCron = pending.filter(s => !s.scheduleCronTaskUid);
-  const hasDeployWarning = pendingWithoutCron.length > 0;
-
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
         <div>
           <h1 className="font-display font-bold text-2xl">Scheduler</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
@@ -128,30 +125,13 @@ export default function Scheduler() {
         ))}
       </div>
 
-      {/* Deploy warning */}
-      {hasDeployWarning && (
-        <Alert className="mb-4 border-forge-amber/40 bg-forge-amber/10">
-          <AlertCircle className="h-4 w-4 text-forge-amber" />
-          <AlertDescription className="text-sm">
-            <strong className="text-forge-amber">
-              {pendingWithoutCron.length} scheduled post
-              {pendingWithoutCron.length > 1 ? "s" : ""} need deployment to
-              activate.
-            </strong>{" "}
-            Heartbeat cron jobs require the site to be deployed (published)
-            before they can fire. Click <strong>Publish</strong> in the
-            top-right to deploy, then re-schedule these posts.
-          </AlertDescription>
-        </Alert>
-      )}
-
       {/* Heartbeat jobs summary */}
       {heartbeatJobs && heartbeatJobs.total > 0 && (
         <Card className="bg-card border-border mb-4">
           <CardContent className="pt-4">
             <div className="flex items-center gap-2 text-sm">
               <Zap className="w-4 h-4 text-primary" />
-              <span className="font-medium">Active Heartbeat Jobs</span>
+              <span className="font-medium">Scheduled publishing queue</span>
               <Badge variant="outline" className="text-xs ml-auto">
                 {heartbeatJobs.total}
               </Badge>
@@ -191,15 +171,11 @@ export default function Scheduler() {
             <div>
               <p className="font-medium mb-1">How Scheduling Works</p>
               <p className="text-muted-foreground text-xs">
-                When you schedule a post, it is saved to{" "}
-                <code className="bg-muted px-1 rounded">_drafts/</code> on
-                GitHub. At the scheduled time, the server automatically moves it
-                to <code className="bg-muted px-1 rounded">_posts/</code>
-                and commits it, triggering a GitHub Pages rebuild.
-                Timezone-aware scheduling ensures posts go live at the right
-                local time. You will receive a notification if publishing fails.{" "}
-                <strong>Note:</strong> The site must be deployed (published) for
-                cron jobs to activate.
+                A draft is committed to GitHub first. The deployed app checks
+                the queue every five minutes and commits due posts to the saved
+                branch. GitHub must then build and deploy your blog. Check the
+                queue for failures; a scheduled time is not a guarantee of an
+                exact live time.
               </p>
             </div>
           </div>

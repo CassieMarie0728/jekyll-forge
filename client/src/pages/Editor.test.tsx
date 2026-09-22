@@ -8,11 +8,13 @@ import {
   wordCount,
 } from "@/lib/editorMarkdown";
 import Editor from "./Editor";
+import { useParams } from "wouter";
+import { trpc } from "@/lib/trpc";
 
 vi.mock("wouter", () => ({
   Link: ({ children }: { children: React.ReactNode }) => <a>{children}</a>,
   useLocation: () => ["/", vi.fn()],
-  useParams: () => ({ siteId: "1" }),
+  useParams: vi.fn(() => ({ siteId: "1" })),
 }));
 
 vi.mock("@/contexts/WorkspaceContext", () => ({
@@ -21,6 +23,8 @@ vi.mock("@/contexts/WorkspaceContext", () => ({
 
 vi.mock("@/lib/trpc", () => ({
   trpc: {
+    auth: { me: { useQuery: () => ({ data: { id: 7 } }) } },
+    useUtils: () => ({ client: { github: { getFile: { query: vi.fn() } } } }),
     sites: {
       get: {
         useQuery: vi.fn(() => ({
@@ -104,7 +108,77 @@ describe("editor markdown utilities", () => {
       screen.getByPlaceholderText("Start writing your post in Markdown...")
     ).toBeInTheDocument();
     expect(screen.getByText("Front matter")).toBeInTheDocument();
-    expect(screen.getByText("Preview")).toBeInTheDocument();
+    expect(
+      screen.getByText("Preview", { selector: "div" })
+    ).toBeInTheDocument();
+  });
+
+  it("formats the current heading line without inserting descriptions or stacking markers", async () => {
+    render(<Editor />);
+    const body = screen.getByPlaceholderText(
+      "Start writing your post in Markdown..."
+    ) as HTMLTextAreaElement;
+    fireEvent.change(body, {
+      target: { value: "CHAPTER SEVEN\nTERMS OF PROTECTION" },
+    });
+    body.setSelectionRange(5, 5);
+    fireEvent.click(screen.getByTitle("H1"));
+    expect(body).toHaveValue("# CHAPTER SEVEN\nTERMS OF PROTECTION");
+    await waitFor(() => expect(body.selectionStart).toBe(15));
+    body.setSelectionRange(4, 4);
+    fireEvent.click(screen.getByTitle("H2"));
+    expect(body).toHaveValue("## CHAPTER SEVEN\nTERMS OF PROTECTION");
+  });
+
+  it("starts an empty heading without placeholder text", () => {
+    render(<Editor />);
+    fireEvent.click(screen.getByTitle("H3"));
+    expect(
+      screen.getByPlaceholderText("Start writing your post in Markdown...")
+    ).toHaveValue("### ");
+  });
+
+  it("preserves selected list content and places the caret inside empty bold markup", async () => {
+    render(<Editor />);
+    const body = screen.getByPlaceholderText(
+      "Start writing your post in Markdown..."
+    ) as HTMLTextAreaElement;
+    fireEvent.change(body, { target: { value: "First\nSecond" } });
+    body.setSelectionRange(0, body.value.length);
+    fireEvent.click(screen.getByTitle("List"));
+    expect(body).toHaveValue("- First\n- Second");
+    await waitFor(() => expect(body.selectionStart).toBe(body.value.length));
+    fireEvent.change(body, { target: { value: "" } });
+    body.setSelectionRange(0, 0);
+    fireEvent.click(screen.getByTitle("Bold"));
+    expect(body).toHaveValue("****");
+    await waitFor(() => expect(body.selectionStart).toBe(2));
+  });
+
+  it("opens mobile post details without replacing the draft", () => {
+    render(<Editor />);
+    const body = screen.getByPlaceholderText(
+      "Start writing your post in Markdown..."
+    );
+    fireEvent.change(body, { target: { value: "Keep this draft" } });
+    fireEvent.click(screen.getByRole("button", { name: "Post details" }));
+    expect(
+      screen.getByRole("dialog", { name: "Post details" })
+    ).toBeInTheDocument();
+    expect(body).toHaveValue("Keep this draft");
+  });
+
+  it("honors cancellation when New Post would replace unsaved work", () => {
+    render(<Editor />);
+    const body = screen.getByPlaceholderText(
+      "Start writing your post in Markdown..."
+    );
+    fireEvent.change(body, { target: { value: "Do not lose this" } });
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);
+    fireEvent(window, new Event("forge:new-post"));
+    expect(confirm).toHaveBeenCalled();
+    expect(body).toHaveValue("Do not lose this");
+    confirm.mockRestore();
   });
 
   it("loads the AI assistant only after the editor AI control is opened", async () => {
@@ -112,10 +186,47 @@ describe("editor markdown utilities", () => {
 
     expect(screen.queryByText("AI Assistant loaded")).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "AI" }));
+    fireEvent.click(screen.getAllByRole("button", { name: "AI" })[0]);
 
     await waitFor(() => {
       expect(screen.getByText("AI Assistant loaded")).toBeInTheDocument();
     });
+  });
+});
+
+describe("saved Forge drafts", () => {
+  it("restores a database draft without requesting a nonexistent GitHub file and preserves typing on refetch", async () => {
+    vi.mocked(useParams).mockReturnValue({
+      siteId: "1",
+      postPath: "_drafts/smoke.md",
+    });
+    const draft = {
+      id: 5,
+      path: "_drafts/smoke.md",
+      markdown: "Saved draft body",
+      frontMatter: { title: "Smoke test" },
+      sha: null,
+    };
+    vi.mocked(trpc.posts.list.useQuery).mockReturnValue({
+      data: [draft],
+      isSuccess: true,
+      refetch: vi.fn(),
+    } as any);
+    const view = render(<Editor />);
+    const body = screen.getByPlaceholderText(
+      "Start writing your post in Markdown..."
+    );
+    await waitFor(() => expect(body).toHaveValue("Saved draft body"));
+    expect(
+      vi.mocked(trpc.github.getFile.useQuery).mock.lastCall?.[1]
+    ).toMatchObject({ enabled: false });
+    fireEvent.change(body, { target: { value: "Still typing" } });
+    vi.mocked(trpc.posts.list.useQuery).mockReturnValue({
+      data: [{ ...draft }],
+      isSuccess: true,
+      refetch: vi.fn(),
+    } as any);
+    view.rerender(<Editor />);
+    expect(body).toHaveValue("Still typing");
   });
 });

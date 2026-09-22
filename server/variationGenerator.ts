@@ -3,7 +3,7 @@
  * Generates multiple variations of blog posts using LLM with different tones and angles
  */
 
-import { invokeLLM } from "./_core/llm";
+import { invokeUserOwnedFreeAi } from "./ai/freeProvider";
 
 export interface VariationOptions {
   count?: number; // Number of variations to generate (default: 3)
@@ -26,6 +26,7 @@ export interface GeneratedVariation {
  * Generate variations of a blog post using LLM
  */
 export async function generatePostVariations(
+  userId: number,
   originalHeadline: string,
   originalContent: string,
   options: VariationOptions = {}
@@ -43,6 +44,7 @@ export async function generatePostVariations(
     const angle = angles[Math.floor(i / tones.length) % angles.length];
 
     const variation = await generateSingleVariation(
+      userId,
       originalHeadline,
       originalContent,
       tone,
@@ -61,6 +63,7 @@ export async function generatePostVariations(
  * Generate a single variation with specified tone and angle
  */
 async function generateSingleVariation(
+  userId: number,
   headline: string,
   content: string,
   tone: string,
@@ -69,67 +72,36 @@ async function generateSingleVariation(
 ): Promise<GeneratedVariation> {
   const prompt = buildVariationPrompt(headline, content, tone, angle);
 
-  try {
-    const response = await invokeLLM({
-      messages: [
-        {
-          role: "system",
-          content: `You are an expert content strategist and copywriter. Your task is to rewrite blog posts with different tones and angles to maximize engagement and reach different audience segments.`,
-        },
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-      response_format: {
-        type: "json_schema",
-        json_schema: {
-          name: "post_variation",
-          strict: true,
-          schema: {
-            type: "object",
-            properties: {
-              headline: {
-                type: "string",
-                description: "The rewritten headline (60-80 characters)",
-              },
-              content: {
-                type: "string",
-                description:
-                  "The rewritten post content (same length as original)",
-              },
-            },
-            required: ["headline", "content"],
-            additionalProperties: false,
-          },
-        },
+  const response = await invokeUserOwnedFreeAi({
+    userId,
+    messages: [
+      {
+        role: "system",
+        content:
+          'Rewrite the post with the requested tone and angle. Return only a JSON object with string fields "headline" and "content".',
       },
-    });
-
-    const content =
-      typeof response.choices[0].message.content === "string"
-        ? response.choices[0].message.content
-        : JSON.stringify(response.choices[0].message.content);
-    const result = JSON.parse(content || "{}");
-
-    return {
-      variationIndex,
-      headline: result.headline || headline,
-      content: result.content || content,
-      tone,
-      angle,
-    };
-  } catch (error) {
-    console.error("[VariationGenerator] Error generating variation:", error);
-    // Return original content if generation fails
-    return {
-      variationIndex,
-      headline,
-      content,
-      tone,
-      angle,
-    };
+      { role: "user", content: prompt },
+    ],
+  });
+  const result = JSON.parse(
+    response.text.replace(/^```(?:json)?\s*/, "").replace(/\s*```$/, "")
+  );
+  if (
+    typeof result.headline !== "string" ||
+    typeof result.content !== "string" ||
+    !result.content.trim()
+  ) {
+    throw new Error(
+      "The provider returned an invalid variation. Original content is unchanged."
+    );
   }
+  return {
+    variationIndex,
+    headline: result.headline,
+    content: result.content,
+    tone,
+    angle,
+  };
 }
 
 /**

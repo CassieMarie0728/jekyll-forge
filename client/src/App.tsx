@@ -9,6 +9,7 @@ import Home from "./pages/Home";
 import RepoPicker from "./pages/RepoPicker";
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Editor = lazy(() => import("./pages/Editor"));
+const RepositoryInventory = lazy(() => import("./pages/RepositoryInventory"));
 const AssetManager = lazy(() => import("./pages/AssetManager"));
 const ThemeManager = lazy(() => import("./pages/ThemeManager"));
 const AISettings = lazy(() => import("./pages/AISettings"));
@@ -38,7 +39,7 @@ function Router() {
           )}
         />
         <Route
-          path="/editor/:siteId/:postPath*"
+          path={/^\/editor\/(?<siteId>[^/]+)\/(?<postPath>.+)$/}
           component={() => (
             <AppLayout>
               <Editor />
@@ -50,6 +51,14 @@ function Router() {
           component={() => (
             <AppLayout>
               <Editor />
+            </AppLayout>
+          )}
+        />
+        <Route
+          path="/inventory/:siteId"
+          component={() => (
+            <AppLayout>
+              <RepositoryInventory />
             </AppLayout>
           )}
         />

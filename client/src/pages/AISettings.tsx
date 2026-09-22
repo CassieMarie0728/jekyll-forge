@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { WRITING_TONES, toneLabel } from "@shared/writingTones";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -16,7 +17,6 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import {
   CheckCircle2,
@@ -45,7 +45,6 @@ export default function AISettings() {
   const [tone, setTone] = useState("professional");
   const [language, setLanguage] = useState("en");
   const [systemPrompt, setSystemPrompt] = useState("");
-  const [autoSnapshot, setAutoSnapshot] = useState(true);
   const [testPrompt, setTestPrompt] = useState(
     "Write a one-sentence blog post introduction about Jekyll."
   );
@@ -59,13 +58,21 @@ export default function AISettings() {
   const { data: providerSettings, isLoading: providersLoading } =
     trpc.aiProviders.getSettings.useQuery();
   const { data: aiSettings } = trpc.ai.getSettings.useQuery();
+  const providerSelectionInitialized = useRef(false);
+  useEffect(() => {
+    if (!providerSettings || providerSelectionInitialized.current) return;
+    providerSelectionInitialized.current = true;
+    setSelectedProvider(
+      (providerSettings.find(item => item.enabled)?.provider as ProviderId) ||
+        "openrouter"
+    );
+  }, [providerSettings]);
 
   useEffect(() => {
     if (!aiSettings) return;
-    setTone("professional");
+    setTone(aiSettings.defaultTone || "professional");
     setLanguage(aiSettings.defaultLanguage || "en");
     setSystemPrompt(aiSettings.systemPrompt || "");
-    setAutoSnapshot(true);
   }, [aiSettings]);
 
   const selectedProviderDetails = useMemo(
@@ -89,7 +96,7 @@ export default function AISettings() {
       setAcknowledgeFreeTier(false);
       await utils.aiProviders.getSettings.invalidate();
       toast.success(
-        `${result.provider} is configured as your active free AI provider.`
+        `${result.provider} is configured as your active AI provider.`
       );
     },
     onError: error => toast.error(error.message),
@@ -117,7 +124,10 @@ export default function AISettings() {
   });
 
   const updateAiSettings = trpc.ai.updateSettings.useMutation({
-    onSuccess: () => toast.success("Default AI behavior saved."),
+    onSuccess: async () => {
+      await utils.ai.getSettings.invalidate();
+      toast.success("Default AI behavior saved.");
+    },
     onError: error => toast.error(error.message),
   });
 
@@ -130,8 +140,9 @@ export default function AISettings() {
     updateAiSettings.mutate({
       enabled: true,
       temperature: 70,
-      systemPrompt: systemPrompt || undefined,
+      systemPrompt,
       defaultLanguage: language,
+      defaultTone: tone as (typeof WRITING_TONES)[number],
     });
   };
 
@@ -179,7 +190,7 @@ export default function AISettings() {
             AI Settings
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Bring your own provider key. Jekyll Forge only accepts approved no-cost model paths.
+            Bring your own provider key. Free options are available; paid AI is never required. Mistral is an optional choice with billing controlled by your provider account.
           </p>
         </div>
         {activeProvider ? (
@@ -211,7 +222,7 @@ export default function AISettings() {
         <CardHeader>
           <CardTitle className="text-sm flex items-center gap-2">
             <KeyRound className="w-4 h-4 text-forge-violet" />
-            Free Provider Configuration
+            AI Provider Configuration
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -231,6 +242,7 @@ export default function AISettings() {
                       key={provider.provider}
                       type="button"
                       onClick={() => {
+                        providerSelectionInitialized.current = true;
                         setSelectedProvider(provider.provider as ProviderId);
                         setApiKey("");
                         setAcknowledgeFreeTier(false);
@@ -282,13 +294,13 @@ export default function AISettings() {
 
                   {!selectedProviderDetails.available ? (
                     <div className="rounded-md border border-forge-amber/30 bg-forge-amber/10 p-3 text-xs text-muted-foreground leading-relaxed">
-                      This provider is intentionally disabled rather than risk routing a request to a model that could create paid usage. No key can be saved until a documented, compatible, permanently no-cost text endpoint is available.
+                      This provider is currently unavailable.
                     </div>
                   ) : (
                     <>
                       <div className="grid gap-4 sm:grid-cols-2">
                         <div className="space-y-1.5">
-                          <Label htmlFor="ai-model">Approved free model</Label>
+                          <Label htmlFor="ai-model">Model</Label>
                           <Select value={selectedModel} onValueChange={setSelectedModel}>
                             <SelectTrigger id="ai-model">
                               <SelectValue placeholder="Choose a model" />
@@ -338,7 +350,7 @@ export default function AISettings() {
                           className="mt-0.5"
                         />
                         <span className="text-xs text-muted-foreground leading-relaxed">
-                          I understand that I must keep this provider account on its free path. Jekyll Forge blocks unapproved model IDs and limits requests, but cannot change billing settings in my provider account.
+                          I understand that usage follows my provider account’s plan and billing settings. I can use a free plan; enabling paid billing is my choice. Forge limits requests and never switches to another provider automatically.
                         </span>
                       </label>
 
@@ -397,12 +409,12 @@ export default function AISettings() {
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label>Default writing tone</Label>
+              <Label htmlFor="default-tone">Default writing tone</Label>
               <Select value={tone} onValueChange={setTone}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger id="default-tone"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {["professional", "casual", "technical", "friendly", "formal", "conversational", "academic"].map(item => (
-                    <SelectItem key={item} value={item} className="capitalize">{item}</SelectItem>
+                  {WRITING_TONES.map(item => (
+                    <SelectItem key={item} value={item} >{toneLabel(item)}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -434,7 +446,7 @@ export default function AISettings() {
               <Label>Auto-snapshot before AI rewrites</Label>
               <p className="text-xs text-muted-foreground mt-1">Creates a safety snapshot before a rewrite operation.</p>
             </div>
-            <Switch checked={autoSnapshot} onCheckedChange={setAutoSnapshot} />
+            <Badge variant="secondary">Always on</Badge>
           </div>
           <Button variant="outline" onClick={saveDefaultBehavior} disabled={updateAiSettings.isPending}>
             Save writing behavior
@@ -458,7 +470,7 @@ export default function AISettings() {
           />
           <Button onClick={handleGenerationTest} disabled={!activeProvider || testGeneration.isPending} className="gap-2">
             {testGeneration.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
-            Run free-provider test
+            Run provider test
           </Button>
           {!activeProvider && <p className="text-xs text-forge-amber">Save and activate an approved provider key before running a test.</p>}
           {testResult && (

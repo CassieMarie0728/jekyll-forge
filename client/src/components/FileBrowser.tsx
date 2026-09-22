@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { mergePostFiles } from "@/lib/savedPosts";
 import { trpc } from "@/lib/trpc";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 // Local types to avoid importing from drizzle/schema on the client
 type Site = {
+  rootPath?: string | null;
   owner: string;
   repo: string;
   selectedBranch?: string | null;
@@ -65,8 +67,10 @@ export default function FileBrowser({
       {
         owner: site?.owner || "",
         repo: site?.repo || "",
-        path: "_drafts",
-        branch: site?.selectedBranch || "main",
+        path: [site?.rootPath?.replace(/^\/+|\/+$/g, ""), "_drafts"]
+          .filter(Boolean)
+          .join("/"),
+        branch: site?.selectedBranch || site?.defaultBranch || "main",
       },
       { enabled: !!site, retry: false }
     );
@@ -75,26 +79,31 @@ export default function FileBrowser({
       {
         owner: site?.owner || "",
         repo: site?.repo || "",
-        path: "_posts",
-        branch: site?.selectedBranch || "main",
+        path: [site?.rootPath?.replace(/^\/+|\/+$/g, ""), "_posts"]
+          .filter(Boolean)
+          .join("/"),
+        branch: site?.selectedBranch || site?.defaultBranch || "main",
       },
       { enabled: !!site, retry: false }
     );
 
-  const allFiles = [
-    ...(Array.isArray(ghDrafts)
-      ? ghDrafts.map((f: { name: string; path: string; sha: string }) => ({
-          ...f,
-          folder: "_drafts",
-        }))
-      : []),
-    ...(Array.isArray(ghPosts)
-      ? ghPosts.map((f: { name: string; path: string; sha: string }) => ({
-          ...f,
-          folder: "_posts",
-        }))
-      : []),
-  ];
+  const allFiles = mergePostFiles(
+    [
+      ...(Array.isArray(ghDrafts)
+        ? ghDrafts.map((f: { name: string; path: string; sha: string }) => ({
+            ...f,
+            folder: "_drafts",
+          }))
+        : []),
+      ...(Array.isArray(ghPosts)
+        ? ghPosts.map((f: { name: string; path: string; sha: string }) => ({
+            ...f,
+            folder: "_posts",
+          }))
+        : []),
+    ],
+    posts
+  );
 
   const filtered = allFiles.filter(
     f => !search || f.name.toLowerCase().includes(search.toLowerCase())
@@ -176,7 +185,7 @@ export default function FileBrowser({
           </button>
           {showDrafts && (
             <div>
-              {draftsLoading ? (
+              {draftsLoading && drafts.length === 0 ? (
                 <div className="px-3 space-y-1">
                   {Array.from({ length: 3 }).map((_, i) => (
                     <Skeleton key={i} className="h-8 rounded" />
@@ -213,7 +222,7 @@ export default function FileBrowser({
           </button>
           {showPosts && (
             <div>
-              {postsLoading ? (
+              {postsLoading && publishedPosts.length === 0 ? (
                 <div className="px-3 space-y-1">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Skeleton key={i} className="h-8 rounded" />

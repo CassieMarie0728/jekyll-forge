@@ -1,4 +1,5 @@
-import { useState, useCallback, useRef } from "react";
+import { optimizeUpload, readBase64 } from "@/lib/optimizeUpload";
+import React, { useState, useCallback, useRef } from "react";
 import { useParams } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -99,11 +100,23 @@ export default function AssetManager() {
   const deleteAsset = trpc.assets.delete.useMutation({
     onSuccess: () => {
       refetch();
-      toast.success("Asset deleted");
+      toast.success("Removed from library; GitHub file preserved");
     },
   });
+  const updateAsset = trpc.assets.update.useMutation({
+    onSuccess: () => {
+      refetch();
+      toast.success("Alt text saved");
+    },
+    onError: error => toast.error(error.message),
+  });
   const generateAltText = trpc.assets.generateAltText.useMutation({
-    onSuccess: data => {
+    onSuccess: (data, variables) => {
+      setSelectedAsset(current =>
+        current?.id === variables.assetId
+          ? { ...current, alt: data.altText }
+          : current
+      );
       toast.success(`Alt text generated: "${data.altText}"`);
       refetch();
     },
@@ -123,47 +136,44 @@ export default function AssetManager() {
 
   const handleFiles = useCallback(
     async (files: FileList | null) => {
-      if (!files || files.length === 0) return;
+      if (!files?.length || !activeSite) return;
+      const branch =
+        activeSite.selectedBranch || activeSite.defaultBranch || "main";
+      if (
+        !window.confirm(
+          `Upload ${files.length} file(s) to ${activeSite.owner}/${activeSite.repo}, branch ${branch}, under ${activeSite.defaultAssetPath || "/assets/images"}? This creates GitHub commits.`
+        )
+      )
+        return;
       setUploading(true);
-      for (const file of Array.from(files)) {
-        if (file.size > 10 * 1024 * 1024) {
-          toast.error(`${file.name} is too large (max 10MB)`);
-          continue;
-        }
-        const reader = new FileReader();
-        await new Promise<void>(resolve => {
-          reader.onload = async e => {
-            const base64 = (e.target?.result as string).split(",")[1];
-            const img = new window.Image();
-            let width: number | undefined, height: number | undefined;
-            if (file.type.startsWith("image/")) {
-              await new Promise<void>(res => {
-                img.onload = () => {
-                  width = img.width;
-                  height = img.height;
-                  res();
-                };
-                img.src = e.target?.result as string;
-              });
-            }
+      try {
+        for (const original of Array.from(files)) {
+          try {
+            const { file, width, height } = await optimizeUpload(original);
+            if (file.size > 5 * 1024 * 1024)
+              throw new Error(`${file.name} exceeds the 5 MB upload limit`);
             await uploadMutation.mutateAsync({
               siteId: Number(siteId),
               name: file.name,
-              path: `/assets/images/${file.name}`,
-              base64Content: base64,
+              path: `${activeSite.defaultAssetPath || "/assets/images"}/${file.name}`,
+              base64Content: await readBase64(file),
               mimeType: file.type,
               size: file.size,
               width,
               height,
+              optimize: false,
             });
-            resolve();
-          };
-          reader.readAsDataURL(file);
-        });
+          } catch (error) {
+            toast.error(
+              error instanceof Error ? error.message : "Upload failed"
+            );
+          }
+        }
+      } finally {
+        setUploading(false);
       }
-      setUploading(false);
     },
-    [siteId, uploadMutation]
+    [siteId, activeSite, uploadMutation]
   );
 
   const handleDrop = useCallback(
@@ -193,7 +203,7 @@ export default function AssetManager() {
         <div>
           <h1 className="font-display font-bold text-2xl">Asset Manager</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            {assets?.length || 0} assets · S3-backed storage
+            {assets?.length || 0} assets · Stored in your GitHub repository
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -259,7 +269,7 @@ export default function AssetManager() {
             : "Drag & drop files here, or click Upload"}
         </p>
         <p className="text-xs text-muted-foreground mt-1">
-          Images, PDFs, ZIPs, audio — max 10MB each
+          Images, PDFs, ZIPs, audio — max 5MB each
         </p>
       </div>
 
@@ -322,9 +332,7 @@ export default function AssetManager() {
                           className="h-7 w-7 text-white"
                           onClick={e => {
                             e.stopPropagation();
-                            navigator.clipboard.writeText(
-                              asset.storageUrl || ""
-                            );
+                            navigator.clipboard.writeText(asset.path || "");
                             toast.success("URL copied");
                           }}
                         >
@@ -386,9 +394,7 @@ export default function AssetManager() {
                           size="icon"
                           className="h-7 w-7"
                           onClick={() => {
-                            navigator.clipboard.writeText(
-                              asset.storageUrl || ""
-                            );
+                            navigator.clipboard.writeText(asset.path || "");
                             toast.success("URL copied");
                           }}
                         >
@@ -441,9 +447,7 @@ export default function AssetManager() {
                           size="icon"
                           className="h-7 w-7"
                           onClick={() => {
-                            navigator.clipboard.writeText(
-                              asset.storageUrl || ""
-                            );
+                            navigator.clipboard.writeText(asset.path || "");
                             toast.success("URL copied");
                           }}
                         >
@@ -525,6 +529,7 @@ export default function AssetManager() {
                           alt: e.target.value,
                         })
                       }
+                      aria-label="Image alt text"
                       placeholder="Describe this image..."
                       className="h-7 text-xs flex-1"
                     />
@@ -547,14 +552,34 @@ export default function AssetManager() {
                       AI
                     </Button>
                   </div>
+                  <Button
+                    className="mt-2"
+                    size="sm"
+                    variant="outline"
+                    disabled={
+                      updateAsset.isPending || generateAltText.isPending
+                    }
+                    onClick={() =>
+                      updateAsset.mutate({
+                        id: selectedAsset.id,
+                        alt: selectedAsset.alt || "",
+                      })
+                    }
+                  >
+                    Save alt text
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    AI suggestions use the filename, not image recognition.
+                    Review the description before using it.
+                  </p>
                 </div>
                 <div>
                   <Label className="text-xs text-muted-foreground mb-1 block">
-                    Storage URL
+                    Jekyll asset path
                   </Label>
                   <div className="flex gap-1">
                     <Input
-                      value={selectedAsset.storageUrl || ""}
+                      value={selectedAsset.path || ""}
                       readOnly
                       className="h-7 text-xs font-mono"
                     />
@@ -563,9 +588,7 @@ export default function AssetManager() {
                       size="icon"
                       className="h-7 w-7"
                       onClick={() => {
-                        navigator.clipboard.writeText(
-                          selectedAsset.storageUrl || ""
-                        );
+                        navigator.clipboard.writeText(selectedAsset.path || "");
                         toast.success("Copied");
                       }}
                     >
@@ -579,7 +602,7 @@ export default function AssetManager() {
                   </Label>
                   <div className="flex gap-1">
                     <Input
-                      value={`![${selectedAsset.alt || selectedAsset.name}](${selectedAsset.storageUrl})`}
+                      value={`![${selectedAsset.alt || selectedAsset.name}](${selectedAsset.path})`}
                       readOnly
                       className="h-7 text-xs font-mono"
                     />
@@ -589,7 +612,7 @@ export default function AssetManager() {
                       className="h-7 w-7"
                       onClick={() => {
                         navigator.clipboard.writeText(
-                          `![${selectedAsset.alt || selectedAsset.name}](${selectedAsset.storageUrl})`
+                          `![${selectedAsset.alt || selectedAsset.name}](${selectedAsset.path})`
                         );
                         toast.success("Copied");
                       }}

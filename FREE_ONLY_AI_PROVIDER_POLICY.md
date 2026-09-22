@@ -1,12 +1,12 @@
-# Free-Only AI Provider Policy
+# User-Owned AI Provider Policy
 
-**Status:** Implementation contract for Jekyll Forge.  
-**Last reviewed:** August 14, 2026.  
+**Status:** Implementation contract for Jekyll Forge.
+**Last reviewed:** September 20, 2026.
 **Scope:** All AI writing, repurposing, and accessibility-generation requests initiated by Jekyll Forge.
 
-Jekyll Forge must never use its own managed AI credentials for customer content. Every AI request must use a key deliberately supplied by the signed-in user, be processed only on the server, and be limited to an approved no-cost model path. The client applications must never receive, store, or display a provider API key after submission.
+Jekyll Forge must never use its own managed AI credentials for customer content. Every AI request must use a key deliberately supplied by the signed-in user, be processed only on the server, and be limited to a supported model path. The client applications must never receive, store, or display a provider API key after submission.
 
-> **Provider-account boundary.** Jekyll Forge can enforce the model ID, request shape, output cap, and app-level limits. It cannot inspect or change a user-owned provider account's billing enrollment. The setup experience therefore requires the user to keep their provider account on its free plan and to avoid enabling paid billing. This limitation is disclosed before a key is saved.
+> **Provider-account boundary.** Jekyll Forge can enforce the model ID, request shape, output cap, and app-level limits. It cannot inspect or change a user-owned provider account's billing enrollment. Free AI options must remain available; paid AI is never required. Users may deliberately choose optional Mistral with their own key, including an account with paid billing. The setup screen explains that provider account settings determine charges. Forge does not enroll users in billing or automatically switch providers. This supersedes the previous blanket free-only restriction.
 
 ## Enforceable Model Policy
 
@@ -17,9 +17,9 @@ The server treats provider and model selection as untrusted input. It evaluates 
 | OpenRouter | `openrouter/free` and model IDs ending exactly in `:free` | OpenRouter defines `:free` as an always-free model variant and documents its distinct free-model limits. [1] [2] | The server rejects every model ID without the exact free suffix and disables automatic fallback. |
 | Google Gemini | `gemini-2.5-flash`, `gemini-2.5-flash-lite` | Google currently lists free input and output for both stable text-capable endpoints on the Gemini Developer API Free tier. [3] | Requests use text generation only. Google Search grounding, Maps grounding, cached content, media generation, and paid-only models are never enabled. |
 | Groq | `llama-3.1-8b-instant`, `llama-3.3-70b-versatile`, `openai/gpt-oss-20b`, `openai/gpt-oss-120b` | Groq publishes Free Plan request and token limits for these text models. [4] | The server permits only the listed text completion IDs, limits outputs, and reports upstream `429` responses without retrying into a different model. |
-| Mistral | **No content-writing model is enabled in strict mode.** | Mistral's documentation describes Free mode as included monthly usage, while pay-as-you-go can extend consumption; the public pricing list does not identify a compatible, permanently no-cost text-generation endpoint for this workflow. [5] [6] | Mistral is intentionally displayed as unavailable until Mistral publishes a text model with an enforceable no-cost endpoint. A generic `*-latest` model must never be added merely because an account begins in Free mode. |
+| Mistral | `mistral-small-latest`, `mistral-large-latest` | Optional BYOK. Free mode includes limited usage; paid billing can incur charges. [5] [6] | Fixed Mistral endpoint, model allowlist, no automatic fallback. |
 
-This policy does not accept aliases such as `*-latest` where the provider may silently retarget a model, preview-only IDs, image/audio models, paid priority modes, batch APIs, provider tools, grounding, custom base URLs, or model fallbacks. The model list is source controlled and test covered; it is not populated from a provider's full model catalog.
+Mistral explicitly supports its listed `*-latest` aliases; the provider may update the model behind them. Otherwise this policy does not accept unlisted IDs, image/audio models, paid priority modes, batch APIs, provider tools, grounding, custom base URLs, or model fallbacks. The model list is source controlled and test covered; it is not populated from a provider's full model catalog.
 
 ## Conservative Limits and Request Contract
 
@@ -30,7 +30,7 @@ The application applies its own per-user, per-provider limits before calling an 
 | OpenRouter | 10 requests/minute; 40 requests/day | Free variants are limited to 20 RPM and, without prior credit purchases, 50 RPD. [1] | Text-only chat completion, no fallback models, 1,024 maximum generated tokens. |
 | Gemini | 5 requests/minute; 100 requests/day | Google applies quotas per project and model, measures RPM/TPM/RPD, and states that active limits can change. [7] | Text-only `generateContent`; no grounding, tools, cached content, image/audio inputs, or media outputs. |
 | Groq | 10 requests/minute; 200 requests/day | The most restrictive approved Groq text models publish 30 RPM and 1,000 RPD on the Free Plan. [4] | OpenAI-compatible text completion only, 1,024 maximum generated tokens. |
-| Mistral | Not applicable while unavailable | Mistral limits are organization- and model-specific. [5] | No request is sent. |
+| Mistral | 5 requests/minute; 100 requests/day | Organization- and model-specific provider limits still apply. [5] | Text chat completions, 1,024 output tokens maximum. Key tests use GET `/v1/models`, without generating text. |
 
 Each enforced limit maintains both a rolling minute window and a daily UTC window. The server returns a typed `TOO_MANY_REQUESTS` error with a clear reset time before reading or decrypting a provider key. Request payloads are further constrained to the Jekyll writing tasks already supported by the app and to a 1,024-token output maximum.
 
@@ -42,7 +42,7 @@ The table has one row per `(userId, provider)`. Database helpers that retrieve a
 
 ## Required User-Facing Disclosures
 
-The web configuration screen and Android status view must state that provider keys are optional, user owned, sent only to the chosen provider through Jekyll Forge's server, and cannot be recovered after saving. Gemini must additionally state that Google identifies Free-tier content as used to improve its products. [3] OpenRouter, Gemini, and Groq each require the user to acknowledge that they are using a provider account configured for its free path; Jekyll Forge's server safeguards cannot override billing settings changed directly at the provider.
+The web configuration screen and Android status view must state that provider keys are optional, user owned, sent only to the chosen provider through Jekyll Forge's server, and cannot be recovered after saving. Gemini must additionally state that Google identifies Free-tier content as used to improve its products. [3] All providers require users to acknowledge their account plan and billing settings; Jekyll Forge's server safeguards cannot override billing settings changed directly at the provider.
 
 ## References
 

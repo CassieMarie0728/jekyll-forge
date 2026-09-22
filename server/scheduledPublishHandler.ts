@@ -1,241 +1,124 @@
-/**
- * Heartbeat handler for scheduled Jekyll post publishing.
- * Mounted at POST /api/scheduled/publish-post in server/_core/index.ts
- *
- * Per periodic-updates.md §3:
- * - Authenticates via sdk.authenticateRequest (isCron=true, taskUid set)
- * - Looks up the scheduled post by taskUid (NOT by req.body)
- * - Performs the GitHub commit to move _drafts → _posts
- * - Notifies owner on failure
- * - Returns 2xx always (even on business failures) to prevent unnecessary retries
- */
-
-import type { Request, Response } from "express";
-import { sdk } from "./_core/sdk";
+import { and, eq, lte } from "drizzle-orm";
+import { getDb, getSiteById, updateScheduledPost } from "./db";
+import { scheduledPosts, users } from "../drizzle/schema";
 import { notifyOwner } from "./_core/notification";
-import {
-  getScheduledPostByTaskUid,
-  updateScheduledPost,
-  getSiteByIdAny,
-  getUserByOpenId,
-} from "./db";
 
-const GITHUB_API = "https://api.github.com";
-
-async function ghFetch(token: string, path: string, options: RequestInit = {}) {
-  const res = await fetch(`${GITHUB_API}${path}`, {
-    ...options,
+async function github(token: string, endpoint: string, init: RequestInit = {}) {
+  const response = await fetch("https://api.github.com" + endpoint, {
+    ...init,
     headers: {
       Authorization: `Bearer ${token}`,
       Accept: "application/vnd.github+json",
-      "X-GitHub-Api-Version": "2022-11-28",
       "Content-Type": "application/json",
-      ...(options.headers || {}),
+      "User-Agent": "Jekyll-Forge",
+      ...init.headers,
     },
+    signal: AbortSignal.timeout(15000),
   });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
+  if (!response.ok)
     throw new Error(
-      `GitHub API error ${res.status}: ${(body as { message?: string }).message || "unknown"}`
+      `GitHub returned ${response.status}; verify access, branch and file SHA`
     );
-  }
-  return res.json();
+  return response.json() as Promise<{ content?: string; sha?: string }>;
 }
+const encodePath = (path: string) =>
+  path.split("/").map(encodeURIComponent).join("/");
 
-export async function scheduledPublishHandler(req: Request, res: Response) {
-  const startedAt = new Date().toISOString();
-
-  try {
-    // 1. Authenticate — must be a cron request
-    const user = await sdk.authenticateRequest(req);
-    if (!user.isCron || !user.taskUid) {
-      return res.status(403).json({ error: "cron-only endpoint" });
-    }
-
-    const taskUid = user.taskUid;
-
-    // 2. Look up the scheduled post by taskUid (never by req.body)
-    const job = await getScheduledPostByTaskUid(taskUid);
-    if (!job) {
-      // Orphan — cron was created but the row was deleted. Return 2xx to stop retries.
-      return res.json({ ok: true, skipped: "orphan", taskUid });
-    }
-
-    // 3. Skip if already processed
-    if (job.status !== "pending") {
-      return res.json({
-        ok: true,
-        skipped: `already-${job.status}`,
-        id: job.id,
-      });
-    }
-
-    // 4. Mark as processing
-    await updateScheduledPost(job.id, { status: "processing" });
-
-    // 5. Load the site to get owner/repo/branch
-    const site = await getSiteByIdAny(job.siteId);
-    if (!site) {
-      const msg = `Site ${job.siteId} not found`;
-      await updateScheduledPost(job.id, {
-        status: "failed",
-        errorMessage: msg,
-      });
-      await notifyOwner({
-        title: "Jekyll Forge: Scheduled publish failed",
-        content: `Could not find site for scheduled post.\nJob ID: ${job.id}\nDraft: ${job.draftPath}\nError: ${msg}`,
-      });
-      return res.json({ ok: true, failed: true, error: msg });
-    }
-
-    // 6. Load the site owner's GitHub token
-    // The site's userId is the owner
-    const siteOwner = await (async () => {
-      // We need to find the user by their DB id, not openId
-      // Use a direct DB query via drizzle
-      const { getDb } = await import("./db");
-      const { users } = await import("../drizzle/schema");
-      const { eq } = await import("drizzle-orm");
-      const db = await getDb();
-      if (!db) return undefined;
-      const result = await db
+export async function processScheduledPosts() {
+  const database = await getDb();
+  const due = await database
+    .select()
+    .from(scheduledPosts)
+    .where(
+      and(
+        eq(scheduledPosts.status, "pending"),
+        lte(scheduledPosts.scheduledAt, new Date())
+      )
+    )
+    .limit(2);
+  for (const job of due) {
+    const claimed = await database
+      .update(scheduledPosts)
+      .set({ status: "processing" })
+      .where(
+        and(eq(scheduledPosts.id, job.id), eq(scheduledPosts.status, "pending"))
+      )
+      .returning({ id: scheduledPosts.id });
+    if (!claimed.length) continue;
+    try {
+      const site = await getSiteById(job.siteId, job.userId);
+      const [user] = await database
         .select()
         .from(users)
-        .where(eq(users.id, site.userId))
+        .where(eq(users.id, job.userId))
         .limit(1);
-      return result[0];
-    })();
-
-    if (!siteOwner?.githubToken) {
-      const msg = "Site owner has no GitHub token connected";
-      await updateScheduledPost(job.id, {
-        status: "failed",
-        errorMessage: msg,
-      });
-      await notifyOwner({
-        title: "Jekyll Forge: Scheduled publish failed",
-        content: `${msg}\nJob ID: ${job.id}\nDraft: ${job.draftPath}`,
-      });
-      return res.json({ ok: true, failed: true, error: msg });
-    }
-
-    const branch = site.selectedBranch || site.defaultBranch || "main";
-
-    // 7. Fetch the draft file from GitHub
-    const draftPath = job.draftPath.startsWith("/")
-      ? job.draftPath.slice(1)
-      : job.draftPath;
-    const targetPath = job.targetPath.startsWith("/")
-      ? job.targetPath.slice(1)
-      : job.targetPath;
-
-    let draftFile: { content: string; sha: string };
-    try {
-      draftFile = await ghFetch(
-        siteOwner.githubToken,
-        `/repos/${site.owner}/${site.repo}/contents/${draftPath}?ref=${branch}`
+      if (!site || !user?.githubToken)
+        throw new Error("Site or connected GitHub account missing");
+      const branch =
+        job.branch || site.selectedBranch || site.defaultBranch || "main";
+      const base = `/repos/${encodeURIComponent(site.owner)}/${encodeURIComponent(site.repo)}/contents/`;
+      const draft = await github(
+        user.githubToken,
+        base + encodePath(job.draftPath) + "?ref=" + encodeURIComponent(branch)
       );
-    } catch (err) {
-      const msg = `Failed to fetch draft: ${err instanceof Error ? err.message : String(err)}`;
+      if (!draft.content || !draft.sha)
+        throw new Error("Draft content unavailable");
+      // Do not overwrite an existing published path. GitHub rejects an update
+      // without its existing SHA, making this creation-only.
+      await github(user.githubToken, base + encodePath(job.targetPath), {
+        method: "PUT",
+        body: JSON.stringify({
+          branch,
+          content: draft.content.replace(/\s/g, ""),
+          message: job.commitMessage || `Publish ${job.targetPath}`,
+        }),
+      });
       await updateScheduledPost(job.id, {
-        status: "failed",
-        errorMessage: msg,
+        status: "published",
+        publishedAt: new Date(),
+        errorMessage: null,
       });
-      await notifyOwner({
-        title: "Jekyll Forge: Scheduled publish failed",
-        content: `${msg}\nJob ID: ${job.id}\nDraft: ${job.draftPath}`,
-      });
-      return res.json({ ok: true, failed: true, error: msg });
-    }
-
-    const draftContent = Buffer.from(draftFile.content, "base64").toString(
-      "utf-8"
-    );
-
-    // 8. Commit to _posts (target path)
-    const commitMessage =
-      job.commitMessage ||
-      `Publish: ${targetPath.split("/").pop() || targetPath}`;
-    try {
-      await ghFetch(
-        siteOwner.githubToken,
-        `/repos/${site.owner}/${site.repo}/contents/${targetPath}`,
-        {
-          method: "PUT",
-          body: JSON.stringify({
-            message: commitMessage,
-            content: Buffer.from(draftContent).toString("base64"),
-            branch,
-          }),
-        }
-      );
-    } catch (err) {
-      const msg = `Failed to commit to _posts: ${err instanceof Error ? err.message : String(err)}`;
-      await updateScheduledPost(job.id, {
-        status: "failed",
-        errorMessage: msg,
-      });
-      await notifyOwner({
-        title: "Jekyll Forge: Scheduled publish failed",
-        content: `${msg}\nJob ID: ${job.id}\nTarget: ${job.targetPath}`,
-      });
-      return res.json({ ok: true, failed: true, error: msg });
-    }
-
-    // 9. Delete the draft from _drafts
-    try {
-      await ghFetch(
-        siteOwner.githubToken,
-        `/repos/${site.owner}/${site.repo}/contents/${draftPath}`,
-        {
+      try {
+        await github(user.githubToken, base + encodePath(job.draftPath), {
           method: "DELETE",
           body: JSON.stringify({
-            message: `Remove draft after publish: ${draftPath.split("/").pop()}`,
-            sha: draftFile.sha,
             branch,
+            sha: draft.sha,
+            message: `Remove published draft ${job.draftPath}`,
           }),
-        }
-      );
-    } catch {
-      // Non-fatal: the post is published, draft deletion failure is logged but not a hard error
-      console.warn(
-        `[Scheduler] Could not delete draft ${draftPath} after publish`
-      );
-    }
-
-    // 10. Mark as published
-    await updateScheduledPost(job.id, {
-      status: "published",
-      publishedAt: new Date(),
-    });
-
-    return res.json({
-      ok: true,
-      published: true,
-      id: job.id,
-      draftPath: job.draftPath,
-      targetPath: job.targetPath,
-      publishedAt: new Date().toISOString(),
-    });
-  } catch (err) {
-    const errorMsg = err instanceof Error ? err.message : String(err);
-    console.error("[Scheduler] Unhandled error in publish handler:", err);
-
-    // Attempt to notify owner even on unexpected errors
-    try {
-      await notifyOwner({
-        title: "Jekyll Forge: Scheduled publish error",
-        content: `Unexpected error in scheduled publish handler.\nError: ${errorMsg}\nTimestamp: ${startedAt}`,
+        });
+      } catch {
+        await updateScheduledPost(job.id, {
+          errorMessage:
+            "Published successfully; original draft remains in GitHub.",
+        });
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Scheduled publishing failed";
+      await updateScheduledPost(job.id, {
+        status: "failed",
+        errorMessage: message,
       });
-    } catch {
-      /* ignore notification failure */
+      await notifyOwner({
+        title: "Scheduled publishing needs attention",
+        content: `Schedule ${job.id}: ${message}`,
+      });
     }
-
-    // Preserve detailed diagnostics in trusted server logs and owner notifications.
-    // Do not return upstream messages or stack traces to an HTTP caller.
-    return res.status(500).json({
-      error: "Scheduled publishing failed",
-      timestamp: startedAt,
-    });
   }
+  // A interrupted claim is never replayed blindly: the remote commit may have
+  // succeeded. Surface it for reconciliation to prevent duplicate side effects.
+  await database
+    .update(scheduledPosts)
+    .set({
+      status: "failed",
+      errorMessage:
+        "Publishing was interrupted. Check GitHub before scheduling again.",
+    })
+    .where(
+      and(
+        eq(scheduledPosts.status, "processing"),
+        lte(scheduledPosts.updatedAt, new Date(Date.now() - 15 * 60000))
+      )
+    );
 }

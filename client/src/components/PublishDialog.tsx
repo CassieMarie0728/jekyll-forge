@@ -1,4 +1,6 @@
-import { useState, useMemo } from "react";
+import { diffLines } from "diff";
+import { serializeToMarkdown } from "@/lib/editorMarkdown";
+import React, { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +13,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -45,6 +48,7 @@ type Site = {
   selectedBranch?: string | null;
   defaultBranch?: string | null;
   timezone?: string | null;
+  rootPath?: string | null;
 };
 
 type Props = {
@@ -57,6 +61,7 @@ type Props = {
   postPath?: string | null;
   postId?: number | null;
   siteId: number;
+  beforePublish?: () => Promise<unknown>;
   onPublished: (sha: string, path: string) => void;
 };
 
@@ -99,22 +104,7 @@ function generateFilename(frontMatter: Record<string, unknown>): string {
   return `${date}-${slug}.md`;
 }
 
-function serializePost(
-  frontMatter: Record<string, unknown>,
-  markdown: string
-): string {
-  const lines = ["---"];
-  for (const [k, v] of Object.entries(frontMatter)) {
-    if (v === null || v === undefined) continue;
-    if (Array.isArray(v))
-      lines.push(`${k}: [${v.map(i => `"${i}"`).join(", ")}]`);
-    else if (typeof v === "boolean") lines.push(`${k}: ${v}`);
-    else if (typeof v === "number") lines.push(`${k}: ${v}`);
-    else lines.push(`${k}: "${String(v).replace(/"/g, '\\"')}"`);
-  }
-  lines.push("---", "", markdown);
-  return lines.join("\n");
-}
+const serializePost = serializeToMarkdown;
 
 export default function PublishDialog({
   open,
@@ -127,6 +117,7 @@ export default function PublishDialog({
   postId,
   siteId,
   onPublished,
+  beforePublish,
 }: Props) {
   const [tab, setTab] = useState("publish");
   const [action, setAction] = useState<
@@ -138,7 +129,7 @@ export default function PublishDialog({
   const [scheduleDate, setScheduleDate] = useState(
     format(new Date(Date.now() + 86400000), "yyyy-MM-dd'T'HH:mm")
   );
-  const [timezone, setTimezone] = useState(site?.timezone || "UTC");
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const [publishing, setPublishing] = useState(false);
 
   const validation = useMemo(
@@ -146,13 +137,63 @@ export default function PublishDialog({
     [frontMatter, markdown]
   );
   const filename = useMemo(() => generateFilename(frontMatter), [frontMatter]);
-  const targetPath =
-    action === "drafts" ? `_drafts/${filename}` : `_posts/${filename}`;
+  const rootPrefix = site?.rootPath?.replace(/^\/+|\/+$/g, "");
+  const prefix = rootPrefix ? `${rootPrefix}/` : "";
+  const folder = action === "drafts" ? "_drafts" : "_posts";
+  const targetPath = postPath?.startsWith(`${prefix}${folder}/`)
+    ? postPath
+    : `${prefix}${folder}/${filename}`;
+  const draftPath = postPath?.startsWith(`${prefix}_drafts/`)
+    ? postPath
+    : `${prefix}_drafts/${filename}`;
+  const branch = site?.selectedBranch || site?.defaultBranch || "main";
+  const reviewPath = action === "schedule" ? draftPath : targetPath;
+  const review = trpc.github.reviewFile.useQuery(
+    {
+      owner: site?.owner || "",
+      repo: site?.repo || "",
+      path: reviewPath,
+      branch,
+    },
+    { enabled: open && !!site, retry: false, refetchOnWindowFocus: false }
+  );
+  const scheduleTarget = trpc.github.reviewFile.useQuery(
+    {
+      owner: site?.owner || "",
+      repo: site?.repo || "",
+      path: targetPath,
+      branch,
+    },
+    { enabled: open && !!site && action === "schedule", retry: false }
+  );
+  const scheduleBlocked =
+    action === "schedule" &&
+    (!scheduleTarget.isSuccess ||
+      scheduleTarget.isFetching ||
+      !!scheduleTarget.data?.sha ||
+      !Number.isFinite(new Date(scheduleDate).getTime()) ||
+      new Date(scheduleDate).getTime() <= Date.now());
+  const [reviewed, setReviewed] = useState("");
   const content = useMemo(
     () => serializePost(frontMatter, markdown),
     [frontMatter, markdown]
   );
 
+  const reviewKey = JSON.stringify([
+    site?.owner,
+    site?.repo,
+    action,
+    reviewPath,
+    branch,
+    newBranch,
+    content,
+    review.data?.sha,
+    scheduleDate,
+  ]);
+  const changes = useMemo(
+    () => diffLines(review.data?.content || "", content),
+    [review.data?.content, content]
+  );
   const commitMutation = trpc.github.commitFile.useMutation();
   const createBranchMutation = trpc.github.createBranch.useMutation();
   const createPRMutation = trpc.github.createPullRequest.useMutation();
@@ -160,7 +201,14 @@ export default function PublishDialog({
   const updatePostMutation = trpc.posts.update.useMutation();
 
   const handlePublish = async () => {
-    if (!site) return;
+    if (
+      !site ||
+      !review.isSuccess ||
+      review.isFetching ||
+      reviewed !== reviewKey ||
+      scheduleBlocked
+    )
+      return;
     if (!validation.valid) {
       toast.error("Fix validation errors before publishing");
       return;
@@ -168,6 +216,7 @@ export default function PublishDialog({
 
     setPublishing(true);
     try {
+      await beforePublish?.();
       const msg =
         commitMessage ||
         `${action === "drafts" ? "Save draft" : "Publish post"}: ${frontMatter.title || filename}`;
@@ -185,7 +234,8 @@ export default function PublishDialog({
         const result = await commitMutation.mutateAsync({
           owner: site.owner,
           repo: site.repo,
-          path: `_posts/${filename}`,
+          path: targetPath,
+          sha: review.data?.sha,
           branch: branchName,
           content,
           message: msg,
@@ -203,27 +253,27 @@ export default function PublishDialog({
         } else {
           toast.success(`Committed to branch: ${branchName}`);
         }
-        onPublished(result.content?.sha || "", `_posts/${filename}`);
+        // A feature-branch commit does not change the editor's base-branch identity.
       } else if (action === "schedule") {
         const draftPath =
-          postPath && postPath.startsWith("_drafts/")
+          postPath && postPath.startsWith(`${prefix}_drafts/`)
             ? postPath
-            : `_drafts/${filename}`;
+            : `${prefix}_drafts/${filename}`;
         // Save to drafts first
-        await commitMutation.mutateAsync({
+        const draftResult = await commitMutation.mutateAsync({
           owner: site.owner,
           repo: site.repo,
           path: draftPath,
           branch: site.selectedBranch || site.defaultBranch || "main",
           content,
           message: `Save draft for scheduling: ${frontMatter.title || filename}`,
-          sha: currentSha,
+          sha: review.data?.sha,
         });
         await scheduleMutation.mutateAsync({
           siteId,
           postId: postId || undefined,
           draftPath,
-          targetPath: `_posts/${filename}`,
+          targetPath,
           scheduledAt: new Date(scheduleDate),
           timezone,
           commitMessage: msg,
@@ -231,7 +281,16 @@ export default function PublishDialog({
         toast.success(
           `Scheduled for ${format(new Date(scheduleDate), "MMM d, yyyy HH:mm")}`
         );
-        onPublished("", draftPath);
+        if (postId)
+          await updatePostMutation.mutateAsync({
+            id: postId,
+            status: "scheduled",
+            path: draftPath,
+            sha: draftResult.content?.sha,
+            markdown,
+            frontMatter,
+          });
+        onPublished(draftResult.content?.sha || "", draftPath);
       } else {
         const result = await commitMutation.mutateAsync({
           owner: site.owner,
@@ -240,7 +299,7 @@ export default function PublishDialog({
           branch: site.selectedBranch || site.defaultBranch || "main",
           content,
           message: msg,
-          sha: currentSha,
+          sha: review.data?.sha,
         });
         if (postId) {
           await updatePostMutation.mutateAsync({
@@ -248,6 +307,8 @@ export default function PublishDialog({
             status: action === "posts" ? "published" : "draft",
             sha: result.content?.sha,
             path: targetPath,
+            markdown,
+            frontMatter,
           } as Parameters<typeof updatePostMutation.mutateAsync>[0]);
         }
         toast.success(
@@ -257,6 +318,8 @@ export default function PublishDialog({
       }
       onOpenChange(false);
     } catch (err: unknown) {
+      setReviewed("");
+      void review.refetch();
       toast.error(err instanceof Error ? err.message : "Publish failed");
     } finally {
       setPublishing(false);
@@ -265,12 +328,15 @@ export default function PublishDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Send className="w-4 h-4 text-primary" />
             Publish Post
           </DialogTitle>
+          <DialogDescription>
+            Review the destination and changes before writing to GitHub.
+          </DialogDescription>
         </DialogHeader>
 
         <Tabs value={tab} onValueChange={setTab}>
@@ -359,7 +425,9 @@ export default function PublishDialog({
                 <span>
                   Target:{" "}
                   <code className="bg-muted px-1 rounded">
-                    {action === "schedule" ? `_drafts/${filename}` : targetPath}
+                    {action === "schedule"
+                      ? `${prefix}_drafts/${filename}`
+                      : targetPath}
                   </code>
                 </span>
               </div>
@@ -407,28 +475,9 @@ export default function PublishDialog({
                 </div>
                 <div>
                   <Label className="text-xs mb-1 block">Timezone</Label>
-                  <Select value={timezone} onValueChange={setTimezone}>
-                    <SelectTrigger className="h-7 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {[
-                        "UTC",
-                        "America/New_York",
-                        "America/Los_Angeles",
-                        "America/Chicago",
-                        "Europe/London",
-                        "Europe/Paris",
-                        "Asia/Tokyo",
-                        "Asia/Shanghai",
-                        "Australia/Sydney",
-                      ].map(tz => (
-                        <SelectItem key={tz} value={tz} className="text-xs">
-                          {tz}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    {timezone} (your browser time)
+                  </p>
                 </div>
               </div>
             )}
@@ -444,6 +493,90 @@ export default function PublishDialog({
               />
             </div>
 
+            <section className="space-y-2 text-xs" aria-label="Review changes">
+              <p className="break-all">
+                Repository:{" "}
+                <strong>
+                  {site?.owner}/{site?.repo}
+                </strong>
+                <br />
+                Branch:{" "}
+                <strong>
+                  {action === "branch" || action === "pr"
+                    ? newBranch ||
+                      `post/${generateSlug(String(frontMatter.title || "new-post"))}`
+                    : branch}
+                </strong>
+                <br />
+                Path: <strong>{reviewPath}</strong>
+              </p>
+              {action === "schedule" && (
+                <p>Scheduled destination: {targetPath}</p>
+              )}
+              {(action === "branch" || action === "pr") && (
+                <p>Compared with base branch: {branch}</p>
+              )}
+              {review.isFetching ? (
+                <p>Loading destination for review…</p>
+              ) : review.isError ? (
+                <div role="alert">
+                  Cannot load destination. Publishing is blocked.
+                  <Button variant="outline" onClick={() => review.refetch()}>
+                    Retry review
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <p>
+                    {review.data?.sha ? "Changes to existing file" : "New file"}{" "}
+                    · + additions / − removals
+                  </p>
+                  <pre
+                    className="max-h-56 overflow-auto whitespace-pre-wrap break-all rounded border p-2"
+                    aria-label="Content diff"
+                  >
+                    {changes.map((part, i) => (
+                      <span
+                        key={i}
+                        className={
+                          part.added
+                            ? "bg-green-950 text-green-200"
+                            : part.removed
+                              ? "bg-red-950 text-red-200"
+                              : "text-muted-foreground"
+                        }
+                      >
+                        {part.value
+                          .split(/(?<=\n)/)
+                          .map(
+                            line =>
+                              `${part.added ? "+ " : part.removed ? "− " : "  "}${line}`
+                          )
+                          .join("")}
+                      </span>
+                    ))}
+                  </pre>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={reviewed === reviewKey}
+                      onChange={e =>
+                        setReviewed(e.target.checked ? reviewKey : "")
+                      }
+                    />
+                    I reviewed this destination and these changes.
+                  </label>
+                </>
+              )}
+            </section>
+            {scheduleBlocked && (
+              <p role="alert">
+                Scheduling requires a future time and an unused destination
+                path. Wait for the destination check, or choose a new post
+                title/date. Existing published files are never overwritten by
+                the scheduler.
+              </p>
+            )}
             {/* Publish Button */}
             <div className="flex gap-2 pt-2">
               <Button
@@ -455,7 +588,14 @@ export default function PublishDialog({
               </Button>
               <Button
                 onClick={handlePublish}
-                disabled={publishing || !validation.valid}
+                disabled={
+                  publishing ||
+                  scheduleBlocked ||
+                  !validation.valid ||
+                  !review.isSuccess ||
+                  review.isFetching ||
+                  reviewed !== reviewKey
+                }
                 className="flex-1 gap-2"
               >
                 {publishing ? (

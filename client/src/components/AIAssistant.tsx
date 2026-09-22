@@ -1,3 +1,4 @@
+import { WRITING_TONES, toneLabel } from "@shared/writingTones";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -207,7 +208,9 @@ export default function AIAssistant({
 }: Props) {
   const [selectedTask, setSelectedTask] = useState<string | null>(null);
   const [customPrompt, setCustomPrompt] = useState("");
-  const [tone, setTone] = useState("professional");
+  const { data: aiSettings } = trpc.ai.getSettings.useQuery();
+  const [toneOverride, setTone] = useState<string | null>(null);
+  const tone = toneOverride ?? aiSettings?.defaultTone ?? "professional";
   const [result, setResult] = useState<string | null>(null);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(
     { Generate: true, Improve: false, "SEO & Meta": false, Content: false }
@@ -370,21 +373,9 @@ export default function AIAssistant({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {[
-                    "professional",
-                    "casual",
-                    "technical",
-                    "friendly",
-                    "formal",
-                    "conversational",
-                    "humorous",
-                  ].map(t => (
-                    <SelectItem
-                      key={t}
-                      value={t}
-                      className="text-xs capitalize"
-                    >
-                      {t}
+                  {WRITING_TONES.map(t => (
+                    <SelectItem key={t} value={t} className="text-xs">
+                      {toneLabel(t)}
                     </SelectItem>
                   ))}
                 </SelectContent>

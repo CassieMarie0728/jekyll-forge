@@ -1,0 +1,40 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "jekyll-forge",
+  "main": "server/worker.ts",
+  "compatibility_date": "2026-09-19",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "workers_dev": true,
+  "assets": {
+    "directory": "./dist/public",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": [
+      "/api/*"
+    ]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "jekyll-forge",
+      "database_id": "3d4c0440-449d-4c54-8f53-e76eafb402c3",
+      "migrations_dir": "drizzle/d1"
+    }
+  ],
+  "triggers": {
+    "crons": [
+      "*/5 * * * *"
+    ]
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 0.1
+  },
+  "vars": {
+    "APP_URL": "https://jekyll-forge.c728.workers.dev",
+    "GITHUB_CLIENT_ID": "Ov23linleILZILcgsHN7",
+    "OWNER_GITHUB_ID": "66750031"
+  }
+}

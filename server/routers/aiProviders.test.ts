@@ -1,4 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
+vi.mock("../_core/limits", () => ({
+  readLimit: vi.fn(async () => ({ remaining: 10, resetAt: new Date() })),
+}));
 
 const mocks = vi.hoisted(() => ({
   getUserAiProviders: vi.fn(),

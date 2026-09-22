@@ -58,6 +58,7 @@ export const abTestingRouter = router({
 
         // Generate variations using LLM
         const variations = await generatePostVariations(
+          ctx.user.id,
           input.headline,
           input.content,
           options
