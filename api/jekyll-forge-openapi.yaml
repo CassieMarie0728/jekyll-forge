@@ -1,0 +1,3533 @@
+openapi: 3.0.3
+info:
+  title: Jekyll Forge API
+  version: 1.0.0
+  description: 'OpenAPI map generated from the Jekyll Forge tRPC server source. Query procedures use GET with tRPC input in the `input` query parameter; mutations use POST with a `{ "json": ... }` body. Protected procedures accept the application session/authentication mechanism.'
+servers:
+- url: http://localhost:3000
+  description: Development
+- url: https://jekyll-forge.manus.space
+  description: Production (source-configured; verify before deployment)
+tags:
+- name: Ab Testing
+- name: Ai
+- name: Ai Providers
+- name: Assets
+- name: Auth
+- name: Blocks
+- name: Github
+- name: Notifications
+- name: Posts
+- name: Repurposing
+- name: Scheduler
+- name: Sites
+- name: Snapshots
+- name: Social Media
+paths:
+  /api/trpc/abTesting.applyWinner:
+    post:
+      tags:
+      - Ab Testing
+      summary: Apply Winner
+      operationId: abTesting_applyWinner
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    postId:
+                      type: number
+                    winningVariationIndex:
+                      type: number
+                  required:
+                  - postId
+                  - winningVariationIndex
+              required:
+              - json
+  /api/trpc/abTesting.completeTest:
+    post:
+      tags:
+      - Ab Testing
+      summary: Complete Test
+      operationId: abTesting_completeTest
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    postId:
+                      type: number
+                  required:
+                  - postId
+              required:
+              - json
+  /api/trpc/abTesting.generateVariations:
+    post:
+      tags:
+      - Ab Testing
+      summary: Generate Variations
+      operationId: abTesting_generateVariations
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    postId:
+                      type: number
+                    count:
+                      type: number
+                    tones:
+                      type: array
+                      items:
+                        type: string
+                    angles:
+                      type: array
+                      items:
+                        type: string
+                    headline:
+                      type: string
+                    content:
+                      type: string
+                  required:
+                  - postId
+                  - headline
+                  - content
+              required:
+              - json
+  /api/trpc/abTesting.getResults:
+    get:
+      tags:
+      - Ab Testing
+      summary: Get Results
+      operationId: abTesting_getResults
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      parameters:
+      - name: input
+        in: query
+        required: true
+        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
+        schema:
+          type: string
+      x-trpc-input-schema:
+        type: object
+        properties:
+          postId:
+            type: number
+        required:
+        - postId
+  /api/trpc/abTesting.getVariations:
+    get:
+      tags:
+      - Ab Testing
+      summary: Get Variations
+      operationId: abTesting_getVariations
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      parameters:
+      - name: input
+        in: query
+        required: true
+        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
+        schema:
+          type: string
+      x-trpc-input-schema:
+        type: object
+        properties:
+          postId:
+            type: number
+        required:
+        - postId
+  /api/trpc/abTesting.publishVariation:
+    post:
+      tags:
+      - Ab Testing
+      summary: Publish Variation
+      operationId: abTesting_publishVariation
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    postId:
+                      type: number
+                    variationIndex:
+                      type: number
+                    platforms:
+                      type: array
+                      items:
+                        type: string
+                        enum:
+                        - twitter
+                        - linkedin
+                        - facebook
+                        - instagram
+                        - email
+                        - direct
+                  required:
+                  - postId
+                  - variationIndex
+                  - platforms
+              required:
+              - json
+  /api/trpc/abTesting.updateMetrics:
+    post:
+      tags:
+      - Ab Testing
+      summary: Update Metrics
+      operationId: abTesting_updateMetrics
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    postId:
+                      type: number
+                    variationIndex:
+                      type: number
+                    platform:
+                      type: string
+                    metrics:
+                      type: object
+                      properties:
+                        impressions:
+                          type: number
+                        engagements:
+                          type: number
+                        clicks:
+                          type: number
+                        shares:
+                          type: number
+                        likes:
+                          type: number
+                        replies:
+                          type: number
+                  required:
+                  - postId
+                  - variationIndex
+                  - platform
+              required:
+              - json
+  /api/trpc/ai.generate:
+    post:
+      tags:
+      - Ai
+      summary: Generate
+      operationId: ai_generate
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    task:
+                      type: string
+                    userPrompt:
+                      type: string
+                    selectedText:
+                      type: string
+                    postMarkdown:
+                      type: string
+                    frontMatter: {}
+                    tone:
+                      type: string
+                    voiceProfileId:
+                      type: number
+                  required:
+                  - task
+              required:
+              - json
+  /api/trpc/ai.getSettings:
+    get:
+      tags:
+      - Ai
+      summary: Get Settings
+      operationId: ai_getSettings
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /api/trpc/ai.getUsageStats:
+    get:
+      tags:
+      - Ai
+      summary: Get Usage Stats
+      operationId: ai_getUsageStats
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /api/trpc/ai.updateSettings:
+    post:
+      tags:
+      - Ai
+      summary: Update Settings
+      operationId: ai_updateSettings
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                    temperature:
+                      type: number
+                    maxTokens:
+                      type: number
+                    systemPrompt:
+                      type: string
+                    brandVoicePrompt:
+                      type: string
+                    safetyPrompt:
+                      type: string
+                    streaming:
+                      type: boolean
+                    defaultLanguage:
+                      type: string
+                    defaultTone:
+                      type: string
+                    budgetLimitCents:
+                      type: number
+                      nullable: true
+                  nullable: true
+              required:
+              - json
+  /api/trpc/aiProviders.activate:
+    post:
+      tags:
+      - Ai Providers
+      summary: Activate
+      operationId: aiProviders_activate
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    provider: {}
+                  required:
+                  - provider
+              required:
+              - json
+  /api/trpc/aiProviders.getSettings:
+    get:
+      tags:
+      - Ai Providers
+      summary: Get Settings
+      operationId: aiProviders_getSettings
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /api/trpc/aiProviders.remove:
+    post:
+      tags:
+      - Ai Providers
+      summary: Remove
+      operationId: aiProviders_remove
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    provider: {}
+                  required:
+                  - provider
+              required:
+              - json
+  /api/trpc/aiProviders.save:
+    post:
+      tags:
+      - Ai Providers
+      summary: Save
+      operationId: aiProviders_save
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    provider: {}
+                    model:
+                      type: string
+                      minLength: 1
+                      maxLength: 160
+                    apiKey:
+                      type: string
+                      minLength: 8
+                      maxLength: 1024
+                  required:
+                  - provider
+                  - model
+                  - apiKey
+              required:
+              - json
+  /api/trpc/aiProviders.test:
+    post:
+      tags:
+      - Ai Providers
+      summary: Test
+      operationId: aiProviders_test
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    provider: {}
+                    model:
+                      type: string
+                      minLength: 1
+                      maxLength: 160
+                    apiKey:
+                      type: string
+                      minLength: 8
+                      maxLength: 1024
+                  required:
+                  - provider
+                  - model
+                  - apiKey
+              required:
+              - json
+  /api/trpc/assets.delete:
+    post:
+      tags:
+      - Assets
+      summary: Delete
+      operationId: assets_delete
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                  required:
+                  - id
+              required:
+              - json
+  /api/trpc/assets.generateAltText:
+    post:
+      tags:
+      - Assets
+      summary: Generate Alt Text
+      operationId: assets_generateAltText
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    assetId:
+                      type: number
+                  required:
+                  - assetId
+              required:
+              - json
+  /api/trpc/assets.list:
+    get:
+      tags:
+      - Assets
+      summary: List
+      operationId: assets_list
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      parameters:
+      - name: input
+        in: query
+        required: true
+        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
+        schema:
+          type: string
+      x-trpc-input-schema:
+        type: object
+        properties:
+          siteId:
+            type: number
+        required:
+        - siteId
+  /api/trpc/assets.reoptimize:
+    post:
+      tags:
+      - Assets
+      summary: Reoptimize
+      operationId: assets_reoptimize
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                    maxWidth:
+                      type: number
+                    outputFormat:
+                      type: string
+                      enum:
+                      - webp
+                      - jpeg
+                      - png
+                    quality:
+                      type: number
+                  required:
+                  - id
+              required:
+              - json
+  /api/trpc/assets.update:
+    post:
+      tags:
+      - Assets
+      summary: Update
+      operationId: assets_update
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                    name:
+                      type: string
+                    path:
+                      type: string
+                    alt:
+                      type: string
+                  required:
+                  - id
+              required:
+              - json
+  /api/trpc/assets.upload:
+    post:
+      tags:
+      - Assets
+      summary: Upload
+      operationId: assets_upload
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    siteId:
+                      type: number
+                    name:
+                      type: string
+                      minLength: 1
+                      maxLength: 256
+                    path:
+                      type: string
+                    base64Content:
+                      type: string
+                    mimeType:
+                      type: string
+                    size:
+                      type: number
+                    width:
+                      type: number
+                    height:
+                      type: number
+                    optimize:
+                      type: boolean
+                    maxWidth:
+                      type: number
+                    outputFormat:
+                      type: string
+                      enum:
+                      - webp
+                      - jpeg
+                      - png
+                      - original
+                    quality:
+                      type: number
+                  required:
+                  - siteId
+                  - name
+                  - path
+                  - base64Content
+                  - mimeType
+                  - size
+                  - optimize
+              required:
+              - json
+  /api/trpc/blocks.create:
+    post:
+      tags:
+      - Blocks
+      summary: Create
+      operationId: blocks_create
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      minLength: 1
+                    category:
+                      type: string
+                    content:
+                      type: string
+                      minLength: 1
+                    contentType:
+                      type: string
+                      enum:
+                      - markdown
+                      - html
+                      - liquid
+                  required:
+                  - name
+                  - content
+                  - contentType
+              required:
+              - json
+  /api/trpc/blocks.delete:
+    post:
+      tags:
+      - Blocks
+      summary: Delete
+      operationId: blocks_delete
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                  required:
+                  - id
+              required:
+              - json
+  /api/trpc/blocks.list:
+    get:
+      tags:
+      - Blocks
+      summary: List
+      operationId: blocks_list
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /api/trpc/blocks.update:
+    post:
+      tags:
+      - Blocks
+      summary: Update
+      operationId: blocks_update
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                    name:
+                      type: string
+                    category:
+                      type: string
+                    content:
+                      type: string
+                    contentType:
+                      type: string
+                      enum:
+                      - markdown
+                      - html
+                      - liquid
+                  required:
+                  - id
+              required:
+              - json
+  /api/trpc/github.checkPluginCompatibility:
+    get:
+      tags:
+      - Github
+      summary: Check Plugin Compatibility
+      operationId: github_checkPluginCompatibility
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      parameters:
+      - name: input
+        in: query
+        required: true
+        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
+        schema:
+          type: string
+      x-trpc-input-schema:
+        type: object
+        properties:
+          plugin:
+            type: string
+        required:
+        - plugin
+  /api/trpc/github.commitFile:
+    post:
+      tags:
+      - Github
+      summary: Commit File
+      operationId: github_commitFile
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    owner:
+                      type: string
+                    repo:
+                      type: string
+                    path:
+                      type: string
+                    branch:
+                      type: string
+                    content:
+                      type: string
+                    message:
+                      type: string
+                    sha:
+                      type: string
+                  required:
+                  - owner
+                  - repo
+                  - path
+                  - branch
+                  - content
+                  - message
+              required:
+              - json
+  /api/trpc/github.connect:
+    post:
+      tags:
+      - Github
+      summary: Connect
+      operationId: github_connect
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    token:
+                      type: string
+                      minLength: 1
+                  required:
+                  - token
+              required:
+              - json
+  /api/trpc/github.createBranch:
+    post:
+      tags:
+      - Github
+      summary: Create Branch
+      operationId: github_createBranch
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    owner:
+                      type: string
+                    repo:
+                      type: string
+                    branchName:
+                      type: string
+                    fromBranch:
+                      type: string
+                  required:
+                  - owner
+                  - repo
+                  - branchName
+                  - fromBranch
+              required:
+              - json
+  /api/trpc/github.createPullRequest:
+    post:
+      tags:
+      - Github
+      summary: Create Pull Request
+      operationId: github_createPullRequest
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    owner:
+                      type: string
+                    repo:
+                      type: string
+                    title:
+                      type: string
+                    head:
+                      type: string
+                    base:
+                      type: string
+                    body:
+                      type: string
+                  required:
+                  - owner
+                  - repo
+                  - title
+                  - head
+                  - base
+              required:
+              - json
+  /api/trpc/github.deleteFile:
+    post:
+      tags:
+      - Github
+      summary: Delete File
+      operationId: github_deleteFile
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    owner:
+                      type: string
+                    repo:
+                      type: string
+                    path:
+                      type: string
+                    branch:
+                      type: string
+                    sha:
+                      type: string
+                    message:
+                      type: string
+                  required:
+                  - owner
+                  - repo
+                  - path
+                  - branch
+                  - sha
+                  - message
+              required:
+              - json
+  /api/trpc/github.detectJekyll:
+    get:
+      tags:
+      - Github
+      summary: Detect Jekyll
+      operationId: github_detectJekyll
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      parameters:
+      - name: input
+        in: query
+        required: true
+        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
+        schema:
+          type: string
+      x-trpc-input-schema:
+        type: object
+        properties:
+          owner:
+            type: string
+          repo:
+            type: string
+          branch:
+            type: string
+          rootPath:
+            type: string
+        required:
+        - owner
+        - repo
+        - branch
+        - rootPath
+  /api/trpc/github.disconnect:
+    post:
+      tags:
+      - Github
+      summary: Disconnect
+      operationId: github_disconnect
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json: {}
+  /api/trpc/github.generateActionsWorkflow:
+    post:
+      tags:
+      - Github
+      summary: Generate Actions Workflow
+      operationId: github_generateActionsWorkflow
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    owner:
+                      type: string
+                    repo:
+                      type: string
+                    branch:
+                      type: string
+                  required:
+                  - owner
+                  - repo
+                  - branch
+              required:
+              - json
+  /api/trpc/github.getFile:
+    get:
+      tags:
+      - Github
+      summary: Get File
+      operationId: github_getFile
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      parameters:
+      - name: input
+        in: query
+        required: true
+        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
+        schema:
+          type: string
+      x-trpc-input-schema:
+        type: object
+        properties:
+          owner:
+            type: string
+          repo:
+            type: string
+          path:
+            type: string
+          branch:
+            type: string
+        required:
+        - owner
+        - repo
+        - path
+        - branch
+  /api/trpc/github.getJekyllConfig:
+    get:
+      tags:
+      - Github
+      summary: Get Jekyll Config
+      operationId: github_getJekyllConfig
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      parameters:
+      - name: input
+        in: query
+        required: true
+        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
+        schema:
+          type: string
+      x-trpc-input-schema:
+        type: object
+        properties:
+          owner:
+            type: string
+          repo:
+            type: string
+          rootPath:
+            type: string
+          branch:
+            type: string
+        required:
+        - owner
+        - repo
+        - rootPath
+        - branch
+  /api/trpc/github.getPagesStatus:
+    get:
+      tags:
+      - Github
+      summary: Get Pages Status
+      operationId: github_getPagesStatus
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      parameters:
+      - name: input
+        in: query
+        required: true
+        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
+        schema:
+          type: string
+      x-trpc-input-schema:
+        type: object
+        properties:
+          owner:
+            type: string
+          repo:
+            type: string
+        required:
+        - owner
+        - repo
+  /api/trpc/github.getRateLimit:
+    get:
+      tags:
+      - Github
+      summary: Get Rate Limit
+      operationId: github_getRateLimit
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /api/trpc/github.inventory:
+    get:
+      tags:
+      - Github
+      summary: Inventory
+      operationId: github_inventory
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      parameters:
+      - name: input
+        in: query
+        required: true
+        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
+        schema:
+          type: string
+      x-trpc-input-schema:
+        type: object
+        properties:
+          owner:
+            type: string
+          repo:
+            type: string
+          branch:
+            type: string
+        required:
+        - owner
+        - repo
+        - branch
+  /api/trpc/github.listBranches:
+    get:
+      tags:
+      - Github
+      summary: List Branches
+      operationId: github_listBranches
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      parameters:
+      - name: input
+        in: query
+        required: true
+        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
+        schema:
+          type: string
+      x-trpc-input-schema:
+        type: object
+        properties:
+          owner:
+            type: string
+          repo:
+            type: string
+        required:
+        - owner
+        - repo
+  /api/trpc/github.listFiles:
+    get:
+      tags:
+      - Github
+      summary: List Files
+      operationId: github_listFiles
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      parameters:
+      - name: input
+        in: query
+        required: true
+        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
+        schema:
+          type: string
+      x-trpc-input-schema:
+        type: object
+        properties:
+          owner:
+            type: string
+          repo:
+            type: string
+          path:
+            type: string
+          branch:
+            type: string
+        required:
+        - owner
+        - repo
+        - path
+        - branch
+  /api/trpc/github.listRepos:
+    get:
+      tags:
+      - Github
+      summary: List Repos
+      operationId: github_listRepos
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      parameters:
+      - name: input
+        in: query
+        required: true
+        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
+        schema:
+          type: string
+      x-trpc-input-schema:
+        type: object
+        properties:
+          page:
+            type: number
+          perPage:
+            type: number
+          search:
+            type: string
+        required:
+        - page
+        - perPage
+  /api/trpc/github.repositories:
+    get:
+      tags:
+      - Github
+      summary: Repositories
+      operationId: github_repositories
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      parameters:
+      - name: input
+        in: query
+        required: true
+        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
+        schema:
+          type: string
+      x-trpc-input-schema:
+        type: object
+        properties:
+          cursor:
+            type: integer
+            nullable: true
+        nullable: true
+  /api/trpc/github.reviewFile:
+    get:
+      tags:
+      - Github
+      summary: Review File
+      operationId: github_reviewFile
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      parameters:
+      - name: input
+        in: query
+        required: true
+        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
+        schema:
+          type: string
+      x-trpc-input-schema:
+        type: object
+        properties:
+          owner:
+            type: string
+          repo:
+            type: string
+          path:
+            type: string
+          branch:
+            type: string
+        required:
+        - owner
+        - repo
+        - path
+        - branch
+  /api/trpc/github.status:
+    get:
+      tags:
+      - Github
+      summary: Status
+      operationId: github_status
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /api/trpc/github.updateJekyllConfig:
+    post:
+      tags:
+      - Github
+      summary: Update Jekyll Config
+      operationId: github_updateJekyllConfig
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    owner:
+                      type: string
+                    repo:
+                      type: string
+                    rootPath:
+                      type: string
+                    branch:
+                      type: string
+                    commitMessage:
+                      type: string
+                  required:
+                  - owner
+                  - repo
+                  - rootPath
+                  - branch
+              required:
+              - json
+  /api/trpc/notifications.registerDevice:
+    post:
+      tags:
+      - Notifications
+      summary: Register Device
+      operationId: notifications_registerDevice
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    token:
+                      type: string
+                      minLength: 1
+                      maxLength: 512
+                    platform:
+                      type: string
+                      enum:
+                      - android
+                  required:
+                  - token
+                  - platform
+              required:
+              - json
+  /api/trpc/notifications.unregisterDevice:
+    post:
+      tags:
+      - Notifications
+      summary: Unregister Device
+      operationId: notifications_unregisterDevice
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    token:
+                      type: string
+                      minLength: 1
+                      maxLength: 512
+                  required:
+                  - token
+              required:
+              - json
+  /api/trpc/posts.autosave:
+    post:
+      tags:
+      - Posts
+      summary: Autosave
+      operationId: posts_autosave
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                    markdown:
+                      type: string
+                    frontMatter: {}
+                  required:
+                  - id
+                  - markdown
+                  - frontMatter
+              required:
+              - json
+  /api/trpc/posts.delete:
+    post:
+      tags:
+      - Posts
+      summary: Delete
+      operationId: posts_delete
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                  required:
+                  - id
+              required:
+              - json
+  /api/trpc/posts.get:
+    get:
+      tags:
+      - Posts
+      summary: Get
+      operationId: posts_get
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      parameters:
+      - name: input
+        in: query
+        required: true
+        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
+        schema:
+          type: string
+      x-trpc-input-schema:
+        type: object
+        properties:
+          id:
+            type: number
+        required:
+        - id
+  /api/trpc/posts.getFrontMatterTemplates:
+    get:
+      tags:
+      - Posts
+      summary: Get Front Matter Templates
+      operationId: posts_getFrontMatterTemplates
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      parameters:
+      - name: input
+        in: query
+        required: true
+        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
+        schema:
+          type: string
+      x-trpc-input-schema:
+        type: object
+        properties:
+          siteId:
+            type: number
+  /api/trpc/posts.list:
+    get:
+      tags:
+      - Posts
+      summary: List
+      operationId: posts_list
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      parameters:
+      - name: input
+        in: query
+        required: true
+        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
+        schema:
+          type: string
+      x-trpc-input-schema:
+        type: object
+        properties:
+          siteId:
+            type: number
+        required:
+        - siteId
+  /api/trpc/posts.update:
+    post:
+      tags:
+      - Posts
+      summary: Update
+      operationId: posts_update
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                    path:
+                      type: string
+                    title:
+                      type: string
+                    slug:
+                      type: string
+                    status: {}
+                    frontMatter: {}
+                    markdown:
+                      type: string
+                    sha:
+                      type: string
+                    scheduledAt:
+                      nullable: true
+                  required:
+                  - id
+                  nullable: true
+              required:
+              - json
+  /api/trpc/posts.upsert:
+    post:
+      tags:
+      - Posts
+      summary: Upsert
+      operationId: posts_upsert
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    siteId:
+                      type: number
+                    path:
+                      type: string
+                    filename:
+                      type: string
+                    slug:
+                      type: string
+                    title:
+                      type: string
+                    status: {}
+                    frontMatter: {}
+                    markdown:
+                      type: string
+                    sha:
+                      type: string
+                    scheduledAt: {}
+                  required:
+                  - siteId
+                  - path
+              required:
+              - json
+  /api/trpc/repurposing.delete:
+    post:
+      tags:
+      - Repurposing
+      summary: Delete
+      operationId: repurposing_delete
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                  required:
+                  - id
+              required:
+              - json
+  /api/trpc/repurposing.generate:
+    post:
+      tags:
+      - Repurposing
+      summary: Generate
+      operationId: repurposing_generate
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    postId:
+                      type: number
+                    siteId:
+                      type: number
+                    format:
+                      type: string
+                      enum:
+                      - twitter
+                      - linkedin
+                      - tiktok
+                      - youtube
+                      - newsletter
+                      - email
+                      - podcast
+                      - slides
+                  required:
+                  - postId
+                  - siteId
+                  - format
+              required:
+              - json
+  /api/trpc/repurposing.getById:
+    get:
+      tags:
+      - Repurposing
+      summary: Get By Id
+      operationId: repurposing_getById
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      parameters:
+      - name: input
+        in: query
+        required: true
+        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
+        schema:
+          type: string
+      x-trpc-input-schema:
+        type: object
+        properties:
+          id:
+            type: number
+        required:
+        - id
+  /api/trpc/repurposing.getByPost:
+    get:
+      tags:
+      - Repurposing
+      summary: Get By Post
+      operationId: repurposing_getByPost
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      parameters:
+      - name: input
+        in: query
+        required: true
+        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
+        schema:
+          type: string
+      x-trpc-input-schema:
+        type: object
+        properties:
+          postId:
+            type: number
+        required:
+        - postId
+  /api/trpc/repurposing.regenerate:
+    post:
+      tags:
+      - Repurposing
+      summary: Regenerate
+      operationId: repurposing_regenerate
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                    postId:
+                      type: number
+                    siteId:
+                      type: number
+                  required:
+                  - id
+                  - postId
+                  - siteId
+              required:
+              - json
+  /api/trpc/repurposing.update:
+    post:
+      tags:
+      - Repurposing
+      summary: Update
+      operationId: repurposing_update
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                    content:
+                      type: string
+                    status: {}
+                    isCustomized:
+                      type: boolean
+                  required:
+                  - id
+              required:
+              - json
+  /api/trpc/scheduler.cancel:
+    post:
+      tags:
+      - Scheduler
+      summary: Cancel
+      operationId: scheduler_cancel
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                  required:
+                  - id
+              required:
+              - json
+  /api/trpc/scheduler.cancelAll:
+    post:
+      tags:
+      - Scheduler
+      summary: Cancel All
+      operationId: scheduler_cancelAll
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    siteId:
+                      type: number
+                  required:
+                  - siteId
+              required:
+              - json
+  /api/trpc/scheduler.list:
+    get:
+      tags:
+      - Scheduler
+      summary: List
+      operationId: scheduler_list
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      parameters:
+      - name: input
+        in: query
+        required: true
+        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
+        schema:
+          type: string
+      x-trpc-input-schema:
+        type: object
+        properties:
+          siteId:
+            type: number
+        required:
+        - siteId
+  /api/trpc/scheduler.listHeartbeatJobs:
+    get:
+      tags:
+      - Scheduler
+      summary: List Heartbeat Jobs
+      operationId: scheduler_listHeartbeatJobs
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      parameters:
+      - name: input
+        in: query
+        required: true
+        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
+        schema:
+          type: string
+      x-trpc-input-schema:
+        type: object
+        properties:
+          page:
+            type: number
+          pageSize:
+            type: number
+        required:
+        - page
+        - pageSize
+  /api/trpc/scheduler.markFailed:
+    post:
+      tags:
+      - Scheduler
+      summary: Mark Failed
+      operationId: scheduler_markFailed
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                    errorMessage:
+                      type: string
+                      maxLength: 2000
+                  required:
+                  - id
+                  - errorMessage
+              required:
+              - json
+  /api/trpc/scheduler.markPublished:
+    post:
+      tags:
+      - Scheduler
+      summary: Mark Published
+      operationId: scheduler_markPublished
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                  required:
+                  - id
+              required:
+              - json
+  /api/trpc/scheduler.reschedule:
+    post:
+      tags:
+      - Scheduler
+      summary: Reschedule
+      operationId: scheduler_reschedule
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                    scheduledAt: {}
+                    timezone:
+                      type: string
+                  required:
+                  - id
+                  - scheduledAt
+              required:
+              - json
+  /api/trpc/scheduler.schedule:
+    post:
+      tags:
+      - Scheduler
+      summary: Schedule
+      operationId: scheduler_schedule
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    siteId:
+                      type: number
+                    postId:
+                      type: number
+                    draftPath:
+                      type: string
+                    targetPath:
+                      type: string
+                    scheduledAt: {}
+                    timezone:
+                      type: string
+                    commitMessage:
+                      type: string
+                  required:
+                  - siteId
+                  - draftPath
+                  - targetPath
+                  - scheduledAt
+                  - timezone
+              required:
+              - json
+  /api/trpc/sites.delete:
+    post:
+      tags:
+      - Sites
+      summary: Delete
+      operationId: sites_delete
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                  required:
+                  - id
+              required:
+              - json
+  /api/trpc/sites.get:
+    get:
+      tags:
+      - Sites
+      summary: Get
+      operationId: sites_get
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      parameters:
+      - name: input
+        in: query
+        required: true
+        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
+        schema:
+          type: string
+      x-trpc-input-schema:
+        type: object
+        properties:
+          id:
+            type: number
+        required:
+        - id
+  /api/trpc/sites.list:
+    get:
+      tags:
+      - Sites
+      summary: List
+      operationId: sites_list
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /api/trpc/sites.update:
+    post:
+      tags:
+      - Sites
+      summary: Update
+      operationId: sites_update
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                    isFavorite:
+                      type: boolean
+                    selectedBranch:
+                      type: string
+                    rootPath:
+                      type: string
+                    timezone:
+                      type: string
+                    defaultLayout:
+                      type: string
+                    defaultAssetPath:
+                      type: string
+                    aiVoiceProfile:
+                      type: string
+                    settings: {}
+                  required:
+                  - id
+              required:
+              - json
+  /api/trpc/sites.upsert:
+    post:
+      tags:
+      - Sites
+      summary: Upsert
+      operationId: sites_upsert
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    owner:
+                      type: string
+                    repo:
+                      type: string
+                    defaultBranch:
+                      type: string
+                    selectedBranch:
+                      type: string
+                    rootPath:
+                      type: string
+                    isJekyll:
+                      type: boolean
+                    isFavorite:
+                      type: boolean
+                    timezone:
+                      type: string
+                    defaultLayout:
+                      type: string
+                    defaultAssetPath:
+                      type: string
+                  required:
+                  - owner
+                  - repo
+              required:
+              - json
+  /api/trpc/snapshots.create:
+    post:
+      tags:
+      - Snapshots
+      summary: Create
+      operationId: snapshots_create
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    siteId:
+                      type: number
+                    postId:
+                      type: number
+                    postPath:
+                      type: string
+                    label:
+                      type: string
+                    reason: {}
+                    markdown:
+                      type: string
+                    frontMatter: {}
+                  required:
+                  - siteId
+                  - label
+                  - reason
+              required:
+              - json
+  /api/trpc/snapshots.get:
+    get:
+      tags:
+      - Snapshots
+      summary: Get
+      operationId: snapshots_get
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      parameters:
+      - name: input
+        in: query
+        required: true
+        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
+        schema:
+          type: string
+      x-trpc-input-schema:
+        type: object
+        properties:
+          id:
+            type: number
+        required:
+        - id
+  /api/trpc/snapshots.listByPost:
+    get:
+      tags:
+      - Snapshots
+      summary: List By Post
+      operationId: snapshots_listByPost
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      parameters:
+      - name: input
+        in: query
+        required: true
+        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
+        schema:
+          type: string
+      x-trpc-input-schema:
+        type: object
+        properties:
+          postPath:
+            type: string
+          siteId:
+            type: number
+        required:
+        - postPath
+        - siteId
+  /api/trpc/socialMedia.cancelScheduledPost:
+    post:
+      tags:
+      - Social Media
+      summary: Cancel Scheduled Post
+      operationId: socialMedia_cancelScheduledPost
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    postId:
+                      type: number
+                  required:
+                  - postId
+              required:
+              - json
+  /api/trpc/socialMedia.connectAccount:
+    post:
+      tags:
+      - Social Media
+      summary: Connect Account
+      operationId: socialMedia_connectAccount
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    platform:
+                      type: string
+                      enum:
+                      - twitter
+                      - linkedin
+                      - facebook
+                      - instagram
+                    accessToken:
+                      type: string
+                    refreshToken:
+                      type: string
+                    expiresAt: {}
+                    accountId:
+                      type: string
+                    username:
+                      type: string
+                    displayName:
+                      type: string
+                    profileImageUrl:
+                      type: string
+                  required:
+                  - platform
+                  - accessToken
+                  - accountId
+              required:
+              - json
+  /api/trpc/socialMedia.disconnectAccount:
+    post:
+      tags:
+      - Social Media
+      summary: Disconnect Account
+      operationId: socialMedia_disconnectAccount
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                  required:
+                  - id
+              required:
+              - json
+  /api/trpc/socialMedia.getAccountDetails:
+    get:
+      tags:
+      - Social Media
+      summary: Get Account Details
+      operationId: socialMedia_getAccountDetails
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      parameters:
+      - name: input
+        in: query
+        required: true
+        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
+        schema:
+          type: string
+      x-trpc-input-schema:
+        type: object
+        properties:
+          id:
+            type: number
+        required:
+        - id
+  /api/trpc/socialMedia.getAccounts:
+    get:
+      tags:
+      - Social Media
+      summary: Get Accounts
+      operationId: socialMedia_getAccounts
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /api/trpc/socialMedia.getAnalyticsByPlatform:
+    get:
+      tags:
+      - Social Media
+      summary: Get Analytics By Platform
+      operationId: socialMedia_getAnalyticsByPlatform
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      parameters:
+      - name: input
+        in: query
+        required: true
+        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
+        schema:
+          type: string
+      x-trpc-input-schema:
+        type: object
+        properties:
+          platform:
+            type: string
+            enum:
+            - twitter
+            - linkedin
+            - facebook
+            - instagram
+        required:
+        - platform
+  /api/trpc/socialMedia.getAnalyticsSummary:
+    get:
+      tags:
+      - Social Media
+      summary: Get Analytics Summary
+      operationId: socialMedia_getAnalyticsSummary
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /api/trpc/socialMedia.getContentAnalytics:
+    get:
+      tags:
+      - Social Media
+      summary: Get Content Analytics
+      operationId: socialMedia_getContentAnalytics
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      parameters:
+      - name: input
+        in: query
+        required: true
+        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
+        schema:
+          type: string
+      x-trpc-input-schema:
+        type: object
+        properties:
+          repurposedContentId:
+            type: number
+        required:
+        - repurposedContentId
+  /api/trpc/socialMedia.getScheduledPosts:
+    get:
+      tags:
+      - Social Media
+      summary: Get Scheduled Posts
+      operationId: socialMedia_getScheduledPosts
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      parameters:
+      - name: input
+        in: query
+        required: true
+        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
+        schema:
+          type: string
+      x-trpc-input-schema:
+        type: object
+        properties:
+          repurposedContentId:
+            type: number
+        required:
+        - repurposedContentId
+  /api/trpc/socialMedia.publishContent:
+    post:
+      tags:
+      - Social Media
+      summary: Publish Content
+      operationId: socialMedia_publishContent
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    repurposedContentId:
+                      type: number
+                    accountId:
+                      type: number
+                  required:
+                  - repurposedContentId
+                  - accountId
+              required:
+              - json
+  /api/trpc/socialMedia.reschedulePost:
+    post:
+      tags:
+      - Social Media
+      summary: Reschedule Post
+      operationId: socialMedia_reschedulePost
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    postId:
+                      type: number
+                    scheduledAt: {}
+                    timezone:
+                      type: string
+                  required:
+                  - postId
+                  - scheduledAt
+              required:
+              - json
+  /api/trpc/socialMedia.schedulePost:
+    post:
+      tags:
+      - Social Media
+      summary: Schedule Post
+      operationId: socialMedia_schedulePost
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    repurposedContentId:
+                      type: number
+                    socialMediaAccountId:
+                      type: number
+                    scheduledAt: {}
+                    timezone:
+                      type: string
+                  required:
+                  - repurposedContentId
+                  - socialMediaAccountId
+                  - scheduledAt
+              required:
+              - json
+  /api/trpc/socialMedia.syncAnalytics:
+    post:
+      tags:
+      - Social Media
+      summary: Sync Analytics
+      operationId: socialMedia_syncAnalytics
+      responses:
+        '200':
+          description: Successful tRPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TRPCResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: object
+                  properties:
+                    analyticsId:
+                      type: number
+                  required:
+                  - analyticsId
+              required:
+              - json
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    TRPCResponse:
+      type: object
+      description: tRPC response envelope; payload shape varies by procedure
+      additionalProperties: true
+    Error:
+      type: object
+      additionalProperties: true
+  responses:
+    BadRequest:
+      description: Bad request / invalid input
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ServerError:
+      description: Server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+security:
+- bearerAuth: []
