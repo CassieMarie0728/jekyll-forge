@@ -3,31 +3,35 @@ info:
   title: Jekyll Forge API
   version: 1.0.0
   description: 'OpenAPI map generated from the Jekyll Forge tRPC server source. Query procedures use GET with tRPC input in the `input` query parameter; mutations use POST with a `{ "json": ... }` body. Protected procedures accept the application session/authentication mechanism.'
+  contact:
+    name: Cassandra Crossno
+    url: 'https://github.com/cassiemarie0728'
+    email: cm
 servers:
-- url: http://localhost:3000
-  description: Development
-- url: https://jekyll-forge.manus.space
-  description: Production (source-configured; verify before deployment)
+  - url: 'http://localhost:3000'
+    description: Development
+  - url: 'https://jekyll-forge.manus.space'
+    description: Production (source-configured; verify before deployment)
 tags:
-- name: Ab Testing
-- name: Ai
-- name: Ai Providers
-- name: Assets
-- name: Auth
-- name: Blocks
-- name: Github
-- name: Notifications
-- name: Posts
-- name: Repurposing
-- name: Scheduler
-- name: Sites
-- name: Snapshots
-- name: Social Media
+  - name: Ab Testing
+  - name: Ai
+  - name: Ai Providers
+  - name: Assets
+  - name: Auth
+  - name: Blocks
+  - name: Github
+  - name: Notifications
+  - name: Posts
+  - name: Repurposing
+  - name: Scheduler
+  - name: Sites
+  - name: Snapshots
+  - name: Social Media
 paths:
   /api/trpc/abTesting.applyWinner:
     post:
       tags:
-      - Ab Testing
+        - Ab Testing
       summary: Apply Winner
       operationId: abTesting_applyWinner
       responses:
@@ -58,14 +62,14 @@ paths:
                     winningVariationIndex:
                       type: number
                   required:
-                  - postId
-                  - winningVariationIndex
+                    - postId
+                    - winningVariationIndex
               required:
-              - json
+                - json
   /api/trpc/abTesting.completeTest:
     post:
       tags:
-      - Ab Testing
+        - Ab Testing
       summary: Complete Test
       operationId: abTesting_completeTest
       responses:
@@ -94,13 +98,13 @@ paths:
                     postId:
                       type: number
                   required:
-                  - postId
+                    - postId
               required:
-              - json
+                - json
   /api/trpc/abTesting.generateVariations:
     post:
       tags:
-      - Ab Testing
+        - Ab Testing
       summary: Generate Variations
       operationId: abTesting_generateVariations
       responses:
@@ -143,15 +147,15 @@ paths:
                     content:
                       type: string
                   required:
-                  - postId
-                  - headline
-                  - content
+                    - postId
+                    - headline
+                    - content
               required:
-              - json
+                - json
   /api/trpc/abTesting.getResults:
     get:
       tags:
-      - Ab Testing
+        - Ab Testing
       summary: Get Results
       operationId: abTesting_getResults
       responses:
@@ -168,23 +172,23 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
       parameters:
-      - name: input
-        in: query
-        required: true
-        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
-        schema:
-          type: string
+        - name: input
+          in: query
+          required: true
+          description: 'URL-encoded tRPC input envelope, e.g. {"json":{...}}'
+          schema:
+            type: string
       x-trpc-input-schema:
         type: object
         properties:
           postId:
             type: number
         required:
-        - postId
+          - postId
   /api/trpc/abTesting.getVariations:
     get:
       tags:
-      - Ab Testing
+        - Ab Testing
       summary: Get Variations
       operationId: abTesting_getVariations
       responses:
@@ -201,23 +205,23 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
       parameters:
-      - name: input
-        in: query
-        required: true
-        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
-        schema:
-          type: string
+        - name: input
+          in: query
+          required: true
+          description: 'URL-encoded tRPC input envelope, e.g. {"json":{...}}'
+          schema:
+            type: string
       x-trpc-input-schema:
         type: object
         properties:
           postId:
             type: number
         required:
-        - postId
+          - postId
   /api/trpc/abTesting.publishVariation:
     post:
       tags:
-      - Ab Testing
+        - Ab Testing
       summary: Publish Variation
       operationId: abTesting_publishVariation
       responses:
@@ -252,22 +256,22 @@ paths:
                       items:
                         type: string
                         enum:
-                        - twitter
-                        - linkedin
-                        - facebook
-                        - instagram
-                        - email
-                        - direct
+                          - twitter
+                          - linkedin
+                          - facebook
+                          - instagram
+                          - email
+                          - direct
                   required:
-                  - postId
-                  - variationIndex
-                  - platforms
+                    - postId
+                    - variationIndex
+                    - platforms
               required:
-              - json
+                - json
   /api/trpc/abTesting.updateMetrics:
     post:
       tags:
-      - Ab Testing
+        - Ab Testing
       summary: Update Metrics
       operationId: abTesting_updateMetrics
       responses:
@@ -315,15 +319,15 @@ paths:
                         replies:
                           type: number
                   required:
-                  - postId
-                  - variationIndex
-                  - platform
+                    - postId
+                    - variationIndex
+                    - platform
               required:
-              - json
+                - json
   /api/trpc/ai.generate:
     post:
       tags:
-      - Ai
+        - Ai
       summary: Generate
       operationId: ai_generate
       responses:
@@ -363,13 +367,13 @@ paths:
                     voiceProfileId:
                       type: number
                   required:
-                  - task
+                    - task
               required:
-              - json
+                - json
   /api/trpc/ai.getSettings:
     get:
       tags:
-      - Ai
+        - Ai
       summary: Get Settings
       operationId: ai_getSettings
       responses:
@@ -388,7 +392,7 @@ paths:
   /api/trpc/ai.getUsageStats:
     get:
       tags:
-      - Ai
+        - Ai
       summary: Get Usage Stats
       operationId: ai_getUsageStats
       responses:
@@ -407,7 +411,7 @@ paths:
   /api/trpc/ai.updateSettings:
     post:
       tags:
-      - Ai
+        - Ai
       summary: Update Settings
       operationId: ai_updateSettings
       responses:
@@ -456,11 +460,11 @@ paths:
                       nullable: true
                   nullable: true
               required:
-              - json
+                - json
   /api/trpc/aiProviders.activate:
     post:
       tags:
-      - Ai Providers
+        - Ai Providers
       summary: Activate
       operationId: aiProviders_activate
       responses:
@@ -488,13 +492,13 @@ paths:
                   properties:
                     provider: {}
                   required:
-                  - provider
+                    - provider
               required:
-              - json
+                - json
   /api/trpc/aiProviders.getSettings:
     get:
       tags:
-      - Ai Providers
+        - Ai Providers
       summary: Get Settings
       operationId: aiProviders_getSettings
       responses:
@@ -513,7 +517,7 @@ paths:
   /api/trpc/aiProviders.remove:
     post:
       tags:
-      - Ai Providers
+        - Ai Providers
       summary: Remove
       operationId: aiProviders_remove
       responses:
@@ -541,13 +545,13 @@ paths:
                   properties:
                     provider: {}
                   required:
-                  - provider
+                    - provider
               required:
-              - json
+                - json
   /api/trpc/aiProviders.save:
     post:
       tags:
-      - Ai Providers
+        - Ai Providers
       summary: Save
       operationId: aiProviders_save
       responses:
@@ -583,15 +587,15 @@ paths:
                       minLength: 8
                       maxLength: 1024
                   required:
-                  - provider
-                  - model
-                  - apiKey
+                    - provider
+                    - model
+                    - apiKey
               required:
-              - json
+                - json
   /api/trpc/aiProviders.test:
     post:
       tags:
-      - Ai Providers
+        - Ai Providers
       summary: Test
       operationId: aiProviders_test
       responses:
@@ -627,15 +631,15 @@ paths:
                       minLength: 8
                       maxLength: 1024
                   required:
-                  - provider
-                  - model
-                  - apiKey
+                    - provider
+                    - model
+                    - apiKey
               required:
-              - json
+                - json
   /api/trpc/assets.delete:
     post:
       tags:
-      - Assets
+        - Assets
       summary: Delete
       operationId: assets_delete
       responses:
@@ -664,13 +668,13 @@ paths:
                     id:
                       type: number
                   required:
-                  - id
+                    - id
               required:
-              - json
+                - json
   /api/trpc/assets.generateAltText:
     post:
       tags:
-      - Assets
+        - Assets
       summary: Generate Alt Text
       operationId: assets_generateAltText
       responses:
@@ -699,13 +703,13 @@ paths:
                     assetId:
                       type: number
                   required:
-                  - assetId
+                    - assetId
               required:
-              - json
+                - json
   /api/trpc/assets.list:
     get:
       tags:
-      - Assets
+        - Assets
       summary: List
       operationId: assets_list
       responses:
@@ -722,23 +726,23 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
       parameters:
-      - name: input
-        in: query
-        required: true
-        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
-        schema:
-          type: string
+        - name: input
+          in: query
+          required: true
+          description: 'URL-encoded tRPC input envelope, e.g. {"json":{...}}'
+          schema:
+            type: string
       x-trpc-input-schema:
         type: object
         properties:
           siteId:
             type: number
         required:
-        - siteId
+          - siteId
   /api/trpc/assets.reoptimize:
     post:
       tags:
-      - Assets
+        - Assets
       summary: Reoptimize
       operationId: assets_reoptimize
       responses:
@@ -771,19 +775,19 @@ paths:
                     outputFormat:
                       type: string
                       enum:
-                      - webp
-                      - jpeg
-                      - png
+                        - webp
+                        - jpeg
+                        - png
                     quality:
                       type: number
                   required:
-                  - id
+                    - id
               required:
-              - json
+                - json
   /api/trpc/assets.update:
     post:
       tags:
-      - Assets
+        - Assets
       summary: Update
       operationId: assets_update
       responses:
@@ -818,13 +822,13 @@ paths:
                     alt:
                       type: string
                   required:
-                  - id
+                    - id
               required:
-              - json
+                - json
   /api/trpc/assets.upload:
     post:
       tags:
-      - Assets
+        - Assets
       summary: Upload
       operationId: assets_upload
       responses:
@@ -875,26 +879,26 @@ paths:
                     outputFormat:
                       type: string
                       enum:
-                      - webp
-                      - jpeg
-                      - png
-                      - original
+                        - webp
+                        - jpeg
+                        - png
+                        - original
                     quality:
                       type: number
                   required:
-                  - siteId
-                  - name
-                  - path
-                  - base64Content
-                  - mimeType
-                  - size
-                  - optimize
+                    - siteId
+                    - name
+                    - path
+                    - base64Content
+                    - mimeType
+                    - size
+                    - optimize
               required:
-              - json
+                - json
   /api/trpc/blocks.create:
     post:
       tags:
-      - Blocks
+        - Blocks
       summary: Create
       operationId: blocks_create
       responses:
@@ -931,19 +935,19 @@ paths:
                     contentType:
                       type: string
                       enum:
-                      - markdown
-                      - html
-                      - liquid
+                        - markdown
+                        - html
+                        - liquid
                   required:
-                  - name
-                  - content
-                  - contentType
+                    - name
+                    - content
+                    - contentType
               required:
-              - json
+                - json
   /api/trpc/blocks.delete:
     post:
       tags:
-      - Blocks
+        - Blocks
       summary: Delete
       operationId: blocks_delete
       responses:
@@ -972,13 +976,13 @@ paths:
                     id:
                       type: number
                   required:
-                  - id
+                    - id
               required:
-              - json
+                - json
   /api/trpc/blocks.list:
     get:
       tags:
-      - Blocks
+        - Blocks
       summary: List
       operationId: blocks_list
       responses:
@@ -997,7 +1001,7 @@ paths:
   /api/trpc/blocks.update:
     post:
       tags:
-      - Blocks
+        - Blocks
       summary: Update
       operationId: blocks_update
       responses:
@@ -1034,17 +1038,17 @@ paths:
                     contentType:
                       type: string
                       enum:
-                      - markdown
-                      - html
-                      - liquid
+                        - markdown
+                        - html
+                        - liquid
                   required:
-                  - id
+                    - id
               required:
-              - json
+                - json
   /api/trpc/github.checkPluginCompatibility:
     get:
       tags:
-      - Github
+        - Github
       summary: Check Plugin Compatibility
       operationId: github_checkPluginCompatibility
       responses:
@@ -1061,23 +1065,23 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
       parameters:
-      - name: input
-        in: query
-        required: true
-        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
-        schema:
-          type: string
+        - name: input
+          in: query
+          required: true
+          description: 'URL-encoded tRPC input envelope, e.g. {"json":{...}}'
+          schema:
+            type: string
       x-trpc-input-schema:
         type: object
         properties:
           plugin:
             type: string
         required:
-        - plugin
+          - plugin
   /api/trpc/github.commitFile:
     post:
       tags:
-      - Github
+        - Github
       summary: Commit File
       operationId: github_commitFile
       responses:
@@ -1118,18 +1122,18 @@ paths:
                     sha:
                       type: string
                   required:
-                  - owner
-                  - repo
-                  - path
-                  - branch
-                  - content
-                  - message
+                    - owner
+                    - repo
+                    - path
+                    - branch
+                    - content
+                    - message
               required:
-              - json
+                - json
   /api/trpc/github.connect:
     post:
       tags:
-      - Github
+        - Github
       summary: Connect
       operationId: github_connect
       responses:
@@ -1159,13 +1163,13 @@ paths:
                       type: string
                       minLength: 1
                   required:
-                  - token
+                    - token
               required:
-              - json
+                - json
   /api/trpc/github.createBranch:
     post:
       tags:
-      - Github
+        - Github
       summary: Create Branch
       operationId: github_createBranch
       responses:
@@ -1200,16 +1204,16 @@ paths:
                     fromBranch:
                       type: string
                   required:
-                  - owner
-                  - repo
-                  - branchName
-                  - fromBranch
+                    - owner
+                    - repo
+                    - branchName
+                    - fromBranch
               required:
-              - json
+                - json
   /api/trpc/github.createPullRequest:
     post:
       tags:
-      - Github
+        - Github
       summary: Create Pull Request
       operationId: github_createPullRequest
       responses:
@@ -1248,17 +1252,17 @@ paths:
                     body:
                       type: string
                   required:
-                  - owner
-                  - repo
-                  - title
-                  - head
-                  - base
+                    - owner
+                    - repo
+                    - title
+                    - head
+                    - base
               required:
-              - json
+                - json
   /api/trpc/github.deleteFile:
     post:
       tags:
-      - Github
+        - Github
       summary: Delete File
       operationId: github_deleteFile
       responses:
@@ -1297,18 +1301,18 @@ paths:
                     message:
                       type: string
                   required:
-                  - owner
-                  - repo
-                  - path
-                  - branch
-                  - sha
-                  - message
+                    - owner
+                    - repo
+                    - path
+                    - branch
+                    - sha
+                    - message
               required:
-              - json
+                - json
   /api/trpc/github.detectJekyll:
     get:
       tags:
-      - Github
+        - Github
       summary: Detect Jekyll
       operationId: github_detectJekyll
       responses:
@@ -1325,12 +1329,12 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
       parameters:
-      - name: input
-        in: query
-        required: true
-        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
-        schema:
-          type: string
+        - name: input
+          in: query
+          required: true
+          description: 'URL-encoded tRPC input envelope, e.g. {"json":{...}}'
+          schema:
+            type: string
       x-trpc-input-schema:
         type: object
         properties:
@@ -1343,14 +1347,14 @@ paths:
           rootPath:
             type: string
         required:
-        - owner
-        - repo
-        - branch
-        - rootPath
+          - owner
+          - repo
+          - branch
+          - rootPath
   /api/trpc/github.disconnect:
     post:
       tags:
-      - Github
+        - Github
       summary: Disconnect
       operationId: github_disconnect
       responses:
@@ -1377,7 +1381,7 @@ paths:
   /api/trpc/github.generateActionsWorkflow:
     post:
       tags:
-      - Github
+        - Github
       summary: Generate Actions Workflow
       operationId: github_generateActionsWorkflow
       responses:
@@ -1410,15 +1414,15 @@ paths:
                     branch:
                       type: string
                   required:
-                  - owner
-                  - repo
-                  - branch
+                    - owner
+                    - repo
+                    - branch
               required:
-              - json
+                - json
   /api/trpc/github.getFile:
     get:
       tags:
-      - Github
+        - Github
       summary: Get File
       operationId: github_getFile
       responses:
@@ -1435,12 +1439,12 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
       parameters:
-      - name: input
-        in: query
-        required: true
-        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
-        schema:
-          type: string
+        - name: input
+          in: query
+          required: true
+          description: 'URL-encoded tRPC input envelope, e.g. {"json":{...}}'
+          schema:
+            type: string
       x-trpc-input-schema:
         type: object
         properties:
@@ -1453,14 +1457,14 @@ paths:
           branch:
             type: string
         required:
-        - owner
-        - repo
-        - path
-        - branch
+          - owner
+          - repo
+          - path
+          - branch
   /api/trpc/github.getJekyllConfig:
     get:
       tags:
-      - Github
+        - Github
       summary: Get Jekyll Config
       operationId: github_getJekyllConfig
       responses:
@@ -1477,12 +1481,12 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
       parameters:
-      - name: input
-        in: query
-        required: true
-        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
-        schema:
-          type: string
+        - name: input
+          in: query
+          required: true
+          description: 'URL-encoded tRPC input envelope, e.g. {"json":{...}}'
+          schema:
+            type: string
       x-trpc-input-schema:
         type: object
         properties:
@@ -1495,14 +1499,14 @@ paths:
           branch:
             type: string
         required:
-        - owner
-        - repo
-        - rootPath
-        - branch
+          - owner
+          - repo
+          - rootPath
+          - branch
   /api/trpc/github.getPagesStatus:
     get:
       tags:
-      - Github
+        - Github
       summary: Get Pages Status
       operationId: github_getPagesStatus
       responses:
@@ -1519,12 +1523,12 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
       parameters:
-      - name: input
-        in: query
-        required: true
-        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
-        schema:
-          type: string
+        - name: input
+          in: query
+          required: true
+          description: 'URL-encoded tRPC input envelope, e.g. {"json":{...}}'
+          schema:
+            type: string
       x-trpc-input-schema:
         type: object
         properties:
@@ -1533,12 +1537,12 @@ paths:
           repo:
             type: string
         required:
-        - owner
-        - repo
+          - owner
+          - repo
   /api/trpc/github.getRateLimit:
     get:
       tags:
-      - Github
+        - Github
       summary: Get Rate Limit
       operationId: github_getRateLimit
       responses:
@@ -1557,7 +1561,7 @@ paths:
   /api/trpc/github.inventory:
     get:
       tags:
-      - Github
+        - Github
       summary: Inventory
       operationId: github_inventory
       responses:
@@ -1574,12 +1578,12 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
       parameters:
-      - name: input
-        in: query
-        required: true
-        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
-        schema:
-          type: string
+        - name: input
+          in: query
+          required: true
+          description: 'URL-encoded tRPC input envelope, e.g. {"json":{...}}'
+          schema:
+            type: string
       x-trpc-input-schema:
         type: object
         properties:
@@ -1590,13 +1594,13 @@ paths:
           branch:
             type: string
         required:
-        - owner
-        - repo
-        - branch
+          - owner
+          - repo
+          - branch
   /api/trpc/github.listBranches:
     get:
       tags:
-      - Github
+        - Github
       summary: List Branches
       operationId: github_listBranches
       responses:
@@ -1613,12 +1617,12 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
       parameters:
-      - name: input
-        in: query
-        required: true
-        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
-        schema:
-          type: string
+        - name: input
+          in: query
+          required: true
+          description: 'URL-encoded tRPC input envelope, e.g. {"json":{...}}'
+          schema:
+            type: string
       x-trpc-input-schema:
         type: object
         properties:
@@ -1627,12 +1631,12 @@ paths:
           repo:
             type: string
         required:
-        - owner
-        - repo
+          - owner
+          - repo
   /api/trpc/github.listFiles:
     get:
       tags:
-      - Github
+        - Github
       summary: List Files
       operationId: github_listFiles
       responses:
@@ -1649,12 +1653,12 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
       parameters:
-      - name: input
-        in: query
-        required: true
-        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
-        schema:
-          type: string
+        - name: input
+          in: query
+          required: true
+          description: 'URL-encoded tRPC input envelope, e.g. {"json":{...}}'
+          schema:
+            type: string
       x-trpc-input-schema:
         type: object
         properties:
@@ -1667,14 +1671,14 @@ paths:
           branch:
             type: string
         required:
-        - owner
-        - repo
-        - path
-        - branch
+          - owner
+          - repo
+          - path
+          - branch
   /api/trpc/github.listRepos:
     get:
       tags:
-      - Github
+        - Github
       summary: List Repos
       operationId: github_listRepos
       responses:
@@ -1691,12 +1695,12 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
       parameters:
-      - name: input
-        in: query
-        required: true
-        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
-        schema:
-          type: string
+        - name: input
+          in: query
+          required: true
+          description: 'URL-encoded tRPC input envelope, e.g. {"json":{...}}'
+          schema:
+            type: string
       x-trpc-input-schema:
         type: object
         properties:
@@ -1707,12 +1711,12 @@ paths:
           search:
             type: string
         required:
-        - page
-        - perPage
+          - page
+          - perPage
   /api/trpc/github.repositories:
     get:
       tags:
-      - Github
+        - Github
       summary: Repositories
       operationId: github_repositories
       responses:
@@ -1729,12 +1733,12 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
       parameters:
-      - name: input
-        in: query
-        required: true
-        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
-        schema:
-          type: string
+        - name: input
+          in: query
+          required: true
+          description: 'URL-encoded tRPC input envelope, e.g. {"json":{...}}'
+          schema:
+            type: string
       x-trpc-input-schema:
         type: object
         properties:
@@ -1745,7 +1749,7 @@ paths:
   /api/trpc/github.reviewFile:
     get:
       tags:
-      - Github
+        - Github
       summary: Review File
       operationId: github_reviewFile
       responses:
@@ -1762,12 +1766,12 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
       parameters:
-      - name: input
-        in: query
-        required: true
-        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
-        schema:
-          type: string
+        - name: input
+          in: query
+          required: true
+          description: 'URL-encoded tRPC input envelope, e.g. {"json":{...}}'
+          schema:
+            type: string
       x-trpc-input-schema:
         type: object
         properties:
@@ -1780,14 +1784,14 @@ paths:
           branch:
             type: string
         required:
-        - owner
-        - repo
-        - path
-        - branch
+          - owner
+          - repo
+          - path
+          - branch
   /api/trpc/github.status:
     get:
       tags:
-      - Github
+        - Github
       summary: Status
       operationId: github_status
       responses:
@@ -1806,7 +1810,7 @@ paths:
   /api/trpc/github.updateJekyllConfig:
     post:
       tags:
-      - Github
+        - Github
       summary: Update Jekyll Config
       operationId: github_updateJekyllConfig
       responses:
@@ -1843,16 +1847,16 @@ paths:
                     commitMessage:
                       type: string
                   required:
-                  - owner
-                  - repo
-                  - rootPath
-                  - branch
+                    - owner
+                    - repo
+                    - rootPath
+                    - branch
               required:
-              - json
+                - json
   /api/trpc/notifications.registerDevice:
     post:
       tags:
-      - Notifications
+        - Notifications
       summary: Register Device
       operationId: notifications_registerDevice
       responses:
@@ -1885,16 +1889,16 @@ paths:
                     platform:
                       type: string
                       enum:
-                      - android
+                        - android
                   required:
-                  - token
-                  - platform
+                    - token
+                    - platform
               required:
-              - json
+                - json
   /api/trpc/notifications.unregisterDevice:
     post:
       tags:
-      - Notifications
+        - Notifications
       summary: Unregister Device
       operationId: notifications_unregisterDevice
       responses:
@@ -1925,13 +1929,13 @@ paths:
                       minLength: 1
                       maxLength: 512
                   required:
-                  - token
+                    - token
               required:
-              - json
+                - json
   /api/trpc/posts.autosave:
     post:
       tags:
-      - Posts
+        - Posts
       summary: Autosave
       operationId: posts_autosave
       responses:
@@ -1963,15 +1967,15 @@ paths:
                       type: string
                     frontMatter: {}
                   required:
-                  - id
-                  - markdown
-                  - frontMatter
+                    - id
+                    - markdown
+                    - frontMatter
               required:
-              - json
+                - json
   /api/trpc/posts.delete:
     post:
       tags:
-      - Posts
+        - Posts
       summary: Delete
       operationId: posts_delete
       responses:
@@ -2000,13 +2004,13 @@ paths:
                     id:
                       type: number
                   required:
-                  - id
+                    - id
               required:
-              - json
+                - json
   /api/trpc/posts.get:
     get:
       tags:
-      - Posts
+        - Posts
       summary: Get
       operationId: posts_get
       responses:
@@ -2023,23 +2027,23 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
       parameters:
-      - name: input
-        in: query
-        required: true
-        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
-        schema:
-          type: string
+        - name: input
+          in: query
+          required: true
+          description: 'URL-encoded tRPC input envelope, e.g. {"json":{...}}'
+          schema:
+            type: string
       x-trpc-input-schema:
         type: object
         properties:
           id:
             type: number
         required:
-        - id
+          - id
   /api/trpc/posts.getFrontMatterTemplates:
     get:
       tags:
-      - Posts
+        - Posts
       summary: Get Front Matter Templates
       operationId: posts_getFrontMatterTemplates
       responses:
@@ -2056,12 +2060,12 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
       parameters:
-      - name: input
-        in: query
-        required: true
-        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
-        schema:
-          type: string
+        - name: input
+          in: query
+          required: true
+          description: 'URL-encoded tRPC input envelope, e.g. {"json":{...}}'
+          schema:
+            type: string
       x-trpc-input-schema:
         type: object
         properties:
@@ -2070,7 +2074,7 @@ paths:
   /api/trpc/posts.list:
     get:
       tags:
-      - Posts
+        - Posts
       summary: List
       operationId: posts_list
       responses:
@@ -2087,23 +2091,23 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
       parameters:
-      - name: input
-        in: query
-        required: true
-        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
-        schema:
-          type: string
+        - name: input
+          in: query
+          required: true
+          description: 'URL-encoded tRPC input envelope, e.g. {"json":{...}}'
+          schema:
+            type: string
       x-trpc-input-schema:
         type: object
         properties:
           siteId:
             type: number
         required:
-        - siteId
+          - siteId
   /api/trpc/posts.update:
     post:
       tags:
-      - Posts
+        - Posts
       summary: Update
       operationId: posts_update
       responses:
@@ -2146,14 +2150,14 @@ paths:
                     scheduledAt:
                       nullable: true
                   required:
-                  - id
+                    - id
                   nullable: true
               required:
-              - json
+                - json
   /api/trpc/posts.upsert:
     post:
       tags:
-      - Posts
+        - Posts
       summary: Upsert
       operationId: posts_upsert
       responses:
@@ -2197,14 +2201,14 @@ paths:
                       type: string
                     scheduledAt: {}
                   required:
-                  - siteId
-                  - path
+                    - siteId
+                    - path
               required:
-              - json
+                - json
   /api/trpc/repurposing.delete:
     post:
       tags:
-      - Repurposing
+        - Repurposing
       summary: Delete
       operationId: repurposing_delete
       responses:
@@ -2233,13 +2237,13 @@ paths:
                     id:
                       type: number
                   required:
-                  - id
+                    - id
               required:
-              - json
+                - json
   /api/trpc/repurposing.generate:
     post:
       tags:
-      - Repurposing
+        - Repurposing
       summary: Generate
       operationId: repurposing_generate
       responses:
@@ -2272,24 +2276,24 @@ paths:
                     format:
                       type: string
                       enum:
-                      - twitter
-                      - linkedin
-                      - tiktok
-                      - youtube
-                      - newsletter
-                      - email
-                      - podcast
-                      - slides
+                        - twitter
+                        - linkedin
+                        - tiktok
+                        - youtube
+                        - newsletter
+                        - email
+                        - podcast
+                        - slides
                   required:
-                  - postId
-                  - siteId
-                  - format
+                    - postId
+                    - siteId
+                    - format
               required:
-              - json
+                - json
   /api/trpc/repurposing.getById:
     get:
       tags:
-      - Repurposing
+        - Repurposing
       summary: Get By Id
       operationId: repurposing_getById
       responses:
@@ -2306,23 +2310,23 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
       parameters:
-      - name: input
-        in: query
-        required: true
-        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
-        schema:
-          type: string
+        - name: input
+          in: query
+          required: true
+          description: 'URL-encoded tRPC input envelope, e.g. {"json":{...}}'
+          schema:
+            type: string
       x-trpc-input-schema:
         type: object
         properties:
           id:
             type: number
         required:
-        - id
+          - id
   /api/trpc/repurposing.getByPost:
     get:
       tags:
-      - Repurposing
+        - Repurposing
       summary: Get By Post
       operationId: repurposing_getByPost
       responses:
@@ -2339,23 +2343,23 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
       parameters:
-      - name: input
-        in: query
-        required: true
-        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
-        schema:
-          type: string
+        - name: input
+          in: query
+          required: true
+          description: 'URL-encoded tRPC input envelope, e.g. {"json":{...}}'
+          schema:
+            type: string
       x-trpc-input-schema:
         type: object
         properties:
           postId:
             type: number
         required:
-        - postId
+          - postId
   /api/trpc/repurposing.regenerate:
     post:
       tags:
-      - Repurposing
+        - Repurposing
       summary: Regenerate
       operationId: repurposing_regenerate
       responses:
@@ -2388,15 +2392,15 @@ paths:
                     siteId:
                       type: number
                   required:
-                  - id
-                  - postId
-                  - siteId
+                    - id
+                    - postId
+                    - siteId
               required:
-              - json
+                - json
   /api/trpc/repurposing.update:
     post:
       tags:
-      - Repurposing
+        - Repurposing
       summary: Update
       operationId: repurposing_update
       responses:
@@ -2430,13 +2434,13 @@ paths:
                     isCustomized:
                       type: boolean
                   required:
-                  - id
+                    - id
               required:
-              - json
+                - json
   /api/trpc/scheduler.cancel:
     post:
       tags:
-      - Scheduler
+        - Scheduler
       summary: Cancel
       operationId: scheduler_cancel
       responses:
@@ -2465,13 +2469,13 @@ paths:
                     id:
                       type: number
                   required:
-                  - id
+                    - id
               required:
-              - json
+                - json
   /api/trpc/scheduler.cancelAll:
     post:
       tags:
-      - Scheduler
+        - Scheduler
       summary: Cancel All
       operationId: scheduler_cancelAll
       responses:
@@ -2500,13 +2504,13 @@ paths:
                     siteId:
                       type: number
                   required:
-                  - siteId
+                    - siteId
               required:
-              - json
+                - json
   /api/trpc/scheduler.list:
     get:
       tags:
-      - Scheduler
+        - Scheduler
       summary: List
       operationId: scheduler_list
       responses:
@@ -2523,23 +2527,23 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
       parameters:
-      - name: input
-        in: query
-        required: true
-        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
-        schema:
-          type: string
+        - name: input
+          in: query
+          required: true
+          description: 'URL-encoded tRPC input envelope, e.g. {"json":{...}}'
+          schema:
+            type: string
       x-trpc-input-schema:
         type: object
         properties:
           siteId:
             type: number
         required:
-        - siteId
+          - siteId
   /api/trpc/scheduler.listHeartbeatJobs:
     get:
       tags:
-      - Scheduler
+        - Scheduler
       summary: List Heartbeat Jobs
       operationId: scheduler_listHeartbeatJobs
       responses:
@@ -2556,12 +2560,12 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
       parameters:
-      - name: input
-        in: query
-        required: true
-        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
-        schema:
-          type: string
+        - name: input
+          in: query
+          required: true
+          description: 'URL-encoded tRPC input envelope, e.g. {"json":{...}}'
+          schema:
+            type: string
       x-trpc-input-schema:
         type: object
         properties:
@@ -2570,12 +2574,12 @@ paths:
           pageSize:
             type: number
         required:
-        - page
-        - pageSize
+          - page
+          - pageSize
   /api/trpc/scheduler.markFailed:
     post:
       tags:
-      - Scheduler
+        - Scheduler
       summary: Mark Failed
       operationId: scheduler_markFailed
       responses:
@@ -2607,14 +2611,14 @@ paths:
                       type: string
                       maxLength: 2000
                   required:
-                  - id
-                  - errorMessage
+                    - id
+                    - errorMessage
               required:
-              - json
+                - json
   /api/trpc/scheduler.markPublished:
     post:
       tags:
-      - Scheduler
+        - Scheduler
       summary: Mark Published
       operationId: scheduler_markPublished
       responses:
@@ -2643,13 +2647,13 @@ paths:
                     id:
                       type: number
                   required:
-                  - id
+                    - id
               required:
-              - json
+                - json
   /api/trpc/scheduler.reschedule:
     post:
       tags:
-      - Scheduler
+        - Scheduler
       summary: Reschedule
       operationId: scheduler_reschedule
       responses:
@@ -2681,14 +2685,14 @@ paths:
                     timezone:
                       type: string
                   required:
-                  - id
-                  - scheduledAt
+                    - id
+                    - scheduledAt
               required:
-              - json
+                - json
   /api/trpc/scheduler.schedule:
     post:
       tags:
-      - Scheduler
+        - Scheduler
       summary: Schedule
       operationId: scheduler_schedule
       responses:
@@ -2728,17 +2732,17 @@ paths:
                     commitMessage:
                       type: string
                   required:
-                  - siteId
-                  - draftPath
-                  - targetPath
-                  - scheduledAt
-                  - timezone
+                    - siteId
+                    - draftPath
+                    - targetPath
+                    - scheduledAt
+                    - timezone
               required:
-              - json
+                - json
   /api/trpc/sites.delete:
     post:
       tags:
-      - Sites
+        - Sites
       summary: Delete
       operationId: sites_delete
       responses:
@@ -2767,13 +2771,13 @@ paths:
                     id:
                       type: number
                   required:
-                  - id
+                    - id
               required:
-              - json
+                - json
   /api/trpc/sites.get:
     get:
       tags:
-      - Sites
+        - Sites
       summary: Get
       operationId: sites_get
       responses:
@@ -2790,23 +2794,23 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
       parameters:
-      - name: input
-        in: query
-        required: true
-        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
-        schema:
-          type: string
+        - name: input
+          in: query
+          required: true
+          description: 'URL-encoded tRPC input envelope, e.g. {"json":{...}}'
+          schema:
+            type: string
       x-trpc-input-schema:
         type: object
         properties:
           id:
             type: number
         required:
-        - id
+          - id
   /api/trpc/sites.list:
     get:
       tags:
-      - Sites
+        - Sites
       summary: List
       operationId: sites_list
       responses:
@@ -2825,7 +2829,7 @@ paths:
   /api/trpc/sites.update:
     post:
       tags:
-      - Sites
+        - Sites
       summary: Update
       operationId: sites_update
       responses:
@@ -2869,13 +2873,13 @@ paths:
                       type: string
                     settings: {}
                   required:
-                  - id
+                    - id
               required:
-              - json
+                - json
   /api/trpc/sites.upsert:
     post:
       tags:
-      - Sites
+        - Sites
       summary: Upsert
       operationId: sites_upsert
       responses:
@@ -2922,14 +2926,14 @@ paths:
                     defaultAssetPath:
                       type: string
                   required:
-                  - owner
-                  - repo
+                    - owner
+                    - repo
               required:
-              - json
+                - json
   /api/trpc/snapshots.create:
     post:
       tags:
-      - Snapshots
+        - Snapshots
       summary: Create
       operationId: snapshots_create
       responses:
@@ -2968,15 +2972,15 @@ paths:
                       type: string
                     frontMatter: {}
                   required:
-                  - siteId
-                  - label
-                  - reason
+                    - siteId
+                    - label
+                    - reason
               required:
-              - json
+                - json
   /api/trpc/snapshots.get:
     get:
       tags:
-      - Snapshots
+        - Snapshots
       summary: Get
       operationId: snapshots_get
       responses:
@@ -2993,23 +2997,23 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
       parameters:
-      - name: input
-        in: query
-        required: true
-        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
-        schema:
-          type: string
+        - name: input
+          in: query
+          required: true
+          description: 'URL-encoded tRPC input envelope, e.g. {"json":{...}}'
+          schema:
+            type: string
       x-trpc-input-schema:
         type: object
         properties:
           id:
             type: number
         required:
-        - id
+          - id
   /api/trpc/snapshots.listByPost:
     get:
       tags:
-      - Snapshots
+        - Snapshots
       summary: List By Post
       operationId: snapshots_listByPost
       responses:
@@ -3026,12 +3030,12 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
       parameters:
-      - name: input
-        in: query
-        required: true
-        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
-        schema:
-          type: string
+        - name: input
+          in: query
+          required: true
+          description: 'URL-encoded tRPC input envelope, e.g. {"json":{...}}'
+          schema:
+            type: string
       x-trpc-input-schema:
         type: object
         properties:
@@ -3040,12 +3044,12 @@ paths:
           siteId:
             type: number
         required:
-        - postPath
-        - siteId
+          - postPath
+          - siteId
   /api/trpc/socialMedia.cancelScheduledPost:
     post:
       tags:
-      - Social Media
+        - Social Media
       summary: Cancel Scheduled Post
       operationId: socialMedia_cancelScheduledPost
       responses:
@@ -3074,13 +3078,13 @@ paths:
                     postId:
                       type: number
                   required:
-                  - postId
+                    - postId
               required:
-              - json
+                - json
   /api/trpc/socialMedia.connectAccount:
     post:
       tags:
-      - Social Media
+        - Social Media
       summary: Connect Account
       operationId: socialMedia_connectAccount
       responses:
@@ -3109,10 +3113,10 @@ paths:
                     platform:
                       type: string
                       enum:
-                      - twitter
-                      - linkedin
-                      - facebook
-                      - instagram
+                        - twitter
+                        - linkedin
+                        - facebook
+                        - instagram
                     accessToken:
                       type: string
                     refreshToken:
@@ -3127,15 +3131,15 @@ paths:
                     profileImageUrl:
                       type: string
                   required:
-                  - platform
-                  - accessToken
-                  - accountId
+                    - platform
+                    - accessToken
+                    - accountId
               required:
-              - json
+                - json
   /api/trpc/socialMedia.disconnectAccount:
     post:
       tags:
-      - Social Media
+        - Social Media
       summary: Disconnect Account
       operationId: socialMedia_disconnectAccount
       responses:
@@ -3164,13 +3168,13 @@ paths:
                     id:
                       type: number
                   required:
-                  - id
+                    - id
               required:
-              - json
+                - json
   /api/trpc/socialMedia.getAccountDetails:
     get:
       tags:
-      - Social Media
+        - Social Media
       summary: Get Account Details
       operationId: socialMedia_getAccountDetails
       responses:
@@ -3187,23 +3191,23 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
       parameters:
-      - name: input
-        in: query
-        required: true
-        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
-        schema:
-          type: string
+        - name: input
+          in: query
+          required: true
+          description: 'URL-encoded tRPC input envelope, e.g. {"json":{...}}'
+          schema:
+            type: string
       x-trpc-input-schema:
         type: object
         properties:
           id:
             type: number
         required:
-        - id
+          - id
   /api/trpc/socialMedia.getAccounts:
     get:
       tags:
-      - Social Media
+        - Social Media
       summary: Get Accounts
       operationId: socialMedia_getAccounts
       responses:
@@ -3222,7 +3226,7 @@ paths:
   /api/trpc/socialMedia.getAnalyticsByPlatform:
     get:
       tags:
-      - Social Media
+        - Social Media
       summary: Get Analytics By Platform
       operationId: socialMedia_getAnalyticsByPlatform
       responses:
@@ -3239,28 +3243,28 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
       parameters:
-      - name: input
-        in: query
-        required: true
-        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
-        schema:
-          type: string
+        - name: input
+          in: query
+          required: true
+          description: 'URL-encoded tRPC input envelope, e.g. {"json":{...}}'
+          schema:
+            type: string
       x-trpc-input-schema:
         type: object
         properties:
           platform:
             type: string
             enum:
-            - twitter
-            - linkedin
-            - facebook
-            - instagram
+              - twitter
+              - linkedin
+              - facebook
+              - instagram
         required:
-        - platform
+          - platform
   /api/trpc/socialMedia.getAnalyticsSummary:
     get:
       tags:
-      - Social Media
+        - Social Media
       summary: Get Analytics Summary
       operationId: socialMedia_getAnalyticsSummary
       responses:
@@ -3279,7 +3283,7 @@ paths:
   /api/trpc/socialMedia.getContentAnalytics:
     get:
       tags:
-      - Social Media
+        - Social Media
       summary: Get Content Analytics
       operationId: socialMedia_getContentAnalytics
       responses:
@@ -3296,23 +3300,23 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
       parameters:
-      - name: input
-        in: query
-        required: true
-        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
-        schema:
-          type: string
+        - name: input
+          in: query
+          required: true
+          description: 'URL-encoded tRPC input envelope, e.g. {"json":{...}}'
+          schema:
+            type: string
       x-trpc-input-schema:
         type: object
         properties:
           repurposedContentId:
             type: number
         required:
-        - repurposedContentId
+          - repurposedContentId
   /api/trpc/socialMedia.getScheduledPosts:
     get:
       tags:
-      - Social Media
+        - Social Media
       summary: Get Scheduled Posts
       operationId: socialMedia_getScheduledPosts
       responses:
@@ -3329,23 +3333,23 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
       parameters:
-      - name: input
-        in: query
-        required: true
-        description: URL-encoded tRPC input envelope, e.g. {"json":{...}}
-        schema:
-          type: string
+        - name: input
+          in: query
+          required: true
+          description: 'URL-encoded tRPC input envelope, e.g. {"json":{...}}'
+          schema:
+            type: string
       x-trpc-input-schema:
         type: object
         properties:
           repurposedContentId:
             type: number
         required:
-        - repurposedContentId
+          - repurposedContentId
   /api/trpc/socialMedia.publishContent:
     post:
       tags:
-      - Social Media
+        - Social Media
       summary: Publish Content
       operationId: socialMedia_publishContent
       responses:
@@ -3376,14 +3380,14 @@ paths:
                     accountId:
                       type: number
                   required:
-                  - repurposedContentId
-                  - accountId
+                    - repurposedContentId
+                    - accountId
               required:
-              - json
+                - json
   /api/trpc/socialMedia.reschedulePost:
     post:
       tags:
-      - Social Media
+        - Social Media
       summary: Reschedule Post
       operationId: socialMedia_reschedulePost
       responses:
@@ -3415,14 +3419,14 @@ paths:
                     timezone:
                       type: string
                   required:
-                  - postId
-                  - scheduledAt
+                    - postId
+                    - scheduledAt
               required:
-              - json
+                - json
   /api/trpc/socialMedia.schedulePost:
     post:
       tags:
-      - Social Media
+        - Social Media
       summary: Schedule Post
       operationId: socialMedia_schedulePost
       responses:
@@ -3456,15 +3460,15 @@ paths:
                     timezone:
                       type: string
                   required:
-                  - repurposedContentId
-                  - socialMediaAccountId
-                  - scheduledAt
+                    - repurposedContentId
+                    - socialMediaAccountId
+                    - scheduledAt
               required:
-              - json
+                - json
   /api/trpc/socialMedia.syncAnalytics:
     post:
       tags:
-      - Social Media
+        - Social Media
       summary: Sync Analytics
       operationId: socialMedia_syncAnalytics
       responses:
@@ -3493,9 +3497,9 @@ paths:
                     analyticsId:
                       type: number
                   required:
-                  - analyticsId
+                    - analyticsId
               required:
-              - json
+                - json
 components:
   securitySchemes:
     bearerAuth:
@@ -3530,4 +3534,4 @@ components:
           schema:
             $ref: '#/components/schemas/Error'
 security:
-- bearerAuth: []
+  - bearerAuth: []
