@@ -1,38 +1,3 @@
 # Jekyll Forge
 
-Jekyll Forge is a visual CMS for Jekyll blogs.
-
-## Independent hosting migration
-
-This branch prepares the app for Cloudflare Workers and D1 with GitHub login.
-Production deployment and external-service acceptance are still pending.
-Start with [Cloudflare setup](./CLOUDFLARE_SETUP.md) and the
-[migration record](./MANUS_EXIT_PLAN.md). Historical Manus setup documents do
-not describe this branch's active runtime. Existing GitHub content is preserved.
-
-## Platform audit and active remediation
-
-The current evidence-backed audit and its prioritized remediation tracker are maintained in the repository so they are available from the project file tree:
-
-- [`COMPREHENSIVE_AUDIT_REPORT.md`](./COMPREHENSIVE_AUDIT_REPORT.md) — platform findings, verification evidence, and release considerations.
-- [`todo.md`](./todo.md#active-audit-remediation--priority-order) — the live, ordered remediation checklist. Items are only marked complete after code changes and verification.
-
-The public landing page lives in [`landing/`](./landing/) and is deployed to GitHub Pages by the `Deploy Landing Page to GitHub Pages` workflow.
-
-If GitHub Pages is accidentally configured to deploy from the repository root instead of the workflow artifact, the root [`index.html`](./index.html) redirects visitors to the landing page.
-
-## Landing page
-
-Open the landing page source here:
-
-- [`landing/index.html`](./landing/index.html)
-- [`landing/styles.css`](./landing/styles.css)
-- [`landing/script.js`](./landing/script.js)
-
-## GitHub Pages
-
-Use this repository setting:
-
-```text
-Settings → Pages → Build and deployment → Source → GitHub Actions
-```
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/CassieMarie0728/jekyll-forge)
